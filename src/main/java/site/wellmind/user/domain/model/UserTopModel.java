@@ -5,9 +5,11 @@ import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import site.wellmind.common.domain.model.BaseModel;
 import site.wellmind.common.domain.vo.Role;
+import site.wellmind.log.domain.model.*;
 import site.wellmind.transfer.domain.model.DepartmentModel;
 import site.wellmind.transfer.domain.model.TransferModel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -60,4 +62,21 @@ public class UserTopModel extends BaseModel {
     // ====================== transfer ========================
     @OneToMany(mappedBy = "userTopId", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TransferModel> transferIds;
+
+    // ====================== log ========================
+    @OneToMany(mappedBy = "userId",cascade = CascadeType.MERGE,orphanRemoval = false)
+    private List<LogArchiveViewModel> viewLogIds= new ArrayList<>();
+
+    @OneToMany(mappedBy = "userId",cascade = CascadeType.MERGE,orphanRemoval = false)
+    private List<LogArchiveUpdateModel> updateLogIds= new ArrayList<>();
+
+    @OneToMany(mappedBy = "userId",cascade = CascadeType.MERGE,orphanRemoval = false)
+    private List<LogArchiveLoginModel> loginLogIds= new ArrayList<>();
+
+    @OneToMany(mappedBy = "userId",cascade = CascadeType.MERGE,orphanRemoval = false)
+    private List<LogArchiveDeleteModel> deleteLogIds= new ArrayList<>();
+
+    @OneToMany(mappedBy = "userId",cascade = CascadeType.MERGE,orphanRemoval = false)
+    private List<LogArchiveReportModel> reportLogIds= new ArrayList<>();
+
 }
