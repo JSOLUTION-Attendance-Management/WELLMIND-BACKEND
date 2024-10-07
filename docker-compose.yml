@@ -1,0 +1,15 @@
+services:
+  mariadb:
+    container_name: jsContainer
+    image: mariadb
+    volumes:
+      - ./maria/demo/etc/maria/conf.d:/etc/maria/conf.d:ro
+      - ./maria/demo/var/lib/maria:/var/lib/maria
+      - ./maria/demo/var/log/maria:/var/log/maria
+    environment:
+      - TZ="Asia/Seoul"
+      - MARIADB_ROOT_PASSWORD=tjrmariadb
+    command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+    ports:
+      - "3307:3306"  # Host port 3307 mapped to container port 3306
+    restart: always

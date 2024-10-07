@@ -22,20 +22,14 @@ public class LogArchiveDeleteModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "DELETE_BY_IDX")
-    private Long deleteById;
+    @Column(name = "ACTION_BY_IDX")
+    private Long actionById;
 
     @Column(name = "DELETE_TYPE")
     private DeleteStatus deleteType;
 
-    @Column(name = "DELETE_DATE")
-    private LocalDateTime deleteDate;
-
-    @Column(name = "RESTORE_BY_IDX")
-    private Long restoreById;
-
-    @Column(name = "RESTORE_DATE")
-    private LocalDateTime restoreDate;
+    @Column(name = "ACTION_DATE")
+    private LocalDateTime actionDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_IDX",nullable = false)

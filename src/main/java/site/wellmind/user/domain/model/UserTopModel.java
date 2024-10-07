@@ -3,12 +3,15 @@ package site.wellmind.user.domain.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import site.wellmind.attend.domain.model.AttendanceQrModel;
+import site.wellmind.attend.domain.model.AttendanceRecordModel;
 import site.wellmind.common.domain.model.BaseModel;
 import site.wellmind.common.domain.vo.Role;
 import site.wellmind.log.domain.model.*;
 import site.wellmind.transfer.domain.model.DepartmentModel;
 import site.wellmind.transfer.domain.model.TransferModel;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,7 +55,13 @@ public class UserTopModel extends BaseModel {
     private Role authUserLevelCodeId;
 
     @Column(name = "DELETE_FLAG")
-    private Boolean deleteFlag= false;  // Default to false
+    private Boolean deleteFlag= false;
+
+    @Column(name = "USER_AUTH_TOKEN",length = 2048,nullable = false)
+    private String authToken;
+
+    @Column(name = "USER_AUTH_TOKEN_EXPIRE",nullable = false)
+    private LocalDateTime authTokenExpire;
 
     // ====================== user ========================
     @OneToOne(cascade = CascadeType.ALL)
@@ -60,8 +69,15 @@ public class UserTopModel extends BaseModel {
     private UserInfoModel userInfoModel;
 
     // ====================== transfer ========================
-    @OneToMany(mappedBy = "userTopId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TransferModel> transferIds;
+
+    // ====================== attend ========================
+    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AttendanceQrModel> qrTokenIds;
+
+    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AttendanceRecordModel> recordIds;
 
     // ====================== log ========================
     @OneToMany(mappedBy = "userId",cascade = CascadeType.MERGE,orphanRemoval = false)

@@ -16,12 +16,12 @@ import java.time.LocalDateTime;
 public abstract class BaseModel {
 
     @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "REG_DATE", updatable = false)
+    private LocalDateTime regDate;
 
     @LastModifiedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @Column(name = "MOD_DATE")
+    private LocalDateTime modDate;
 
 
 }

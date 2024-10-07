@@ -25,7 +25,7 @@ public class TransferModel extends BaseModel {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_IDX", nullable = false)
-    private UserTopModel userTopId;
+    private UserTopModel userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "DEPART_IDX",nullable = false)
