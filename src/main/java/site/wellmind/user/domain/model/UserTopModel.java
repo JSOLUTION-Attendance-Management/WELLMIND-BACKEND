@@ -5,6 +5,8 @@ import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import site.wellmind.common.domain.model.BaseModel;
 import site.wellmind.common.domain.vo.Role;
+import site.wellmind.transfer.domain.model.DepartmentModel;
+import site.wellmind.transfer.domain.model.TransferModel;
 
 import java.util.List;
 
@@ -14,6 +16,7 @@ import java.util.List;
 @Builder
 @Setter
 @Getter
+@Table(name = "jsol_usertop")
 @ToString(exclude = {"id"})
 public class UserTopModel extends BaseModel {
 
@@ -36,7 +39,7 @@ public class UserTopModel extends BaseModel {
     @Column(name = "REG_NUMBER_LAT",nullable = false)
     private Integer regNumberLat;
 
-    @Column(name="USER_TEL")
+    @Column(name="USER_TEL",length = 50)
     private String tel;
 
     @Column(name="AUTH_TYPE",length = 1)
@@ -49,5 +52,12 @@ public class UserTopModel extends BaseModel {
     @Column(name = "DELETE_FLAG")
     private Boolean deleteFlag= false;  // Default to false
 
+    // ====================== user ========================
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "USERINFO_IDX",referencedColumnName = "USERINFO_IDX")
+    private UserInfoModel userInfoModel;
 
+    // ====================== transfer ========================
+    @OneToMany(mappedBy = "userTopId", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TransferModel> transferIds;
 }
