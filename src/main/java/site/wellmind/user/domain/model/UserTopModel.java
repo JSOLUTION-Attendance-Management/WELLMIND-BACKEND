@@ -30,7 +30,7 @@ public class UserTopModel extends BaseModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "USER_EMAIIL",unique = true,nullable = false)
+    @Column(name = "USER_EMAIL",unique = true,nullable = false)
     private String email;
 
     @Column(name = "USER_PASSWORD", unique = true)

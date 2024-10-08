@@ -8,13 +8,13 @@ import lombok.*;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class AddressVO {
-    private String address;
-    private String address_detail;
-    private String postalCode;
-
+public class EducationVO {
+    private String institutionName;
+    private String major;
+    private String degree;
     @Override
     public String toString() {
-        return address + " " + address_detail + " / "+postalCode;
+        return institutionName + " " + major + " " + degree;
     }
+
 }

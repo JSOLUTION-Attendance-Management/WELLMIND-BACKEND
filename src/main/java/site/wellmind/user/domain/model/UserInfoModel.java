@@ -3,6 +3,7 @@ package site.wellmind.user.domain.model;
 import jakarta.persistence.*;
 import lombok.*;
 import site.wellmind.common.domain.model.BaseModel;
+import site.wellmind.user.domain.vo.AddressVO;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -19,7 +20,7 @@ public class UserInfoModel extends BaseModel {
     private Long id;
 
     @Column(name = "USER_ADDRESS",unique = true)
-    private String address;
+    private AddressVO address;
 
     @Column(name = "USER_EDUCATION")
     private String education;
@@ -34,5 +35,5 @@ public class UserInfoModel extends BaseModel {
     private String photo;
 
     @Column(name = "USER_IS_LONG")
-    private Boolean isLong=false;
+    private boolean isLong=false;
 }
