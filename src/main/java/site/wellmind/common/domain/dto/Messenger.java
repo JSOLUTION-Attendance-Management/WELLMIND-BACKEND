@@ -9,9 +9,10 @@ import org.springframework.stereotype.Component;
 /**
  * Messenger
  * <p>Message Data Transfer Object</p>
- * @since 2024-10-08
- * @version 1.0
+ *
  * @author Yuri Seok(tjrdbfl)
+ * @version 1.0
+ * @since 2024-10-08
  */
 @Component
 @Data
@@ -19,8 +20,8 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 @Builder
 public class Messenger {
-    private String message;
-    private Boolean state;
-    private Integer count;
-    private Object data;
+    private String message; // 메시지 내용
+    private Object data;    // 성공 여부 등 상태를 나타냄
+    private Integer count;  // 응답에 포함된 데이터 개수 등
+    private Boolean state;  // 성공 여부 등 상태를 나타냄
 }

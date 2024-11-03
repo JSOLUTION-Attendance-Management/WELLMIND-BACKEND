@@ -41,6 +41,6 @@ out/
 .env
 
 **/application.yml
-
+docker-compose.yml
 # Ignore all .sql files
 *.sql

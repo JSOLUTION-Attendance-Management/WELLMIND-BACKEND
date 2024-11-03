@@ -8,8 +8,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import site.wellmind.common.domain.vo.Role;
+import site.wellmind.user.domain.vo.AddressVO;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * UserDTO
@@ -25,14 +27,25 @@ import java.time.LocalDateTime;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserDto {
 
+    //UserTopModel
     private Long id;
+    private String employeeId;
     private String email;
     private String password;
     private String name;
-    private String tel;
+    private String phoneNum;
+    private String regNumberFor;
+    private String regNumberLat;
     private boolean deleteFlag;
     private String authType;
     private Role authUserLevelCodeId;
+
+    //UserInfoModel
+    private UserInfoDto userInfo;
+
+    //UserEducationModel
+    private List<EducationDto> education;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     private LocalDateTime regDate;
     @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")

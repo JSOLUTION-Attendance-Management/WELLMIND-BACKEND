@@ -15,6 +15,15 @@ public class SwaggerConfig {
     public OpenAPI openAPI(){
         String jwt="JWT";
 
+//        // Basic Auth 방식
+//        return new OpenAPI()
+//                .components(new Components()
+//                        .addSecuritySchemes("basicAuth", new SecurityScheme()
+//                                .type(SecurityScheme.Type.HTTP)
+//                                .scheme("basic")))
+//                .info(apiInfo())
+//                .addSecurityItem(new SecurityRequirement().addList("basicAuth"));
+        // jwt 기반 인증 방식
         return new OpenAPI()
                 .components(new Components())
                 .info(apiInfo())

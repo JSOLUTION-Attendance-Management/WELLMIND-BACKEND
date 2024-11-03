@@ -22,9 +22,6 @@ public class UserInfoModel extends BaseModel {
     @Column(name = "USER_ADDRESS",unique = true)
     private AddressVO address;
 
-    @Column(name = "USER_EDUCATION")
-    private String education;
-
     @Column(name = "USER_HOBBY")
     private String hobby;
 

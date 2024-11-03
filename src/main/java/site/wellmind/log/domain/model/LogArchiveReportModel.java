@@ -24,6 +24,9 @@ public class LogArchiveReportModel extends BaseModel {
     @Column(name = "MANAGER_REPORT_COMMENT")
     private String managerComment;
 
+    @Column(name = "REPORT_SUMMARY")
+    private String summary;
+
     @Column(name = "MANGER_IDX")
     private Long managerId;
 

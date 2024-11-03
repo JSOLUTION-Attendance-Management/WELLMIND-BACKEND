@@ -9,8 +9,8 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class AddressVO {
-    private String address;
-    private String address_detail;
+    private String address;  //대구시 수성구 효목로 19길
+    private String address_detail;  //103동 1203호
     private String postalCode;
 
     @Override

@@ -30,6 +30,9 @@ public class UserTopModel extends BaseModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "USER_EMPLOYEE_ID",unique = true,nullable = false)
+    private String employeeId;
+
     @Column(name = "USER_EMAIL",unique = true,nullable = false)
     private String email;
 
@@ -40,12 +43,12 @@ public class UserTopModel extends BaseModel {
     private String name;
 
     @Column(name="REG_NUMBER_FOR",nullable = false)
-    private Integer regNumberFor;
+    private String regNumberFor;
     @Column(name = "REG_NUMBER_LAT",nullable = false)
-    private Integer regNumberLat;
+    private String regNumberLat;
 
-    @Column(name="USER_TEL",length = 50)
-    private String tel;
+    @Column(name="USER_PHONE_NUM",length = 50)
+    private String phoneNum;
 
     @Column(name="AUTH_TYPE",length = 1)
     @Pattern(regexp = "[NM]",message = "authType must be 'N' or 'M'")
@@ -67,6 +70,9 @@ public class UserTopModel extends BaseModel {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "USERINFO_IDX",referencedColumnName = "USERINFO_IDX")
     private UserInfoModel userInfoModel;
+
+    @OneToMany(mappedBy = "userId",cascade = CascadeType.ALL,orphanRemoval = true)
+    private List<UserEducationModel> userEduIds;
 
     // ====================== transfer ========================
     @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
