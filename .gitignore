@@ -40,7 +40,10 @@ out/
 
 .env
 
+# 구성 파일
 **/application.yml
 docker-compose.yml
+*.yml
+
 # Ignore all .sql files
 *.sql
