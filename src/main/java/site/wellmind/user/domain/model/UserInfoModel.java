@@ -19,7 +19,12 @@ public class UserInfoModel extends BaseModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "USER_ADDRESS",unique = true)
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "address", column = @Column(name = "USER_ADDRESS")),
+            @AttributeOverride(name = "address_detail", column = @Column(name = "USER_ADDRESS_DETAIL")),
+            @AttributeOverride(name = "postalCode", column = @Column(name = "USER_POSTAL_CODE"))
+    })
     private AddressVO address;
 
     @Column(name = "USER_HOBBY")
@@ -33,4 +38,5 @@ public class UserInfoModel extends BaseModel {
 
     @Column(name = "USER_IS_LONG")
     private boolean isLong=false;
+
 }

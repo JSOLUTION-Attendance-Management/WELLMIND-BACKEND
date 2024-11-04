@@ -67,12 +67,13 @@ public class UserTopModel extends BaseModel {
     private LocalDateTime authTokenExpire;
 
     // ====================== user ========================
-    @OneToOne(cascade = CascadeType.ALL)
+
+    @OneToMany(mappedBy = "userTopModel",cascade = CascadeType.ALL,orphanRemoval = true)
+    private List<UserEducationModel> userEduIds;
+
+    @OneToOne
     @JoinColumn(name = "USERINFO_IDX",referencedColumnName = "USERINFO_IDX")
     private UserInfoModel userInfoModel;
-
-    @OneToMany(mappedBy = "userId",cascade = CascadeType.ALL,orphanRemoval = true)
-    private List<UserEducationModel> userEduIds;
 
     // ====================== transfer ========================
     @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)

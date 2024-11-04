@@ -27,7 +27,7 @@ public class LogArchiveReportModel extends BaseModel {
     @Column(name = "REPORT_SUMMARY")
     private String summary;
 
-    @Column(name = "MANGER_IDX")
+    @Column(name = "MANAGER_IDX")
     private Long managerId;
 
     @ManyToOne(fetch = FetchType.LAZY)

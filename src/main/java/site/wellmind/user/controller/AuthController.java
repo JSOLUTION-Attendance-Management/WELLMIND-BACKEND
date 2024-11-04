@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import site.wellmind.common.domain.dto.Messenger;
 import site.wellmind.common.domain.vo.SuccessStatus;
+import site.wellmind.user.domain.dto.LoginDto;
 import site.wellmind.user.domain.dto.ProfileDto;
 import site.wellmind.user.domain.dto.UserDto;
 import site.wellmind.user.service.UserService;
@@ -30,7 +31,11 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<ProfileDto> login(@RequestBody UserDto dto){
-        return ResponseEntity.ok(userService.login(dto));
+    public ResponseEntity<Messenger> login(@RequestBody LoginDto dto){
+        return ResponseEntity.ok(
+                Messenger.builder()
+                        .message("auth login : "+SuccessStatus.OK.getMessage())
+                        .data(userService.login(dto))
+                        .build());
     }
 }

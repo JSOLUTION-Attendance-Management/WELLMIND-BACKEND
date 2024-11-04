@@ -1,6 +1,9 @@
 package site.wellmind.user.service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import site.wellmind.common.service.CommandService;
 import site.wellmind.common.service.QueryService;
+import site.wellmind.user.domain.dto.LoginDto;
 import site.wellmind.user.domain.dto.ProfileDto;
 import site.wellmind.user.domain.dto.UserDto;
 import site.wellmind.user.domain.model.UserTopModel;
@@ -50,6 +53,8 @@ public interface UserService extends CommandService<UserDto>, QueryService<UserD
 
     Boolean existByEmployeeId(String employeeId);
 
-    ProfileDto login(UserDto dto);
+    ProfileDto login(LoginDto dto);
+
+    Page<UserDto> findBy(String departName, String positionName, String name, Pageable pageable);
 }
 

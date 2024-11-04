@@ -1,12 +1,23 @@
 package site.wellmind.user.service.impl;
 
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.security.util.EncryptionUtil;
-import site.wellmind.user.domain.dto.ProfileDto;
-import site.wellmind.user.domain.dto.UserDto;
+import site.wellmind.transfer.domain.model.QDepartmentModel;
+import site.wellmind.transfer.domain.model.QPositionModel;
+import site.wellmind.transfer.domain.model.QTransferModel;
+import site.wellmind.transfer.domain.model.TransferModel;
+import site.wellmind.user.domain.dto.*;
+import site.wellmind.user.domain.model.QUserTopModel;
 import site.wellmind.user.domain.model.UserEducationModel;
 import site.wellmind.user.domain.model.UserInfoModel;
 import site.wellmind.user.domain.model.UserTopModel;
@@ -39,9 +50,16 @@ public class UserServiceImpl implements UserService {
     private final UserInfoRepository userInfoRepository;
     private final UserEducationRepository userEducationRepository;
 
-
     private final PasswordEncoder passwordEncoder;
+
+    private final JPAQueryFactory queryFactory;
+    private final QUserTopModel qUserTop=QUserTopModel.userTopModel;
+    private final QTransferModel qTransfer=QTransferModel.transferModel;
+    private final QPositionModel qPosition=QPositionModel.positionModel;
+    private final QDepartmentModel qDepartment=QDepartmentModel.departmentModel;
+
     @Override
+    @Transactional
     public UserDto save(UserDto dto) {
         //validate user request
         validateUserDto(dto);
@@ -102,17 +120,78 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto findById(Long id) {
-        return null;
+        UserTopModel userTopModel = userTopRepository.findById(id)
+                .orElseThrow(() -> new UserException(ExceptionStatus.NOT_FOUND, "UserTop not found"));
+        UserInfoModel userInfoModel = userTopModel.getUserInfoModel();
+        List<UserEducationModel> userEducations = userTopModel.getUserEduIds();
+
+        return UserDto.builder()
+                .id(userTopModel.getId())
+                .email(userTopModel.getEmail())
+                .phoneNum(userTopModel.getPhoneNum())
+                .name(userTopModel.getName())
+                .authType(userTopModel.getAuthType())
+                .regNumberFor(userTopModel.getRegNumberFor())
+                .regNumberLat(userTopModel.getRegNumberLat())
+                .employeeId(userTopModel.getRegNumberLat())
+                .userInfo(UserInfoDto.builder()
+                        .photo(userInfoModel.getPhoto())
+                        .address(userInfoModel.getAddress())
+                        .significant(userInfoModel.getSignificant())
+                        .isLong(userInfoModel.isLong())
+                        .hobby(userInfoModel.getHobby())
+                        .build())
+                .education(userEducations.stream()
+                        .map(edu -> EducationDto.builder()
+                                .degree(edu.getDegree())
+                                .institutionName(edu.getInstitutionName())
+                                .major(edu.getMajor())
+                                .build())
+                        .collect(Collectors.toList()))
+                .build();
+
     }
 
     @Override
     public List<UserDto> findAll() {
-        return null;
+        List<UserTopModel> userTopModels = userTopRepository.findAll();
+
+        return userTopModels.stream()
+                .map(userTopModel -> {
+                    UserInfoModel userInfoModel = userTopModel.getUserInfoModel(); // 이미 페치된 상태
+                    List<UserEducationModel> userEducationModels = userTopModel.getUserEduIds();
+
+                    return UserDto.builder()
+                            .id(userTopModel.getId())
+                            .email(userTopModel.getEmail())
+                            .phoneNum(userTopModel.getPhoneNum())
+                            .name(userTopModel.getName())
+                            .authType(userTopModel.getAuthType())
+                            .regNumberFor(userTopModel.getRegNumberFor())
+                            .regNumberLat(userTopModel.getRegNumberLat())
+                            .employeeId(userTopModel.getRegNumberLat())
+                            .userInfo(UserInfoDto.builder()
+                                    .photo(userInfoModel.getPhoto())
+                                    .address(userInfoModel.getAddress())
+                                    .significant(userInfoModel.getSignificant())
+                                    .isLong(userInfoModel.isLong())
+                                    .hobby(userInfoModel.getHobby())
+                                    .build())
+                            .education(userEducationModels.stream()
+                                    .map(edu -> EducationDto.builder()
+                                            .degree(edu.getDegree())
+                                            .institutionName(edu.getInstitutionName())
+                                            .major(edu.getMajor())
+                                            .build())
+                                    .collect(Collectors.toList()))
+                            .build();
+
+                }).collect(Collectors.toList());
     }
 
     @Override
     public boolean existById(Long id) {
-        return false;
+        return userTopRepository.existsById(id);
     }
 
     @Override
@@ -126,8 +205,56 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ProfileDto login(UserDto dto) {
+    @Transactional
+    public ProfileDto login(LoginDto dto) {
         return null;
+    }
+
+    @Override
+    public Page<UserDto> findBy(String departName, String positionName, String name, Pageable pageable) {
+        BooleanBuilder whereClause = new BooleanBuilder();
+        // 조건 추가 시 null 체크를 포함하여 안전하게 설정
+        if (positionName != null) {
+            whereClause.and(qPosition.name.eq(positionName));
+        } else {
+            whereClause.and(qPosition.name.isNull());
+        }
+
+        if (departName != null) {
+            whereClause.and(qDepartment.name.eq(departName));
+        } else {
+            whereClause.and(qDepartment.name.isNull());
+        }
+
+        if (name != null) {
+            whereClause.and(qUserTop.name.containsIgnoreCase(name));
+        } else {
+            whereClause.and(qUserTop.name.isNull());
+        }
+        var user = queryFactory
+                .selectFrom(qUserTop)
+                .join(qUserTop.transferIds, qTransfer)
+                .join(qTransfer.positionId, qPosition)
+                .join(qTransfer.departmentId, qDepartment)
+                .where(whereClause)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .orderBy(qUserTop.id.desc())
+                .fetch()
+                .stream()
+                .map(this::entityToDto)
+                .toList();
+
+        // Count query for pagination
+        JPAQuery<Long> countQuery = queryFactory
+                .select(qUserTop.count())
+                .from(qUserTop)
+                .join(qUserTop.transferIds, qTransfer)
+                .join(qTransfer.positionId, qPosition)
+                .join(qTransfer.departmentId, qDepartment)
+                .where(whereClause);
+
+        return PageableExecutionUtils.getPage(user, pageable, countQuery::fetchOne);
     }
 
     private void validateUserDto(UserDto dto) {
@@ -135,5 +262,6 @@ public class UserServiceImpl implements UserService {
             throw new UserException(ExceptionStatus.INVALID_INPUT, "employeeeId or password cannot be empty");
         }
     }
+
 
 }

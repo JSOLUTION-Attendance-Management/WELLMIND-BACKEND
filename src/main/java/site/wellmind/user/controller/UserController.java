@@ -3,6 +3,8 @@ package site.wellmind.user.controller;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import site.wellmind.common.domain.dto.Messenger;
@@ -38,13 +40,41 @@ public class UserController {
                 .data(userService.save(dto))
                 .build());
     }
-    @GetMapping("/register/exist-by-employeeId")
-    public ResponseEntity<Messenger> existsByEmployeeId(@RequestParam("employeeId") String employeeId) {
+    @GetMapping("/exist-by-employeeId")
+    public ResponseEntity<Messenger> existByEmployeeId(@RequestParam("employeeId") String employeeId) {
         return ResponseEntity.ok(Messenger
                 .builder()
                 .message("user existByEmployeeId 조회 결과")
                 .state(userService.existByEmployeeId(employeeId))
                 .build());
+    }
+
+    @GetMapping("/find-all")
+    public ResponseEntity<Messenger> findAll() {
+        return ResponseEntity.ok(Messenger
+                .builder()
+                .message("user findAll : "+SuccessStatus.OK.getMessage())
+                .data(userService.findAll())
+                .build());
+    }
+
+    //jwt 에서 id 꺼내는 형식으로 바꾸기
+    @GetMapping("/find-by-id")
+    public ResponseEntity<Messenger> findById(@RequestParam("id") Long id){
+        return ResponseEntity.ok(
+                Messenger.builder()
+                        .message("user findById : "+SuccessStatus.OK.getMessage())
+                        .data(userService.findById(id))
+                        .build()
+        );
+    }
+
+    @GetMapping("/findBy")
+    public ResponseEntity<Page<UserDto>> findBy(@RequestParam(value = "departName",required = false) String departName,
+                                                @RequestParam(value = "positionName",required = false) String positionName,
+                                                @RequestParam(value = "name",required = false) String name,
+                                                Pageable pageable){
+        return ResponseEntity.ok(userService.findBy(departName,positionName,name,pageable));
     }
 
 }
