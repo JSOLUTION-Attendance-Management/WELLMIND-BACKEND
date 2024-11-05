@@ -46,7 +46,7 @@ public class DepartmentModel extends BaseModel {
     @OneToMany(mappedBy = "parentDepartId",cascade = CascadeType.ALL,orphanRemoval = true)
     private List<DepartmentModel> subDepartIds=new ArrayList<>();
 
-    @OneToMany(mappedBy = "departmentId",cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany(mappedBy = "department",cascade = CascadeType.ALL,orphanRemoval = true)
     private List<TransferModel> transferIds;
 
 }

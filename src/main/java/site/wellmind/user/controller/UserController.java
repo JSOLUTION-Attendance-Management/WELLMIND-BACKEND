@@ -77,4 +77,24 @@ public class UserController {
         return ResponseEntity.ok(userService.findBy(departName,positionName,name,pageable));
     }
 
+    @GetMapping("/exist-by-email")
+    public ResponseEntity<Messenger> existByEmail(@RequestParam("email") String email){
+        return ResponseEntity.ok(Messenger.builder()
+                .message("user existByEmail : "+SuccessStatus.OK.getMessage())
+                .state(userService.existByEmail(email))
+                .build());
+    }
+
+    @PutMapping("/modify-by-password")
+    public ResponseEntity<Messenger> modifyByPassword(@RequestParam("email") String email,
+                                                      @RequestParam("oldPassword") String oldPassword,
+                                                      @RequestParam("newPassword") String newPassword){
+        return ResponseEntity.ok(Messenger.builder()
+                        .message("user modifyByPassword : "+SuccessStatus.OK.name())
+                        //.state(userService.modifyByPassword(email,oldPassword,newPassword))
+                .build());
+    }
+
+    // 여러 개 데이터를 input 값으로 받고 modify
+
 }

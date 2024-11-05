@@ -29,9 +29,9 @@ public class TransferModel extends BaseModel {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "DEPART_IDX",nullable = false)
-    private DepartmentModel departmentId;
+    private DepartmentModel department;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "POSITION_IDX",nullable = false)
-    private PositionModel positionId;
+    private PositionModel position;
 }

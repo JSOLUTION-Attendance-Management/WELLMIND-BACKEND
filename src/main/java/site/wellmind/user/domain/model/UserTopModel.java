@@ -54,6 +54,7 @@ public class UserTopModel extends BaseModel {
     @Pattern(regexp = "[NM]",message = "authType must be 'N' or 'M'")
     private String authType="N";
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "AUTH_USER_LEVEL_CODE_ID")
     private Role authUserLevelCodeId;
 

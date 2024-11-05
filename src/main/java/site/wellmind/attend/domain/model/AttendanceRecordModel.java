@@ -21,6 +21,7 @@ public class AttendanceRecordModel extends BaseModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "ATTEND_STATUS")
     private AttendanceStatus attendStatus;
 

@@ -29,7 +29,7 @@ public class PositionModel extends BaseModel {
     @Column(name = "POSITION_VERSION")
     private Integer version;
 
-    @OneToMany(mappedBy = "positionId")
+    @OneToMany(mappedBy = "position")
     private List<TransferModel> transferIds;
 
 }

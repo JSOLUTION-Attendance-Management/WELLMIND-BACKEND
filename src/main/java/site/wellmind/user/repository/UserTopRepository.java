@@ -17,4 +17,6 @@ public interface UserTopRepository extends JpaRepository<UserTopModel,Long> {
     List<UserTopModel> findAll();
 
     Boolean existsByEmployeeId(String employeeId);
+
+    Boolean existsByEmail(String email);
 }

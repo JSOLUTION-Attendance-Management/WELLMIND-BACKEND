@@ -63,6 +63,10 @@ dependencies {
 
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // SMTP
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
     //testImplementation 'io.projectreactor:reactor-test'
     //testImplementation 'org.springframework.kafka:spring-kafka-test'
 

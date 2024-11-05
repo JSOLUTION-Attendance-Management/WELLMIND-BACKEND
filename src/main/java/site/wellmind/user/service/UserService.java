@@ -50,7 +50,7 @@ public interface UserService extends CommandService<UserDto>, QueryService<UserD
                 .modDate(model.getModDate())
                 .build();
     }
-
+    Boolean existByEmail(String email);
     Boolean existByEmployeeId(String employeeId);
 
     ProfileDto login(LoginDto dto);

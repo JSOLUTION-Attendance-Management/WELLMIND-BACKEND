@@ -58,14 +58,15 @@ public class UserServiceImpl implements UserService {
     private final QPositionModel qPosition=QPositionModel.positionModel;
     private final QDepartmentModel qDepartment=QDepartmentModel.departmentModel;
 
+    // //validate user request
+    //        validateUserDto(dto);
+    //
+    //        //password encoding
+    //        dto.setPassword(passwordEncoder.encode(dto.getPassword()));
+
     @Override
     @Transactional
     public UserDto save(UserDto dto) {
-        //validate user request
-        validateUserDto(dto);
-
-        //password encoding
-        dto.setPassword(passwordEncoder.encode(dto.getPassword()));
 
         UserTopModel savedUser = userTopRepository.save(UserTopModel.builder()
                 .employeeId(dto.getEmployeeId())
@@ -110,6 +111,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteById(Long id) {
+        if (existById(id)){
+           userTopRepository.deleteById(id);
+        }else{
+            throw new UserException(ExceptionStatus.NOT_FOUND,"USERTOP_IDX not found");
+        }
 
     }
 
@@ -200,6 +206,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Boolean existByEmail(String email) {
+        return userTopRepository.existsByEmail(email);
+    }
+
+    @Override
     public Boolean existByEmployeeId(String employeeId) {
         return userTopRepository.existsByEmployeeId(employeeId);
     }
@@ -216,26 +227,21 @@ public class UserServiceImpl implements UserService {
         // 조건 추가 시 null 체크를 포함하여 안전하게 설정
         if (positionName != null) {
             whereClause.and(qPosition.name.eq(positionName));
-        } else {
-            whereClause.and(qPosition.name.isNull());
         }
 
         if (departName != null) {
             whereClause.and(qDepartment.name.eq(departName));
-        } else {
-            whereClause.and(qDepartment.name.isNull());
         }
 
         if (name != null) {
             whereClause.and(qUserTop.name.containsIgnoreCase(name));
-        } else {
-            whereClause.and(qUserTop.name.isNull());
         }
+
         var user = queryFactory
                 .selectFrom(qUserTop)
-                .join(qUserTop.transferIds, qTransfer)
-                .join(qTransfer.positionId, qPosition)
-                .join(qTransfer.departmentId, qDepartment)
+                .leftJoin(qUserTop.transferIds, qTransfer)
+                .leftJoin(qTransfer.position, qPosition)
+                .leftJoin(qTransfer.department, qDepartment)
                 .where(whereClause)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -249,9 +255,9 @@ public class UserServiceImpl implements UserService {
         JPAQuery<Long> countQuery = queryFactory
                 .select(qUserTop.count())
                 .from(qUserTop)
-                .join(qUserTop.transferIds, qTransfer)
-                .join(qTransfer.positionId, qPosition)
-                .join(qTransfer.departmentId, qDepartment)
+                .leftJoin(qUserTop.transferIds, qTransfer)
+                .leftJoin(qTransfer.position, qPosition)
+                .leftJoin(qTransfer.department, qDepartment)
                 .where(whereClause);
 
         return PageableExecutionUtils.getPage(user, pageable, countQuery::fetchOne);
