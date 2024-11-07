@@ -1,6 +1,7 @@
 package site.wellmind.security.service;
 
 import jakarta.mail.MessagingException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,9 +30,15 @@ public class EmailVerificationService {
     private final PasswordEncoder passwordEncoder;
 
     // 인증 코드 생성 및 이메일 발송
+    @Transactional
     public String sendVerificationCode(String email) throws MessagingException{
         String code=mailService.createNumber(); //인증 코드 생성
         LocalDateTime expirationTime=LocalDateTime.now().plusMinutes(5);
+
+        emailVerificationRepository.findByEmail(email).ifPresent(existingVerification -> {
+            emailVerificationRepository.delete(existingVerification);
+            emailVerificationRepository.flush();
+        });
 
         emailVerificationRepository.save(EmailVerificationModel.builder()
                 .email(email)
@@ -39,11 +46,12 @@ public class EmailVerificationService {
                 .expirationTime(expirationTime)
                 .build());
 
-        mailService.sendEmailCheckMessage(email,code); //메일 전송
+        mailService.sendEmailVerifyMessage(email,code); //메일 전송
         return code;
     }
 
     // 인증 코드 검증 로직
+    @Transactional
     public VerificationStatus verifyCode(String email, String inputCode){
         EmailVerificationModel emailVerificationModel=emailVerificationRepository.findByEmail(email).orElse(null);
 

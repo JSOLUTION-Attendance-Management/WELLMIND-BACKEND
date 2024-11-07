@@ -43,7 +43,7 @@ public class MailService {
         return key.toString();
     }
 
-    public MimeMessage createEmailCheckMail(String mail, String code) throws MessagingException{
+    public MimeMessage createEmailVerifyMail(String mail, String code) throws MessagingException{
         MimeMessage message=javaMailSender.createMimeMessage();
 
         message.setFrom(senderEmail);
@@ -65,9 +65,9 @@ public class MailService {
     }
 
     // 메일 발송
-    public String sendEmailCheckMessage(String sendEmail,String code) throws MessagingException{
+    public String sendEmailVerifyMessage(String sendEmail,String code) throws MessagingException{
 
-        MimeMessage message=createEmailCheckMail(sendEmail,code); //메일 생성
+        MimeMessage message=createEmailVerifyMail(sendEmail,code); //메일 생성
         try{
             javaMailSender.send(message);
         }catch (MailException e){
