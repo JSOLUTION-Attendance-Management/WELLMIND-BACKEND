@@ -7,9 +7,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import site.wellmind.common.domain.dto.MailDto;
+import site.wellmind.user.domain.dto.UserDto;
 
 import java.util.Random;
-
+/**
+ * MailService
+ * <p>Mail Service Interface</p>
+ * @since 2024-11-06
+ * @version 1.0
+ * @see MailDto
+ */
 @Service
 @RequiredArgsConstructor
 public class MailService {
@@ -35,7 +43,7 @@ public class MailService {
         return key.toString();
     }
 
-    public MimeMessage createEmailCheckMail(String mail, String number) throws MessagingException{
+    public MimeMessage createEmailCheckMail(String mail, String code) throws MessagingException{
         MimeMessage message=javaMailSender.createMimeMessage();
 
         message.setFrom(senderEmail);
@@ -47,7 +55,7 @@ public class MailService {
         body += "<h2 style='color: #333;'>이메일 인증 요청</h2>";
         body += "<p style='font-size: 16px; color: #555;'>아래의 인증 번호를 사용하여 인증을 완료해 주세요.</p>";
         body += "<div style='padding: 20px; background-color: #f9f9f9; display: inline-block; border-radius: 5px; margin: 20px 0;'>";
-        body += "<h1 style='margin: 0; color: #00AEEF;'>" + number + "</h1>"; // 하늘색 인증 코드 강조
+        body += "<h1 style='margin: 0; color: #00AEEF;'>" + code + "</h1>"; // 하늘색 인증 코드 강조
         body += "</div>";
         body += "<p style='font-size: 14px; color: #777;'>이 인증 코드는 5분 동안만 유효합니다.</p>";
         body += "</div>";
@@ -57,18 +65,17 @@ public class MailService {
     }
 
     // 메일 발송
-    public String sendEmailCheckMessage(String sendEmail) throws MessagingException{
-        String number=createNumber();
+    public String sendEmailCheckMessage(String sendEmail,String code) throws MessagingException{
 
-        MimeMessage message=createEmailCheckMail(sendEmail,number); //메일 생성
+        MimeMessage message=createEmailCheckMail(sendEmail,code); //메일 생성
         try{
             javaMailSender.send(message);
         }catch (MailException e){
-            e.printStackTrace();;
+            e.printStackTrace();
             throw new IllegalArgumentException("메일 발송 중 오류가 발생했습니다.");
         }
 
-        return  number; // 생성된 인증번호 반환
+        return code; // 생성된 인증번호 반환
     }
 
 }

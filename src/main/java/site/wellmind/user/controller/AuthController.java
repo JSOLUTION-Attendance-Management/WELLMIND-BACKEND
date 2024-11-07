@@ -1,16 +1,23 @@
 package site.wellmind.user.controller;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import site.wellmind.common.domain.dto.MailDto;
 import site.wellmind.common.domain.dto.Messenger;
 import site.wellmind.common.domain.vo.SuccessStatus;
+import site.wellmind.common.service.MailService;
+import site.wellmind.security.domain.vo.VerificationStatus;
+import site.wellmind.security.service.EmailVerificationService;
 import site.wellmind.user.domain.dto.LoginDto;
 import site.wellmind.user.domain.dto.ProfileDto;
 import site.wellmind.user.domain.dto.UserDto;
 import site.wellmind.user.service.UserService;
+
+import java.io.UnsupportedEncodingException;
 
 /**
  * Auth Controller
@@ -29,13 +36,50 @@ import site.wellmind.user.service.UserService;
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class AuthController {
     private final UserService userService;
+    private final EmailVerificationService emailVerificationService;
 
     @PostMapping("/login")
-    public ResponseEntity<Messenger> login(@RequestBody LoginDto dto){
+    public ResponseEntity<Messenger> login(@RequestBody LoginDto dto) {
         return ResponseEntity.ok(
                 Messenger.builder()
-                        .message("auth login : "+SuccessStatus.OK.getMessage())
+                        .message("auth login : " + SuccessStatus.OK.getMessage())
                         .data(userService.login(dto))
                         .build());
     }
+
+
+    @PostMapping("/send-verification")
+    public ResponseEntity<Messenger> sendVerification(@RequestParam(name = "email") String email) throws MessagingException {
+        try {
+            emailVerificationService.sendVerificationCode(email);
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("Verification code sent successfully.")
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(
+                    Messenger.builder()
+                            .message("Failed to send verification code.")
+                            .build());
+        }
+    }
+
+    @PostMapping("/verify-code")
+    public ResponseEntity<Messenger> verifyCode(@RequestParam(name = "email") String email, @RequestParam(name = "verifyCode") String verifyCode) {
+        VerificationStatus verified = emailVerificationService.verifyCode(email, verifyCode);
+        return verified==VerificationStatus.SUCCESS ?
+                ResponseEntity.ok(Messenger.builder()
+                        .message("verification success")
+                        .state(true)
+                        .build()) : verified==VerificationStatus.EXPIRED ?
+                ResponseEntity.status(410).body(Messenger.builder()
+                .message("expired verification code.")
+                .build()):
+                ResponseEntity.status(400).body(Messenger.builder()
+                        .message("Invalid verification code.")
+                        .build());
+
+    }
+
 }
+
+

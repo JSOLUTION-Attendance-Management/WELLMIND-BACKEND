@@ -1,5 +1,8 @@
 package site.wellmind.security.util;
 
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;

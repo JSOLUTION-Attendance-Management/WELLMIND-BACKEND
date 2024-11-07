@@ -18,6 +18,7 @@ import site.wellmind.user.service.UserService;
 public enum ExceptionStatus {
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "Bad Request",4001),
     INVALID_INPUT(HttpStatus.BAD_REQUEST, "Invalid Input",4002),
+    EXPIRED(HttpStatus.GONE,"Resource Expired",4101),
 
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "Unauthorized",401),
     NO_PERMISSION(HttpStatus.FORBIDDEN, "No Permission",403),

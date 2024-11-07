@@ -27,7 +27,6 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserDto {
 
-    //UserTopModel
     private Long id;
     private String employeeId;
     private String email;
