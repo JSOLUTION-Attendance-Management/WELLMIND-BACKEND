@@ -37,12 +37,12 @@ public class AccountTokenModel extends BaseModel {
     private String token;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "TOKEN_STATUS")
-    private TokenStatus tokenStatus;
+    @Column(name = "ACCOUNT_TOKEN_ROLE")
+    private Role roles;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "TOKEN_USER_TYPE")
-    private Role userType;
+    @Column(name = "ACCOUNT_TOKEN_STATUS")
+    private TokenStatus tokenStatus;
 
     @Column(name = "TOKEN_EXPIRATION_TIME",nullable = false)
     private LocalDateTime expirationTime;

@@ -15,6 +15,7 @@ import site.wellmind.security.service.EmailVerificationService;
 import site.wellmind.user.domain.dto.LoginDto;
 import site.wellmind.user.domain.dto.ProfileDto;
 import site.wellmind.user.domain.dto.UserDto;
+import site.wellmind.user.service.AuthService;
 import site.wellmind.user.service.UserService;
 
 import java.io.UnsupportedEncodingException;
@@ -35,16 +36,12 @@ import java.io.UnsupportedEncodingException;
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class AuthController {
-    private final UserService userService;
+    private final AuthService authService;
     private final EmailVerificationService emailVerificationService;
 
     @PostMapping("/login")
-    public ResponseEntity<Messenger> login(@RequestBody LoginDto dto) {
-        return ResponseEntity.ok(
-                Messenger.builder()
-                        .message("auth login : " + SuccessStatus.OK.getMessage())
-                        .data(userService.login(dto))
-                        .build());
+    public ResponseEntity<?> login(@RequestBody LoginDto dto) {
+        return authService.localLogin(dto);
     }
 
 

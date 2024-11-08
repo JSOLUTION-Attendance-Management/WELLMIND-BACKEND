@@ -21,6 +21,9 @@ public enum ExceptionStatus {
     EXPIRED(HttpStatus.GONE,"Resource Expired",4101),
 
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "Unauthorized",401),
+    EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED,"Expired Token",4102),
+    INVALID_SIGNATURE(HttpStatus.UNAUTHORIZED,"Invalid Token Signature",4103),
+    MALFORMED_TOKEN(HttpStatus.BAD_REQUEST, "Malformed Token", 4104),
     NO_PERMISSION(HttpStatus.FORBIDDEN, "No Permission",403),
 
     NOT_FOUND(HttpStatus.NOT_FOUND, "Not Found",404),
