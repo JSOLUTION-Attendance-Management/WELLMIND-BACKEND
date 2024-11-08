@@ -55,9 +55,6 @@ dependencies {
     // JUnit
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    //security
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-
     // validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
@@ -66,6 +63,14 @@ dependencies {
 
     // SMTP
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    //security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // jwt
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
 
     //testImplementation 'io.projectreactor:reactor-test'
     //testImplementation 'org.springframework.kafka:spring-kafka-test'

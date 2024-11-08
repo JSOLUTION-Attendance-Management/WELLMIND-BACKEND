@@ -86,12 +86,11 @@ public class UserController {
     }
 
     @PutMapping("/modify-by-password")
-    public ResponseEntity<Messenger> modifyByPassword(@RequestParam("email") String email,
-                                                      @RequestParam("oldPassword") String oldPassword,
+    public ResponseEntity<Messenger> modifyByPassword(@RequestParam("oldPassword") String oldPassword,
                                                       @RequestParam("newPassword") String newPassword){
         return ResponseEntity.ok(Messenger.builder()
                         .message("user modifyByPassword : "+SuccessStatus.OK.name())
-                        //.state(userService.modifyByPassword(email,oldPassword,newPassword))
+                        .state(userService.modifyByPassword(oldPassword,newPassword))
                 .build());
     }
 

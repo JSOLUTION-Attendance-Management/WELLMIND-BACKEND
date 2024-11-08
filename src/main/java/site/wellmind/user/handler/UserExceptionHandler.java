@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import site.wellmind.user.exception.UserException;
+import site.wellmind.common.exception.GlobalException;
 /**
  * UserExceptionHandler
  * <p> Spring의 전역 예외 처리기/p>
@@ -23,7 +23,7 @@ public class UserExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleAllExceptions(Exception ex, WebRequest request){
         log.error("@UserExceptionHandler(Exception.class) 에러 내용 : {} {}",ex,request);
-        UserException result= UserException.toUserException(ex);
+        GlobalException result= GlobalException.toGlobalException(ex);
         return ResponseEntity.status(result.getStatus().getHttpStatus()).body(result.getMessage());
     }
 }

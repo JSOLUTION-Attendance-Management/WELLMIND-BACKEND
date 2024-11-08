@@ -6,9 +6,7 @@ import lombok.*;
 import site.wellmind.attend.domain.model.AttendanceQrModel;
 import site.wellmind.attend.domain.model.AttendanceRecordModel;
 import site.wellmind.common.domain.model.BaseModel;
-import site.wellmind.common.domain.vo.Role;
 import site.wellmind.log.domain.model.*;
-import site.wellmind.transfer.domain.model.DepartmentModel;
 import site.wellmind.transfer.domain.model.TransferModel;
 
 import java.time.LocalDateTime;
@@ -53,10 +51,6 @@ public class UserTopModel extends BaseModel {
     @Column(name="AUTH_TYPE",length = 1)
     @Pattern(regexp = "[NM]",message = "authType must be 'N' or 'M'")
     private String authType="N";
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "AUTH_USER_LEVEL_CODE_ID")
-    private Role authUserLevelCodeId;
 
     @Column(name = "DELETE_FLAG")
     private Boolean deleteFlag= false;

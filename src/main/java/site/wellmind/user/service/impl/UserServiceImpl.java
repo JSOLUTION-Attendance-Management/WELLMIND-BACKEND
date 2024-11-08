@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 import site.wellmind.common.domain.vo.ExceptionStatus;
+import site.wellmind.common.exception.GlobalException;
 import site.wellmind.security.util.EncryptionUtil;
 import site.wellmind.transfer.domain.model.QDepartmentModel;
 import site.wellmind.transfer.domain.model.QPositionModel;
@@ -21,7 +22,6 @@ import site.wellmind.user.domain.model.QUserTopModel;
 import site.wellmind.user.domain.model.UserEducationModel;
 import site.wellmind.user.domain.model.UserInfoModel;
 import site.wellmind.user.domain.model.UserTopModel;
-import site.wellmind.user.exception.UserException;
 import site.wellmind.user.repository.UserEducationRepository;
 import site.wellmind.user.repository.UserInfoRepository;
 import site.wellmind.user.repository.UserTopRepository;
@@ -114,7 +114,7 @@ public class UserServiceImpl implements UserService {
         if (existById(id)){
            userTopRepository.deleteById(id);
         }else{
-            throw new UserException(ExceptionStatus.NOT_FOUND,"USERTOP_IDX not found");
+            throw new GlobalException(ExceptionStatus.NOT_FOUND,"USERTOP_IDX not found");
         }
 
     }
@@ -127,7 +127,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto findById(Long id) {
         UserTopModel userTopModel = userTopRepository.findById(id)
-                .orElseThrow(() -> new UserException(ExceptionStatus.NOT_FOUND, "UserTop not found"));
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.NOT_FOUND, "UserTop not found"));
         UserInfoModel userInfoModel = userTopModel.getUserInfoModel();
         List<UserEducationModel> userEducations = userTopModel.getUserEduIds();
 
@@ -215,11 +215,6 @@ public class UserServiceImpl implements UserService {
         return userTopRepository.existsByEmployeeId(employeeId);
     }
 
-    @Override
-    @Transactional
-    public ProfileDto login(LoginDto dto) {
-        return null;
-    }
 
     @Override
     public Page<UserDto> findBy(String departName, String positionName, String name, Pageable pageable) {
@@ -263,9 +258,16 @@ public class UserServiceImpl implements UserService {
         return PageableExecutionUtils.getPage(user, pageable, countQuery::fetchOne);
     }
 
+    @Override
+    @Transactional
+    public Boolean modifyByPassword(String oldPassword, String newPassword) {
+        //if(passwordEncoder.matches(oldPassword,))
+        return null;
+    }
+
     private void validateUserDto(UserDto dto) {
         if (dto.getEmployeeId().isEmpty() || dto.getPassword().isEmpty()) {
-            throw new UserException(ExceptionStatus.INVALID_INPUT, "employeeeId or password cannot be empty");
+            throw new GlobalException(ExceptionStatus.INVALID_INPUT, "employeeeId or password cannot be empty");
         }
     }
 

@@ -2,13 +2,11 @@ package site.wellmind.user.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import site.wellmind.common.domain.vo.Role;
-import site.wellmind.user.domain.vo.AddressVO;
+import site.wellmind.common.domain.vo.AdminRole;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,7 +35,7 @@ public class UserDto {
     private String regNumberLat;
     private boolean deleteFlag;
     private String authType;
-    private Role authUserLevelCodeId;
+    private AdminRole authUserLevelCodeId;
 
     //UserInfoModel
     private UserInfoDto userInfo;

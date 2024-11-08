@@ -29,7 +29,6 @@ public interface UserService extends CommandService<UserDto>, QueryService<UserD
                 .regNumberLat(dto.getRegNumberLat())
                 .deleteFlag(dto.getDeleteFlag())
                 .authType(dto.getAuthType())
-                .authUserLevelCodeId(dto.getAuthUserLevelCodeId())
                 .build();
     }
 
@@ -45,7 +44,6 @@ public interface UserService extends CommandService<UserDto>, QueryService<UserD
                 .regNumberLat(model.getRegNumberLat())
                 .deleteFlag(model.getDeleteFlag())
                 .authType(model.getAuthType())
-                .authUserLevelCodeId(model.getAuthUserLevelCodeId())
                 .regDate(model.getRegDate())
                 .modDate(model.getModDate())
                 .build();
@@ -53,8 +51,8 @@ public interface UserService extends CommandService<UserDto>, QueryService<UserD
     Boolean existByEmail(String email);
     Boolean existByEmployeeId(String employeeId);
 
-    ProfileDto login(LoginDto dto);
-
     Page<UserDto> findBy(String departName, String positionName, String name, Pageable pageable);
+
+    Boolean modifyByPassword(String oldPassword, String newPassword);
 }
 
