@@ -39,6 +39,8 @@ import java.util.stream.Collectors;
  * @version 1.0
  * @see UserService
  * @see UserTopRepository
+ * @see UserInfoRepository
+ * @see UserEducationRepository
  * @since 2024-10-08
  */
 @Service
