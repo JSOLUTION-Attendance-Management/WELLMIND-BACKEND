@@ -1,8 +1,17 @@
 package site.wellmind.common.domain.vo;
 
 import lombok.AllArgsConstructor;
-import java.util.stream.Stream;
+import site.wellmind.security.provider.JwtTokenProvider;
 
+import java.util.stream.Stream;
+/**
+ * Role
+ * <p>Integrated roles : user role + admin roles</p>
+ * @see AdminRole
+ * @author Yuri Seok(tjrdbfl)
+ * @version 1.0
+ * @since 2024-11-09
+ */
 @AllArgsConstructor
 public enum Role {
     ROLE_USER("USER"),              // 일반 사용자
