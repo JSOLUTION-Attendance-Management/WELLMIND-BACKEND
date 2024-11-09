@@ -16,10 +16,6 @@ import site.wellmind.common.domain.dto.Messenger;
 import site.wellmind.security.domain.model.PrincipalAdminDetails;
 import site.wellmind.security.domain.model.PrincipalUserDetails;
 import site.wellmind.security.provider.JwtTokenProvider;
-import site.wellmind.user.repository.UserEducationRepository;
-import site.wellmind.user.repository.UserInfoRepository;
-import site.wellmind.user.repository.UserTopRepository;
-import site.wellmind.user.service.UserService;
 
 import java.io.IOException;
 
@@ -29,6 +25,8 @@ import java.io.IOException;
  * @author Yuri Seok(tjrdbfl)
  * @version 1.0
  * @see JwtTokenProvider
+ * @see PrincipalUserDetails
+ * @see PrincipalAdminDetails
  * @since 2024-11-09
  */
 @Slf4j
@@ -68,12 +66,18 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             ResponseCookie accessTokenCookie=ResponseCookie.from("accessToken",accessToken)
                     .path("/")
                     .maxAge(jwtTokenProvider.getAccessTokenExpired())
+//                    .httpOnly(true)
+//                    .secure(true)  // Enable for HTTPS
+//                    .sameSite("Lax")
                     .build();
             response.addHeader("Set-Cookie",accessTokenCookie.toString());
 
             ResponseCookie refreshTokenCookie=ResponseCookie.from("refreshToken",refreshToken)
                     .path("/")
                     .maxAge(jwtTokenProvider.getRefreshTokenExpired())
+//                    .httpOnly(true)
+//                    .secure(true)  // Enable for HTTPS
+//                    .sameSite("Lax")
                     .build();
             response.addHeader("Set-Cookie",refreshTokenCookie.toString());
 
