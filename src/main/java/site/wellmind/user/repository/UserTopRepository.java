@@ -19,4 +19,6 @@ public interface UserTopRepository extends JpaRepository<UserTopModel,Long> {
     Boolean existsByEmployeeId(String employeeId);
 
     Boolean existsByEmail(String email);
+
+    Optional<UserTopModel> findByEmployeeId(String employeeId);
 }

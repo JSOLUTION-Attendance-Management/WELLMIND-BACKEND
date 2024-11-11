@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import site.wellmind.common.domain.vo.ExceptionStatus;
@@ -19,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * AuthorizationHeaderFilter
+ * JwtAuthorizationFilter
  * <p>Checks user authentication and authorization with access and refresh tokens.</p>
  * <p>If the access token is expired but refresh token is valid, prompts the client to refresh the token.</p>
  * @see JwtTokenProvider
@@ -30,22 +32,30 @@ import java.util.List;
  */
 @Slf4j
 @Component
-public class AuthorizationHeaderFilter extends OncePerRequestFilter {
+public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
     @Setter
     private List<Role> roles;
+    private static final List<String> AUTH_WHITELIST=Arrays.asList(
+            "/", "/home",
+            "/api/v1/member/**", "/swagger-ui/**", "/api-docs", "/swagger-ui.html",
+            "/v3/api-docs/**", "/api-docs/**", "/swagger-ui.html", "/api/v1/auth/**"
+    );
 
-    public AuthorizationHeaderFilter(JwtTokenProvider jwtTokenProvider){
+    public JwtAuthorizationFilter(JwtTokenProvider jwtTokenProvider){
         this.jwtTokenProvider=jwtTokenProvider;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, jakarta.servlet.FilterChain filterChain) throws jakarta.servlet.ServletException, IOException {
-        HttpServletRequest httpServletRequest=(HttpServletRequest) request;
-        HttpServletResponse httpServletResponse=(HttpServletResponse) response;
 
         try{
-            String authorizationHeader=httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION);
+            String path=request.getRequestURI();
+            if(AUTH_WHITELIST.stream().anyMatch(path::startsWith)){
+                filterChain.doFilter(request,response);
+                return;
+            }
+            String authorizationHeader= ((HttpServletRequest) request).getHeader(HttpHeaders.AUTHORIZATION);
             if(authorizationHeader==null || !authorizationHeader.startsWith("Bearer ")){
                 throw new GlobalException(ExceptionStatus.UNAUTHORIZED,"No Authorization Header");
             }
@@ -54,17 +64,8 @@ public class AuthorizationHeaderFilter extends OncePerRequestFilter {
 
             //if access token isn't valid
             if(!jwtTokenProvider.isTokenValid(accessToken,false)){
-                //get refresh token
-                String refreshToken=getCookieValue(httpServletRequest,"refresh");
-                //if refresh token is null
-                if(refreshToken==null || !jwtTokenProvider.isTokenValid(refreshToken,true)){
-                    throw new GlobalException(ExceptionStatus.UNAUTHORIZED,"Invalid Tokens");
-                }else{
-                    // Prompt client to refresh the access token
-                    httpServletResponse.setHeader("X-Token-Status", "ExpiredAccessToken");
-                    httpServletResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    httpServletResponse.getWriter().write("Access token expired. Please refresh the token.");
-                }
+                handleTokenRefresh(request,response);
+                return;
             }
 
             //if access token is valid
@@ -78,10 +79,14 @@ public class AuthorizationHeaderFilter extends OncePerRequestFilter {
                 throw new GlobalException(ExceptionStatus.NO_PERMISSION,"No permission");
             }
 
+            //set authentication in security context if token is valid
+            UsernamePasswordAuthenticationToken authenticationToken=new UsernamePasswordAuthenticationToken(jwtTokenProvider.extractPrincipalDetails(accessToken),null);
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
             //사용자가 모든 검사를 통과한 경우(즉, 가 유효하고, 가 refreshToken필요하지 않으며, 사용자에게 필요한 역할이 있는 경우) 이 줄은 필터 체인을 통해 요청의 여정을 계속
             filterChain.doFilter(request,response);
         }catch (GlobalException e){
-            onError(httpServletResponse,e.getStatus().getErrorCode(),e.getMessage());
+            onError((HttpServletResponse) response,e.getStatus().getErrorCode(),e.getMessage());
         }
     }
 
@@ -92,10 +97,23 @@ public class AuthorizationHeaderFilter extends OncePerRequestFilter {
     
     @Override
     public void destroy() {
-        log.info("AuthorizationHeaderFilter destroyed.");
+        log.info("JwtAuthorizationFilter destroyed.");
         //closing database connections or stopping threads
     }
 
+    private void handleTokenRefresh(HttpServletRequest request,HttpServletResponse response) throws IOException{
+        //get refresh token
+        String refreshToken=getCookieValue((HttpServletRequest) request,"refresh");
+        //if refresh token is null
+        if(refreshToken==null || !jwtTokenProvider.isTokenValid(refreshToken,true)){
+            throw new GlobalException(ExceptionStatus.UNAUTHORIZED,"Invalid Tokens");
+        }else{
+            // Prompt client to refresh the access token
+            ((HttpServletResponse) response).setHeader("X-Token-Status", "ExpiredAccessToken");
+            ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            ((HttpServletResponse) response).getWriter().write("Access token expired. Please refresh the token.");
+        }
+    }
     private String getCookieValue(HttpServletRequest request,String cookieName){
         if(request.getCookies()!=null){
             return Arrays.stream(request.getCookies())

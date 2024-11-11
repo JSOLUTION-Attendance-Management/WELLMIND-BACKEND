@@ -3,8 +3,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import site.wellmind.common.service.CommandService;
 import site.wellmind.common.service.QueryService;
-import site.wellmind.user.domain.dto.LoginDto;
-import site.wellmind.user.domain.dto.ProfileDto;
 import site.wellmind.user.domain.dto.UserDto;
 import site.wellmind.user.domain.model.UserTopModel;
 

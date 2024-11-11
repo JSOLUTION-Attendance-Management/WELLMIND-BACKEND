@@ -12,8 +12,8 @@ import org.springframework.context.annotation.Configuration;
 public class SwaggerConfig {
 
     @Bean
-    public OpenAPI openAPI(){
-        String jwt="JWT";
+    public OpenAPI openAPI() {
+        String jwt = "JWT";
 
 //        // Basic Auth 방식
 //        return new OpenAPI()
@@ -27,16 +27,20 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .components(new Components())
                 .info(apiInfo())
-                .addSecurityItem(new SecurityRequirement().addList(jwt))
-                .components(new Components().addSecuritySchemes(jwt,new SecurityScheme()
-                        .name(jwt)
-                        .type(SecurityScheme.Type.HTTP)
-                        .scheme("bearer")
-                        .bearerFormat("JWT"))
+                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))  // Adds security requirement for bearer token
+                //.addSecurityItem(new SecurityRequirement().addList(jwt))
+                .components(new Components()
+                        .addSecuritySchemes("bearerAuth", new SecurityScheme()
+                                //.addSecuritySchemes(jwt,new SecurityScheme()
+                                .name("Authorization")
+                                //.name(jwt)
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT"))
                 );
     }
 
-    private Info apiInfo(){
+    private Info apiInfo() {
         return new Info()
                 .title("JSolution WellMind API")
                 .description("This is Swagger UI, an AI-based wellness personnel management system.")

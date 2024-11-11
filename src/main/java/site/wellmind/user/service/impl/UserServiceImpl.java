@@ -116,7 +116,7 @@ public class UserServiceImpl implements UserService {
         if (existById(id)){
            userTopRepository.deleteById(id);
         }else{
-            throw new GlobalException(ExceptionStatus.NOT_FOUND,"USERTOP_IDX not found");
+            throw new GlobalException(ExceptionStatus.USER_NOT_FOUND,"USERTOP_IDX not found");
         }
 
     }
@@ -129,7 +129,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto findById(Long id) {
         UserTopModel userTopModel = userTopRepository.findById(id)
-                .orElseThrow(() -> new GlobalException(ExceptionStatus.NOT_FOUND, "UserTop not found"));
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND, ExceptionStatus.USER_NOT_FOUND.getMessage()));
         UserInfoModel userInfoModel = userTopModel.getUserInfoModel();
         List<UserEducationModel> userEducations = userTopModel.getUserEduIds();
 

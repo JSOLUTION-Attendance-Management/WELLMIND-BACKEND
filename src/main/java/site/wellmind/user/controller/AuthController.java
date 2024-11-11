@@ -6,19 +6,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import site.wellmind.common.domain.dto.MailDto;
 import site.wellmind.common.domain.dto.Messenger;
-import site.wellmind.common.domain.vo.SuccessStatus;
-import site.wellmind.common.service.MailService;
 import site.wellmind.security.domain.vo.VerificationStatus;
 import site.wellmind.security.service.EmailVerificationService;
-import site.wellmind.user.domain.dto.LoginDto;
-import site.wellmind.user.domain.dto.ProfileDto;
-import site.wellmind.user.domain.dto.UserDto;
+import site.wellmind.security.domain.dto.LoginDto;
 import site.wellmind.user.service.AuthService;
-import site.wellmind.user.service.UserService;
-
-import java.io.UnsupportedEncodingException;
 
 /**
  * Auth Controller

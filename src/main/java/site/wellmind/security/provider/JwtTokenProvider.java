@@ -1,9 +1,7 @@
 package site.wellmind.security.provider;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import jakarta.servlet.http.PushBuilder;
 import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -19,17 +17,27 @@ import site.wellmind.security.domain.model.AccountTokenModel;
 import site.wellmind.security.domain.model.PrincipalAdminDetails;
 import site.wellmind.security.domain.model.PrincipalUserDetails;
 import site.wellmind.security.domain.vo.TokenStatus;
+import site.wellmind.security.handler.CustomAuthenticationFailureHandler;
+import site.wellmind.security.handler.CustomAuthenticationSuccessHandler;
 import site.wellmind.security.repository.AccountTokenRepository;
 import site.wellmind.user.domain.model.AdminTopModel;
 import site.wellmind.user.domain.model.UserTopModel;
 
 import javax.crypto.SecretKey;
-import javax.swing.text.html.Option;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
-
+/**
+ * JwtTokenProvider
+ * <p>Handles JWT token generation, validation, and management.</p>
+ *
+ * @author Yuri Seok(tjrdbfl)
+ * @version 1.0
+ * @see PrincipalUserDetails
+ * @see PrincipalAdminDetails
+ * @since 2024-11-10
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -143,21 +151,48 @@ public class JwtTokenProvider {
     }
 
     public Boolean isTokenValid(String token,Boolean isRefreshToken){
-        return !isTokenExpired(token) && isTokenTypeEqual(token,isRefreshToken);
+        try {
+            if(isTokenExpired(token)){
+                log.info("Token has expired.");
+                return false;
+            }
+            return isTokenTypeEqual(token,isRefreshToken);
+        }catch(SecurityException | MalformedJwtException e){
+            log.info("Invalid JWT Token",e);
+        }catch (ExpiredJwtException e){
+            log.info("Expired JWT Token",e);
+        }catch (UnsupportedJwtException e){
+            log.info("Unsupported JWT Token",e);
+        }catch (IllegalArgumentException e){
+            log.info("JWT claims string is empty",e);
+        }
+        return false;
     }
 
     private Boolean isTokenExpired(String token){
-        boolean isExpired = extractClaim(token, Claims::getExpiration).before(Date.from(Instant.now()));
-        if (isExpired) {
-            expireToken(token); // 만료 시 상태 업데이트
+        try{
+            Date expiration=extractClaim(token,Claims::getExpiration);
+            boolean isExpired=expiration.before(Date.from(Instant.now()));
+            if(isExpired){
+                expireToken(token);
+            }
+            return isExpired;
+        }catch (ExpiredJwtException e){
+            log.info("Token is already expired",e);
+            return true;
         }
-        return isExpired;
+
     }
 
     // token 타입이 refresh 면 true, access 면 false 반환
     private Boolean isTokenTypeEqual(String token,Boolean isRefreshToken){
-        return !isTokenExpired(token) &&
-                extractClaim(token,i->i.get("type",String.class)).equals(isRefreshToken? "refresh":"access");
+        try {
+            String tokenType=extractClaim(token,claims -> claims.get("type",String.class));
+            return tokenType.equals(isRefreshToken ? "refresh" : "access");
+        }catch (Exception e){
+            log.info("Failed to determine token type",e);
+            return false;
+        }
     }
 
     public String removeBearer(String bearerToken){
@@ -193,15 +228,13 @@ public class JwtTokenProvider {
     }
 
     @Transactional
-    public Boolean expireToken(String token){
+    public void expireToken(String token){
         Optional<AccountTokenModel> savedToken = accountTokenRepository.findByEmployeeIdAndTokenStatus(token, TokenStatus.VALID);
         if (savedToken.isPresent()) {
             AccountTokenModel accountToken = savedToken.get();
             accountToken.setTokenStatus(TokenStatus.EXPIRED);
             accountTokenRepository.save(accountToken); // 상태 업데이트
-            return true;
         }
-        return false;
     }
     @Transactional
     public Boolean invalidateToken(String employeeId){
@@ -213,7 +246,7 @@ public class JwtTokenProvider {
             accountTokenRepository.save(token);
             return true;
         }else{
-            throw new GlobalException(ExceptionStatus.NOT_FOUND,"No valid token found for the provided employee ID");
+            throw new GlobalException(ExceptionStatus.NO_VALID_TOKEN,ExceptionStatus.NO_VALID_TOKEN.getMessage());
         }
     }
     @Transactional
@@ -224,7 +257,7 @@ public class JwtTokenProvider {
             accountTokenRepository.flush();
             return true;
         }else{
-            throw new GlobalException(ExceptionStatus.NOT_FOUND,"No valid token found for the provided employee ID");
+            throw new GlobalException(ExceptionStatus.NO_VALID_TOKEN,ExceptionStatus.NO_VALID_TOKEN.getMessage());
         }
     }
 

@@ -28,18 +28,18 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     private final JwtTokenProvider jwtTokenProvider;
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        String accessToken = getTokenFromCookie(request, "accessToken");
-        String refreshToken = getTokenFromCookie(request, "refreshToken");
-
-        if(accessToken!=null && jwtTokenProvider.isTokenValid(accessToken,false)){
-            setAuthenticaton(accessToken);
-        }
+//        String accessToken = getTokenFromCookie(request, "accessToken");
+//        String refreshToken = getTokenFromCookie(request, "refreshToken");
+//
+//        if(accessToken!=null && jwtTokenProvider.isTokenValid(accessToken,false)){
+//            setAuthenticaton(accessToken);
+//        }
         return true;
     }
 
-    private void setAuthentication(String token){
-        Authentication authentication=jwtTokenProvider.get
-    }
+//    private void setAuthentication(String token){
+//        Authentication authentication=jwtTokenProvider.get
+//    }
 
     private String getTokenFromCookie(HttpServletRequest request,String cookieName){
        if(request.getCookies()!=null){
