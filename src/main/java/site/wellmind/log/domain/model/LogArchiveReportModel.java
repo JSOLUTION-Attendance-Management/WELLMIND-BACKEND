@@ -3,7 +3,11 @@ package site.wellmind.log.domain.model;
 import jakarta.persistence.*;
 import lombok.*;
 import site.wellmind.common.domain.model.BaseModel;
+import site.wellmind.log.converter.AttendanceStatusConverter;
+import site.wellmind.log.domain.vo.ReportAttendanceStatus;
 import site.wellmind.user.domain.model.UserTopModel;
+
+import java.util.List;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -29,6 +33,10 @@ public class LogArchiveReportModel extends BaseModel {
 
     @Column(name = "MANAGER_IDX")
     private Long managerId;
+
+    @Convert(converter = AttendanceStatusConverter.class)
+    @Column(name = "REPORT_USER_TYPE")
+    private List<ReportAttendanceStatus> userType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_IDX",nullable = false)

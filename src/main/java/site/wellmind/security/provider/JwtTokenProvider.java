@@ -66,7 +66,7 @@ public class JwtTokenProvider {
         return Keys.hmacShaKeyFor(Base64.getUrlEncoder().encode(secretKey.getBytes()));
     }
 
-    public String extractEmail(String jwt){
+    public String extractEmployeeId(String jwt){
         return extractClaim(jwt, Claims::getSubject);
     }
 
@@ -205,17 +205,17 @@ public class JwtTokenProvider {
     public Object extractPrincipalDetails(String jwt){
         String roles=extractRoles(jwt).get(0);
         Long id=extractId(jwt);
-        String email = extractEmail(jwt);
+        String employeeId = extractEmployeeId(jwt);
 
         if("ROLE_USER".equals(roles)){
             return new PrincipalUserDetails(UserTopModel.builder()
-                    .email(email)
+                    .employeeId(employeeId)
                     .id(id)
                     .authType("N")
                     .build());
         }else{
             return new PrincipalAdminDetails(AdminTopModel.builder()
-                    .email(email)
+                    .employeeId(employeeId)
                     .id(id)
                     .authType("M")
                     .authAdminLevelCodeId( "ROLE_ADMIN_UBL_55".equals(roles) ? AdminRole.UBL_55 :

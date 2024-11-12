@@ -7,6 +7,12 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 import java.util.Properties;
+/**
+ * MailConfig
+ * <p>SMTP 를 위한 이메일 관련 설정 Config 클래스</p>
+ * @since 2024-11-08
+ * @version 1.0
+ */
 
 @Configuration
 public class MailConfig {

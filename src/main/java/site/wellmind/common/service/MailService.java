@@ -8,12 +8,13 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import site.wellmind.common.domain.dto.MailDto;
+import site.wellmind.security.provider.PasswordTokenProvider;
 import site.wellmind.user.domain.dto.UserDto;
 
 import java.util.Random;
 /**
  * MailService
- * <p>Mail Service Interface</p>
+ * <p>이메일 인증, 비밀번호 설정, 재발급 관련 logic 을 위한 service layer</p>
  * @since 2024-11-06
  * @version 1.0
  * @see MailDto
@@ -22,6 +23,7 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class MailService {
     private final JavaMailSender javaMailSender;
+    private final PasswordTokenProvider passwordTokenProvider;
 
     @Value("${mail.sender-email}")
     private String senderEmail;
@@ -77,6 +79,15 @@ public class MailService {
 
         return code; // 생성된 인증번호 반환
     }
+
+//    public MimeMessage createPasswordSetupMail(String email,String employeeId) throws MessagingException{
+//        MimeMessage message=javaMailSender.createMimeMessage();
+//
+//        //비밀번호 설정 토큰 생성
+//        String token= passwordTokenProvider.generatePasswordSetupToken(employeeId);
+//
+//        //비밀번호 설정 링크 생성
+//    }
 
 }
 
