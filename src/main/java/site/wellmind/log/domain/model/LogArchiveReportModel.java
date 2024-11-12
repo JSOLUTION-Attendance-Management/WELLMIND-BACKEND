@@ -18,10 +18,10 @@ public class LogArchiveReportModel extends BaseModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "AI_REPORT_COMMENT")
+    @Column(name = "AI_REPORT_COMMENT",length = 10000)
     private String aiComment;
 
-    @Column(name = "MANAGER_REPORT_COMMENT")
+    @Column(name = "MANAGER_REPORT_COMMENT",length = 5000)
     private String managerComment;
 
     @Column(name = "REPORT_SUMMARY")

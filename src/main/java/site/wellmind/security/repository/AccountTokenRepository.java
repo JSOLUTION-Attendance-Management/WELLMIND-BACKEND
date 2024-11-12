@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import site.wellmind.security.domain.model.AccountTokenModel;
 import site.wellmind.security.domain.vo.TokenStatus;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -18,4 +19,6 @@ import java.util.Optional;
 public interface AccountTokenRepository extends JpaRepository<AccountTokenModel,Long> {
 
     Optional<AccountTokenModel> findByEmployeeIdAndTokenStatus(String employeeId, TokenStatus tokenStatus);
+
+    List<AccountTokenModel> findByTokenStatusIn(List<TokenStatus> list);
 }

@@ -36,8 +36,10 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
     @Setter
     private List<Role> roles;
+
+    //인증에서 제외할 url
     private static final List<String> AUTH_WHITELIST=Arrays.asList(
-            "/", "/home",
+            "/", "/home","/api/auth/**",
             "/api/v1/member/**", "/swagger-ui/**", "/api-docs", "/swagger-ui.html",
             "/v3/api-docs/**", "/api-docs/**", "/swagger-ui.html", "/api/v1/auth/**"
     );
@@ -48,22 +50,16 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, jakarta.servlet.FilterChain filterChain) throws jakarta.servlet.ServletException, IOException {
-
+        String path=request.getRequestURI();
+        if(AUTH_WHITELIST.stream().anyMatch(path::startsWith)){
+            filterChain.doFilter(request,response);
+            return;
+        }
         try{
-            String path=request.getRequestURI();
-            if(AUTH_WHITELIST.stream().anyMatch(path::startsWith)){
-                filterChain.doFilter(request,response);
-                return;
-            }
-            String authorizationHeader= ((HttpServletRequest) request).getHeader(HttpHeaders.AUTHORIZATION);
-            if(authorizationHeader==null || !authorizationHeader.startsWith("Bearer ")){
-                throw new GlobalException(ExceptionStatus.UNAUTHORIZED,"No Authorization Header");
-            }
-
-            String accessToken = jwtTokenProvider.removeBearer(authorizationHeader);
+            String accessToken=jwtTokenProvider.getCookieValue(request,"accessToken");
 
             //if access token isn't valid
-            if(!jwtTokenProvider.isTokenValid(accessToken,false)){
+            if(accessToken==null){
                 handleTokenRefresh(request,response);
                 return;
             }
@@ -103,7 +99,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     private void handleTokenRefresh(HttpServletRequest request,HttpServletResponse response) throws IOException{
         //get refresh token
-        String refreshToken=getCookieValue((HttpServletRequest) request,"refresh");
+        String refreshToken=jwtTokenProvider.getCookieValue((HttpServletRequest) request,"refreshToken");
         //if refresh token is null
         if(refreshToken==null || !jwtTokenProvider.isTokenValid(refreshToken,true)){
             throw new GlobalException(ExceptionStatus.UNAUTHORIZED,"Invalid Tokens");
@@ -113,16 +109,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             ((HttpServletResponse) response).getWriter().write("Access token expired. Please refresh the token.");
         }
-    }
-    private String getCookieValue(HttpServletRequest request,String cookieName){
-        if(request.getCookies()!=null){
-            return Arrays.stream(request.getCookies())
-                    .filter(cookie->cookieName.equals(cookie.getName()))
-                    .map(Cookie::getValue)
-                    .findFirst()
-                    .orElse(null);
-        }
-        return null;
     }
 
     private void onError(HttpServletResponse response,int statusCode,String message) throws IOException{

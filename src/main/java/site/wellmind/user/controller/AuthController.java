@@ -2,6 +2,7 @@ package site.wellmind.user.controller;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -52,6 +53,7 @@ public class AuthController {
         }
     }
 
+    //이메일 인증 처리
     @PostMapping("/verify-code")
     public ResponseEntity<Messenger> verifyCode(@RequestParam(name = "email") String email, @RequestParam(name = "verifyCode") String verifyCode) {
         VerificationStatus verified = emailVerificationService.verifyCode(email, verifyCode);
@@ -67,6 +69,16 @@ public class AuthController {
                         .message("Invalid verification code.")
                         .build());
 
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshToken(HttpServletRequest request){
+        return authService.refresh(request);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request){
+        return authService.logout(request);
     }
 
 }

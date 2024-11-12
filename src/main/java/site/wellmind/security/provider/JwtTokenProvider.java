@@ -2,11 +2,14 @@ package site.wellmind.security.provider;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import site.wellmind.common.domain.vo.AdminRole;
@@ -249,6 +252,24 @@ public class JwtTokenProvider {
             throw new GlobalException(ExceptionStatus.NO_VALID_TOKEN,ExceptionStatus.NO_VALID_TOKEN.getMessage());
         }
     }
+
+    // 매일 새벽 3시에 실행 (cron 표현식: "초 분 시 일 월 요일")
+    @Scheduled(cron = "0 0 3 * * ?")
+    @Transactional
+    public void removeExpiredAndInvalidTokens(){
+        List<AccountTokenModel> tokensToDelete=accountTokenRepository.findByTokenStatusIn(
+                Arrays.asList(TokenStatus.EXPIRED,TokenStatus.INVALID)
+        );
+
+        if(!tokensToDelete.isEmpty()){
+            accountTokenRepository.deleteAll(tokensToDelete);
+            accountTokenRepository.flush();
+            log.info("Removed {} expired or invalid tokens.", tokensToDelete.size());
+        }else {
+            log.info("No expired or invalid tokens found for cleanup.");
+        }
+    }
+
     @Transactional
     public Boolean removeToken(String employeeId){
         Optional<AccountTokenModel> savedToken=accountTokenRepository.findByEmployeeIdAndTokenStatus(employeeId,TokenStatus.EXPIRED);
@@ -260,5 +281,16 @@ public class JwtTokenProvider {
             throw new GlobalException(ExceptionStatus.NO_VALID_TOKEN,ExceptionStatus.NO_VALID_TOKEN.getMessage());
         }
     }
+    public String getCookieValue(HttpServletRequest request, String cookieName){
+        if(request.getCookies()!=null){
+            return Arrays.stream(request.getCookies())
+                    .filter(cookie->cookieName.equals(cookie.getName()))
+                    .map(Cookie::getValue)
+                    .findFirst()
+                    .orElse(null);
+        }
+        return null;
+    }
+
 
 }

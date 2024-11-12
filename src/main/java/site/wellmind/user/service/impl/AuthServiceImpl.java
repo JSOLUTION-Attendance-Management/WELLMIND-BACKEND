@@ -1,5 +1,7 @@
 package site.wellmind.user.service.impl;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,7 @@ import site.wellmind.user.repository.AdminTopRepository;
 import site.wellmind.user.repository.UserTopRepository;
 import site.wellmind.user.service.AuthService;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 @Service
@@ -97,11 +100,14 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ResponseEntity<Messenger> refresh(String refreshToken) {
+    public ResponseEntity<Messenger> refresh(HttpServletRequest request) {
         try{
-            //Bearer 토큰 제거
-            String jwtToken=jwtTokenProvider.removeBearer(refreshToken);
+            String jwtToken=jwtTokenProvider.getCookieValue(request,"refreshToken");
             //유효성 검사
+            if (jwtToken == null) {
+                throw new GlobalException(ExceptionStatus.UNAUTHORIZED, "Refresh token is missing");
+            }
+
             if(!jwtTokenProvider.isTokenValid(jwtToken,true)){
                 throw new GlobalException(ExceptionStatus.UNAUTHORIZED,"Invalid Refresh Token");
             }
@@ -117,23 +123,30 @@ public class AuthServiceImpl implements AuthService {
             } else {
                 throw new GlobalException(ExceptionStatus.UNAUTHORIZED, "Token not found in DB");
             }
+            if (!isTokenExists) {
+                throw new GlobalException(ExceptionStatus.UNAUTHORIZED, "Token not found in DB");
+            }
 
             // 새로운 Access Token 발행
             String accessToken=jwtTokenProvider.generateToken(accountDetails,false);
 
-            // ResponseCookie 로 쿠키 설정
-            ResponseCookie accessTokenCookie=ResponseCookie.from("accessToken",accessToken)
-                    .maxAge(jwtTokenProvider.getAccessTokenExpired())
-                    .path("/")
-                    .domain("")
-                    .build();
+            // Set the new access token as a cookie
+            HttpHeaders headers = createSingleTokenCookie("accessToken", accessToken, jwtTokenProvider.getAccessTokenExpired());
 
             return ResponseEntity.ok()
-                    .header("Set-Cookie",accessTokenCookie.toString())
+                    .headers(headers)
                     .body(Messenger.builder()
                             .message("Access Token refreshed successfully")
                             .build());
-        }catch (Exception e){
+
+        } catch (GlobalException e) {
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message(e.getMessage())
+                            .build());
+
+        } catch (Exception e) {
+            log.error("Failed to refresh token", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Messenger.builder()
                             .message("Failed to refresh token")
@@ -142,10 +155,13 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ResponseEntity<Messenger> logout(String refreshToken) {
+    public ResponseEntity<Messenger> logout(HttpServletRequest request) {
         try{
-            //Bearer 토큰 제거
-            String jwtToken=jwtTokenProvider.removeBearer(refreshToken);
+            String jwtToken=jwtTokenProvider.getCookieValue(request,"accessToken");
+            //유효성 검사
+            if (jwtToken == null) {
+                throw new GlobalException(ExceptionStatus.UNAUTHORIZED, "Access token is missing");
+            }
             //유효성 검사
             if(!jwtTokenProvider.isTokenValid(jwtToken,true)){
                 throw new GlobalException(ExceptionStatus.UNAUTHORIZED,"Invalid Refresh Token");
@@ -167,10 +183,22 @@ public class AuthServiceImpl implements AuthService {
                 throw new GlobalException(ExceptionStatus.UNAUTHORIZED,"Token not found in DB");
             }
 
-            return ResponseEntity.ok(Messenger.builder()
-                    .message("Logout Successful").build());
+            // Clear the tokens from the cookies by setting them with maxAge 0
+            HttpHeaders headers = clearTokenCookies();
 
-        }catch (Exception e){
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(Messenger.builder()
+                            .message("Logout Successful")
+                            .build());
+
+        } catch (GlobalException e) {
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message(e.getMessage())
+                            .build());
+        } catch (Exception e) {
+            log.error("Failed to logout", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Messenger.builder()
                             .message("Failed to logout")
@@ -201,4 +229,44 @@ public class AuthServiceImpl implements AuthService {
 
         return headers;
     }
+
+    private HttpHeaders createSingleTokenCookie(String cookieName,String token,Long maxAge){
+        ResponseCookie tokenCookie = ResponseCookie.from(cookieName, token)
+                .path("/")
+                .maxAge(maxAge)
+                .httpOnly(true)
+                .secure(true)  // Enable for HTTPS in production
+                .sameSite("Lax")
+                .build();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.SET_COOKIE, tokenCookie.toString());
+        return headers;
+    }
+
+    private HttpHeaders clearTokenCookies(){
+        ResponseCookie accessTokenCookie=ResponseCookie.from("accessToken","")
+                .path("/")
+                .maxAge(0L)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Lax")
+                .build();
+
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", "")
+                .path("/")
+                .maxAge(0L) // Set max age to 0 to delete the cookie
+                .httpOnly(true)
+                .secure(true)  // Enable for HTTPS in production
+                .sameSite("Lax")
+                .build();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
+        headers.add(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+        return headers;
+    }
+
+
 }
+
