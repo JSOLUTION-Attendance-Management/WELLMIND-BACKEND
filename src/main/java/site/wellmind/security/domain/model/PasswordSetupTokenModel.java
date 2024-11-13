@@ -29,7 +29,7 @@ public class PasswordSetupTokenModel extends BaseModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "PASSWORD_EMPLOYEE_ID",unique = true,nullable = false)
+    @Column(name = "PASSWORD_EMPLOYEE_ID",nullable = false)
     private String employeeId;
 
     @Column(name = "PASSWORD_TOKEN",nullable = false)

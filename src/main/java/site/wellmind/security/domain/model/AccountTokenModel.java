@@ -30,7 +30,7 @@ public class AccountTokenModel extends BaseModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "ACCOUNT_EMPLOYEE_ID",unique = true,nullable = false)
+    @Column(name = "ACCOUNT_EMPLOYEE_ID",nullable = false)
     private String employeeId;
 
     @Column(name = "ACCOUNT_TOKEN",nullable = false)

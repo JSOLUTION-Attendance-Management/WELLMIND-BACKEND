@@ -48,42 +48,29 @@ public class AuthServiceImpl implements AuthService {
         Optional<UserTopModel> user=userTopRepository.findByEmployeeId(employeeId);
         Optional<AdminTopModel> admin=adminTopRepository.findByEmployeeId(employeeId);
 
+        String accessToken=null;
+        String refreshToken=null;
+
         if(user.isEmpty() && admin.isEmpty()){
             throw new GlobalException(ExceptionStatus.USER_NOT_FOUND,ExceptionStatus.USER_NOT_FOUND.getMessage());
         }else if(user.isPresent()){
             if(!passwordEncoder.matches(password,user.get().getPassword())){
                 throw new GlobalException(ExceptionStatus.INVALID_CREDENTIALS,ExceptionStatus.INVALID_CREDENTIALS.getMessage());
             }
+            PrincipalUserDetails userDetails=new PrincipalUserDetails(user.get());
+            accessToken = jwtTokenProvider.generateToken(userDetails, false);
+            refreshToken = jwtTokenProvider.generateToken(userDetails, true);
+
         } else if (admin.isPresent()) {
             if(!passwordEncoder.matches(password,admin.get().getPassword())){
                 throw new GlobalException(ExceptionStatus.INVALID_CREDENTIALS,ExceptionStatus.INVALID_CREDENTIALS.getMessage());
             }
+            PrincipalAdminDetails adminDetails=new PrincipalAdminDetails(admin.get());
+            accessToken = jwtTokenProvider.generateToken(adminDetails, false);
+            refreshToken = jwtTokenProvider.generateToken(adminDetails, true);
         }
 
         try{
-            //요청 보내기
-            Object accountDetails = restTemplate.postForObject(
-                    "http://localhost:8080/auth/login",
-                    dto,
-                    Object.class
-            );
-
-            if(accountDetails==null){
-                throw new GlobalException(ExceptionStatus.UNAUTHORIZED,"Invalid User");
-            }
-
-            String accessToken;
-            String refreshToken;
-            if (accountDetails instanceof PrincipalUserDetails) {
-                accessToken = jwtTokenProvider.generateToken((PrincipalUserDetails) accountDetails, false);
-                refreshToken = jwtTokenProvider.generateToken((PrincipalUserDetails) accountDetails, true);
-            } else if (accountDetails instanceof PrincipalAdminDetails) {
-                accessToken = jwtTokenProvider.generateToken((PrincipalAdminDetails) accountDetails, false);
-                refreshToken = jwtTokenProvider.generateToken((PrincipalAdminDetails) accountDetails, true);
-            } else {
-                throw new GlobalException(ExceptionStatus.UNAUTHORIZED, "Invalid User Type");
-            }
-
 
             HttpHeaders headers = createTokenCookies(accessToken, refreshToken);
             headers.add("Location", "http://localhost:3000/login/callback");
@@ -168,11 +155,12 @@ public class AuthServiceImpl implements AuthService {
                 throw new GlobalException(ExceptionStatus.UNAUTHORIZED, "Access token is missing");
             }
             //유효성 검사
-            if(!jwtTokenProvider.isTokenValid(jwtToken,true)){
+            if(!jwtTokenProvider.isTokenValid(jwtToken,false)){
                 throw new GlobalException(ExceptionStatus.UNAUTHORIZED,"Invalid Refresh Token");
             }
 
             Object accountDetails=jwtTokenProvider.extractPrincipalDetails(jwtToken);
+            log.info("accountDetails : {}",accountDetails);
 
             boolean isRemoved;
             if (accountDetails instanceof PrincipalUserDetails){

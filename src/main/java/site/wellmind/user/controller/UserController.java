@@ -40,6 +40,7 @@ public class UserController {
 
         try {
             UserDto savedUser=userService.save(dto);
+            log.info("mail register : {}, {}",savedUser.getEmail(),savedUser.getEmployeeId());
             try{
                 mailService.sendPasswordSetupEmail(savedUser.getEmail(),savedUser.getEmployeeId());
             }catch (MessagingException e){
@@ -50,6 +51,7 @@ public class UserController {
             return ResponseEntity.ok()
                     .body(Messenger.builder()
                             .message("User registration successful and password setup email sent.")
+                            .data(savedUser)
                             .build());
         }catch (GlobalException e){
             return ResponseEntity.status(ExceptionStatus.INTERNAL_SERVER_ERROR.getHttpStatus())

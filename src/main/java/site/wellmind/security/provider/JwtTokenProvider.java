@@ -72,7 +72,8 @@ public class JwtTokenProvider {
 
     @SuppressWarnings("unchecked")
     public List<String> extractRoles(String jwt){
-        return extractClaim(jwt,i->i.get("roles",List.class));
+        String rolesString = extractClaim(jwt, claims -> claims.get("roles", String.class));
+        return rolesString != null ? Arrays.asList(rolesString.split(",")) : Collections.emptyList();
     }
 
     Long extractId(String jwt){
@@ -89,6 +90,7 @@ public class JwtTokenProvider {
                     .build()
                     .parseSignedClaims(jwt)
                     .getPayload();
+
         }catch (io.jsonwebtoken.ExpiredJwtException e) {
             log.error("extractAllClaims Error - Expired Token: {}", e.getMessage());
             throw new GlobalException(ExceptionStatus.EXPIRED_TOKEN, "Token has expired");

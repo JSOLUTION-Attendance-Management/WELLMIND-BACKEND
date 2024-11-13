@@ -76,6 +76,15 @@ public class UserServiceImpl implements UserService {
     public UserDto save(UserDto dto) {
 
         try{
+
+            UserInfoModel userInfoModel=userInfoRepository.save(UserInfoModel.builder()
+                    .address(dto.getUserInfo().getAddress())
+                    .photo(dto.getUserInfo().getPhoto())
+                    .hobby(dto.getUserInfo().getHobby())
+                    .isLong(dto.getUserInfo().isLong())
+                    .significant(dto.getUserInfo().getSignificant())
+                    .build());
+
             UserTopModel savedUser = userTopRepository.save(UserTopModel.builder()
                     .employeeId(dto.getEmployeeId())
                     .email(dto.getEmail())
@@ -85,14 +94,7 @@ public class UserServiceImpl implements UserService {
                     .regNumberFor(EncryptionUtil.encrypt(dto.getRegNumberFor()))
                     .regNumberLat(EncryptionUtil.encrypt(dto.getRegNumberLat()))
                     .deleteFlag(false)
-                    .build());
-
-            userInfoRepository.save(UserInfoModel.builder()
-                    .address(dto.getUserInfo().getAddress())
-                    .photo(dto.getUserInfo().getPhoto())
-                    .hobby(dto.getUserInfo().getHobby())
-                    .isLong(dto.getUserInfo().isLong())
-                    .significant(dto.getUserInfo().getSignificant())
+                    .userInfoModel(userInfoModel)
                     .build());
 
             List<UserEducationModel> educationEntities = dto.getEducation().stream()
@@ -110,6 +112,8 @@ public class UserServiceImpl implements UserService {
             //authType,role 은 관리자 체크 옵션을 통해 나중에 설정
             return UserDto.builder()
                     .id(savedUser.getId())
+                    .email(savedUser.getEmail())
+                    .employeeId(savedUser.getEmployeeId())
                     .name(savedUser.getName())
                     .regDate(savedUser.getRegDate())
                     .build();

@@ -30,13 +30,12 @@ public class SwaggerConfig {
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))  // Adds security requirement for bearer token
                 //.addSecurityItem(new SecurityRequirement().addList(jwt))
                 .components(new Components()
-                        .addSecuritySchemes("bearerAuth", new SecurityScheme()
-                                //.addSecuritySchemes(jwt,new SecurityScheme()
-                                .name("Authorization")
-                                //.name(jwt)
-                                .type(SecurityScheme.Type.HTTP)
-                                .scheme("bearer")
-                                .bearerFormat("JWT"))
+                        .addSecuritySchemes("cookieAuth", new SecurityScheme()
+                                .type(SecurityScheme.Type.APIKEY)
+                                .in(SecurityScheme.In.COOKIE)
+                                .name("accessToken") // 쿠키 이름 (예: 'accessToken')
+                        ))
+                .addSecurityItem(new SecurityRequirement().addList("cookieAuth")
                 );
     }
 

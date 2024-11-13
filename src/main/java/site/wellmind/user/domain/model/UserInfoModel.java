@@ -33,7 +33,7 @@ public class UserInfoModel extends BaseModel {
     @Column(name = "USER_SIGNIFICANT")
     private String significant;
 
-    @Column(name = "USER_PHOTO")
+    @Column(name = "USER_PHOTO",nullable = true)
     private String photo;
 
     @Column(name = "USER_IS_LONG")
