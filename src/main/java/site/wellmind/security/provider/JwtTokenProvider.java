@@ -184,7 +184,6 @@ public class JwtTokenProvider {
             log.info("Token is already expired",e);
             return true;
         }
-
     }
 
     // token 타입이 refresh 면 true, access 면 false 반환

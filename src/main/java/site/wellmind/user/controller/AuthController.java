@@ -1,6 +1,6 @@
 package site.wellmind.user.controller;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -8,9 +8,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import site.wellmind.common.domain.dto.Messenger;
+import site.wellmind.common.domain.dto.TokenValidationRequestDto;
+import site.wellmind.common.domain.vo.ExceptionStatus;
+import site.wellmind.common.service.MailService;
 import site.wellmind.security.domain.vo.VerificationStatus;
 import site.wellmind.security.service.EmailVerificationService;
 import site.wellmind.security.domain.dto.LoginDto;
+import site.wellmind.user.domain.dto.PasswordSetupRequestDto;
+import site.wellmind.user.domain.dto.PasswordSetupTestDto;
 import site.wellmind.user.service.AuthService;
 
 /**
@@ -31,7 +36,7 @@ import site.wellmind.user.service.AuthService;
 public class AuthController {
     private final AuthService authService;
     private final EmailVerificationService emailVerificationService;
-
+    private final MailService mailService;
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDto dto) {
         return authService.localLogin(dto);
@@ -52,6 +57,15 @@ public class AuthController {
                             .build());
         }
     }
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshToken(HttpServletRequest request){
+        return authService.refresh(request);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request){
+        return authService.logout(request);
+    }
 
     //이메일 인증 처리
     @PostMapping("/verify-code")
@@ -70,15 +84,30 @@ public class AuthController {
                         .build());
 
     }
-
-    @PostMapping("/refresh-token")
-    public ResponseEntity<?> refreshToken(HttpServletRequest request){
-        return authService.refresh(request);
+    @PostMapping("/password/test/setup")   //save 로직에 합쳐져야 함
+    public ResponseEntity<Messenger> testSetupPassword(@RequestBody PasswordSetupTestDto dto) throws MessagingException {
+        try {
+            mailService.sendPasswordSetupEmail(dto.getEmail(),dto.getEmployeeId());
+            return ResponseEntity.ok()
+                    .body(Messenger.builder()
+                            .message("send password set up success").build());
+        }catch (MessagingException e){
+            return ResponseEntity.status(ExceptionStatus.INTERNAL_SERVER_ERROR.getHttpStatus())
+                    .body(Messenger.builder()
+                            .message(e.getMessage()).build());
+        }
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request){
-        return authService.logout(request);
+
+    //비밀번호 생성 토큰 유효 검사
+    @PostMapping("/password/validate-token")
+    public ResponseEntity<Messenger> validatePasswordSetupToken(@RequestBody TokenValidationRequestDto request){
+        return authService.validatePasswordSetupToken(request);
+    }
+    //비밀번호 생성
+    @PostMapping("/password/setup")
+    public ResponseEntity<Messenger> setupPassword(@RequestBody PasswordSetupRequestDto request){
+        return authService.setupPassword(request);
     }
 
 }

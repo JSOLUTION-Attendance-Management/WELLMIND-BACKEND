@@ -26,38 +26,38 @@ public class RequestResponseInterceptor implements HandlerInterceptor {
     private static final String START_TIME_ATTRIBUTE = "startTime";
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        long startTime=System.currentTimeMillis();
-        request.setAttribute(START_TIME_ATTRIBUTE,startTime);
-        log.info("Request URI: {}", request.getRequestURI());
-        log.info("HTTP Method: {}", request.getMethod());
-        log.info("Client IP: {}", request.getRemoteAddr());
-        log.info("User-Agent: {}", request.getHeader("User-Agent"));
-        log.info("Referer: {}", request.getHeader("Referer"));
-
-        Authentication authentication= SecurityContextHolder.getContext().getAuthentication();
-        if(authentication!=null && authentication.isAuthenticated()){
-            log.info("Authenticated User : {}, Roles : {}",
-                    authentication.getName(),
-                    authentication.getAuthorities());
-        }
+//        long startTime=System.currentTimeMillis();
+//        request.setAttribute(START_TIME_ATTRIBUTE,startTime);
+//        log.info("Request URI: {}", request.getRequestURI());
+//        log.info("HTTP Method: {}", request.getMethod());
+//        log.info("Client IP: {}", request.getRemoteAddr());
+//        log.info("User-Agent: {}", request.getHeader("User-Agent"));
+//        log.info("Referer: {}", request.getHeader("Referer"));
+//
+//        Authentication authentication= SecurityContextHolder.getContext().getAuthentication();
+//        if(authentication!=null && authentication.isAuthenticated()){
+//            log.info("Authenticated User : {}, Roles : {}",
+//                    authentication.getName(),
+//                    authentication.getAuthorities());
+//        }
 
         return true;
     }
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, @Nullable ModelAndView modelAndView) throws Exception {
-        log.info("Response Status: {}", response.getStatus());
+        //log.info("Response Status: {}", response.getStatus());
     }
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, @Nullable Exception ex) throws Exception {
-        long startTime=(Long) request.getAttribute(START_TIME_ATTRIBUTE);
-        long endTime=System.currentTimeMillis();
-        long executionTime=endTime-startTime;
-
-        if (ex != null) {
-            log.error("Exception: ", ex);
-        }
-        log.info("Request Completed in {} ms", executionTime);
+//        long startTime=(Long) request.getAttribute(START_TIME_ATTRIBUTE);
+//        long endTime=System.currentTimeMillis();
+//        long executionTime=endTime-startTime;
+//
+//        if (ex != null) {
+//            log.error("Exception: ", ex);
+//        }
+//        log.info("Request Completed in {} ms", executionTime);
     }
 }

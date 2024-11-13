@@ -3,15 +3,19 @@ package site.wellmind.user.service.impl;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import site.wellmind.common.domain.dto.Messenger;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
+import site.wellmind.common.service.MailService;
 import site.wellmind.security.util.EncryptionUtil;
 import site.wellmind.transfer.domain.model.QDepartmentModel;
 import site.wellmind.transfer.domain.model.QPositionModel;
@@ -52,6 +56,7 @@ public class UserServiceImpl implements UserService {
     private final UserInfoRepository userInfoRepository;
     private final UserEducationRepository userEducationRepository;
 
+
     private final PasswordEncoder passwordEncoder;
 
     private final JPAQueryFactory queryFactory;
@@ -70,40 +75,48 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserDto save(UserDto dto) {
 
-        UserTopModel savedUser = userTopRepository.save(UserTopModel.builder()
-                .employeeId(dto.getEmployeeId())
-                .email(dto.getEmail())
-                .name(dto.getName())
-                .phoneNum(dto.getPhoneNum())
-                .authType("N")
-                .regNumberFor(EncryptionUtil.encrypt(dto.getRegNumberFor()))
-                .regNumberLat(EncryptionUtil.encrypt(dto.getRegNumberLat()))
-                .deleteFlag(false)
-                .build());
+        try{
+            UserTopModel savedUser = userTopRepository.save(UserTopModel.builder()
+                    .employeeId(dto.getEmployeeId())
+                    .email(dto.getEmail())
+                    .name(dto.getName())
+                    .phoneNum(dto.getPhoneNum())
+                    .authType("N")
+                    .regNumberFor(EncryptionUtil.encrypt(dto.getRegNumberFor()))
+                    .regNumberLat(EncryptionUtil.encrypt(dto.getRegNumberLat()))
+                    .deleteFlag(false)
+                    .build());
 
-        userInfoRepository.save(UserInfoModel.builder()
-                .address(dto.getUserInfo().getAddress())
-                .photo(dto.getUserInfo().getPhoto())
-                .hobby(dto.getUserInfo().getHobby())
-                .isLong(dto.getUserInfo().isLong())
-                .significant(dto.getUserInfo().getSignificant())
-                .build());
+            userInfoRepository.save(UserInfoModel.builder()
+                    .address(dto.getUserInfo().getAddress())
+                    .photo(dto.getUserInfo().getPhoto())
+                    .hobby(dto.getUserInfo().getHobby())
+                    .isLong(dto.getUserInfo().isLong())
+                    .significant(dto.getUserInfo().getSignificant())
+                    .build());
 
-        List<UserEducationModel> educationEntities = dto.getEducation().stream()
-                .map(educationDto -> UserEducationModel.builder()
-                        .degree(educationDto.getDegree())
-                        .major(educationDto.getMajor())
-                        .institutionName(educationDto.getInstitutionName())
-                        .build())
-                .collect(Collectors.toList());
+            List<UserEducationModel> educationEntities = dto.getEducation().stream()
+                    .map(educationDto -> UserEducationModel.builder()
+                            .degree(educationDto.getDegree())
+                            .major(educationDto.getMajor())
+                            .institutionName(educationDto.getInstitutionName())
+                            .userTopModel(savedUser)
+                            .build())
+                    .collect(Collectors.toList());
 
-        userEducationRepository.saveAll(educationEntities);
-        //authType,role 은 관리자 체크 옵션을 통해 나중에 설정
-        return UserDto.builder()
-                .id(savedUser.getId())
-                .name(savedUser.getName())
-                .regDate(savedUser.getRegDate())
-                .build();
+            userEducationRepository.saveAll(educationEntities);
+
+
+            //authType,role 은 관리자 체크 옵션을 통해 나중에 설정
+            return UserDto.builder()
+                    .id(savedUser.getId())
+                    .name(savedUser.getName())
+                    .regDate(savedUser.getRegDate())
+                    .build();
+        }catch (Exception e){
+            throw new GlobalException(ExceptionStatus.INTERNAL_SERVER_ERROR,"Failed to save user data for employee ID : "+dto.getEmployeeId());
+        }
+
     }
 
     @Override

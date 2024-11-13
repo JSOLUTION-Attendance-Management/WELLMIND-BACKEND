@@ -1,6 +1,6 @@
 package site.wellmind.user.controller;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -9,6 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import site.wellmind.common.domain.dto.Messenger;
 import site.wellmind.common.domain.vo.SuccessStatus;
+import site.wellmind.common.domain.vo.ExceptionStatus;
+import site.wellmind.common.exception.GlobalException;
+import site.wellmind.common.service.MailService;
 import site.wellmind.user.domain.dto.UserDto;
 import site.wellmind.user.service.UserService;
 
@@ -31,14 +34,28 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final MailService mailService;
     @PostMapping("/register")
-    public ResponseEntity<Messenger> register(@RequestBody UserDto dto) {
+    public ResponseEntity<Messenger> register(@RequestBody UserDto dto) throws MessagingException {
 
-        return ResponseEntity.ok(Messenger
-                .builder()
-                .message("auth join : " + SuccessStatus.OK.getMessage())
-                .data(userService.save(dto))
-                .build());
+        try {
+            UserDto savedUser=userService.save(dto);
+            try{
+                mailService.sendPasswordSetupEmail(savedUser.getEmail(),savedUser.getEmployeeId());
+            }catch (MessagingException e){
+                return ResponseEntity.status(ExceptionStatus.INTERNAL_SERVER_ERROR.getHttpStatus())
+                        .body(Messenger.builder()
+                                .message(e.getMessage()).build());
+            }
+            return ResponseEntity.ok()
+                    .body(Messenger.builder()
+                            .message("User registration successful and password setup email sent.")
+                            .build());
+        }catch (GlobalException e){
+            return ResponseEntity.status(ExceptionStatus.INTERNAL_SERVER_ERROR.getHttpStatus())
+                    .body(Messenger.builder()
+                            .message(e.getMessage()).build());
+        }
     }
     @GetMapping("/exist-by-employeeId")
     public ResponseEntity<Messenger> existByEmployeeId(@RequestParam("employeeId") String employeeId) {

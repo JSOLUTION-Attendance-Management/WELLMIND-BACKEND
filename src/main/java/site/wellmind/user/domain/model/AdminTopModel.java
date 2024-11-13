@@ -53,10 +53,4 @@ public class AdminTopModel extends BaseModel {
     @Column(name = "DELETE_FLAG")
     private Boolean deleteFlag= false;
 
-    @Column(name = "USER_AUTH_TOKEN",length = 2048,nullable = false)
-    private String authToken;
-
-    @Column(name = "USER_AUTH_TOKEN_EXPIRE",nullable = false)
-    private LocalDateTime authTokenExpire;
-
 }

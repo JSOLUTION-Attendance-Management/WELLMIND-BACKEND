@@ -28,6 +28,9 @@ public class MailService {
     @Value("${mail.sender-email}")
     private String senderEmail;
 
+    @Value("${app.domain}")
+    private String appDomain;
+
     // 랜덤으로 숫자 생성
     public String createNumber(){
         Random random=new Random();
@@ -80,14 +83,41 @@ public class MailService {
         return code; // 생성된 인증번호 반환
     }
 
-//    public MimeMessage createPasswordSetupMail(String email,String employeeId) throws MessagingException{
-//        MimeMessage message=javaMailSender.createMimeMessage();
-//
-//        //비밀번호 설정 토큰 생성
-//        String token= passwordTokenProvider.generatePasswordSetupToken(employeeId);
-//
-//        //비밀번호 설정 링크 생성
-//    }
+    public MimeMessage createPasswordSetupMail(String email,String employeeId) throws MessagingException{
+        MimeMessage message=javaMailSender.createMimeMessage();
 
+        //비밀번호 설정 토큰 생성
+        String token= passwordTokenProvider.generatePasswordSetupToken(employeeId);
+
+        //비밀번호 설정 링크 생성
+        String link=appDomain+"/password-setup?token="+token;
+
+        message.setFrom(senderEmail);
+        message.setRecipients(MimeMessage.RecipientType.TO,email);
+        message.setSubject("비밀번호 설정");
+
+        String body = "<div style='width: 100%; max-width: 600px; margin: auto; font-family: Arial, sans-serif; text-align: center;'>";
+        body += "<img src='https://example.com/logo.png' alt='Company Logo' style='width: 100px; margin-bottom: 20px;'>"; // 로고 이미지 추가
+        body += "<h2 style='color: #333;'>비밀번호 설정</h2>";
+        body += "<p style='font-size: 15px; color: #555;'>아래 링크를 클릭하여 비밀번호를 설정해 주세요.</p>";
+        body += "<div style='padding: 20px; background-color: #f9f9f9; display: inline-block; border-radius: 5px; margin: 20px 0;'>";
+        body += "<a href='" + link + "' style='color: #00AEEF; font-size: 16px;'>비밀번호 설정하기</a>"; // 링크
+        body += "</div>";
+        body += "<p style='font-size: 14px; color: #777;'>이 링크는 24시간 동안만 유효합니다.</p>";
+        body += "</div>";
+        message.setText(body, "UTF-8", "html");
+
+        return message;
+    }
+
+    public void sendPasswordSetupEmail(String email,String employeeId) throws MessagingException{
+        MimeMessage message = createPasswordSetupMail(email, employeeId);
+        try {
+            javaMailSender.send(message);
+        } catch (MailException e) {
+            e.printStackTrace();
+            throw new IllegalArgumentException("비밀번호 설정 이메일 발송 중 오류가 발생했습니다.");
+        }
+    }
 }
 

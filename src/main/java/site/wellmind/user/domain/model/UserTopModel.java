@@ -31,7 +31,7 @@ public class UserTopModel extends BaseModel {
     @Column(name = "USER_EMPLOYEE_ID",unique = true,nullable = false)
     private String employeeId;
 
-    @Column(name = "USER_EMAIL",unique = true,nullable = false)
+    @Column(name = "USER_EMAIL",unique = false,nullable = false)
     private String email;
 
     @Column(name = "USER_PASSWORD", unique = true)
@@ -55,16 +55,10 @@ public class UserTopModel extends BaseModel {
     @Column(name = "DELETE_FLAG")
     private Boolean deleteFlag= false;
 
-    @Column(name = "USER_AUTH_TOKEN",length = 2048,nullable = false)
-    private String authToken;
-
-    @Column(name = "USER_AUTH_TOKEN_EXPIRE",nullable = false)
-    private LocalDateTime authTokenExpire;
-
     // ====================== user ========================
 
     @OneToMany(mappedBy = "userTopModel",cascade = CascadeType.ALL,orphanRemoval = true)
-    private List<UserEducationModel> userEduIds;
+    private List<UserEducationModel> userEduIds = new ArrayList<>();
 
     @OneToOne
     @JoinColumn(name = "USERINFO_IDX",referencedColumnName = "USERINFO_IDX")

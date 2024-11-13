@@ -10,12 +10,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import site.wellmind.common.domain.dto.Messenger;
+import site.wellmind.common.domain.dto.TokenValidationRequestDto;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
 import site.wellmind.security.domain.model.PrincipalAdminDetails;
 import site.wellmind.security.domain.model.PrincipalUserDetails;
 import site.wellmind.security.provider.JwtTokenProvider;
 import site.wellmind.security.domain.dto.LoginDto;
+import site.wellmind.security.provider.PasswordTokenProvider;
+import site.wellmind.user.domain.dto.PasswordSetupRequestDto;
 import site.wellmind.user.domain.model.AdminTopModel;
 import site.wellmind.user.domain.model.UserTopModel;
 import site.wellmind.user.repository.AdminTopRepository;
@@ -32,6 +35,8 @@ public class AuthServiceImpl implements AuthService {
 
     private final RestTemplate restTemplate;
     private final JwtTokenProvider jwtTokenProvider;
+    private final PasswordTokenProvider passwordTokenProvider;
+
     private final UserTopRepository userTopRepository;
     private final AdminTopRepository adminTopRepository;
     private final PasswordEncoder passwordEncoder;
@@ -206,6 +211,77 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+    @Override
+    public ResponseEntity<Messenger> validatePasswordSetupToken(TokenValidationRequestDto request) {
+        if(passwordTokenProvider.isPasswordSetupTokenValid(request.getToken())){
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("Password setup token is valid").build());
+        }else {
+            return ResponseEntity.status(ExceptionStatus.UNAUTHORIZED.getHttpStatus())
+                    .body(Messenger.builder()
+                            .message("Invalid or expired token")
+                            .build());
+        }
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<Messenger> setupPassword(PasswordSetupRequestDto request) {
+        String token = request.getToken();
+
+        if (!passwordTokenProvider.isPasswordSetupTokenValid(token)) {
+            return ResponseEntity.status(ExceptionStatus.UNAUTHORIZED.getHttpStatus()).body(Messenger.builder()
+                    .message("Invalid or expired token").build());
+        }
+
+        // 비밀번호 강도 검사
+        if (!isValidPassword(request.getNewPassword())) {
+            return ResponseEntity.status(ExceptionStatus.INVALID_INPUT.getHttpStatus()).body(Messenger.builder()
+                    .message("Password does not meet the security requirements.").build());
+        }
+        String employeeId=passwordTokenProvider.extractEmployeeId(request.getToken());
+        if(!request.getNewPassword().equals(request.getConfirmNewPassword())){
+            return ResponseEntity.badRequest().body(Messenger.builder()
+                    .message("Passwords do not match").build());
+        }
+
+        try {
+            String newPassword = request.getNewPassword();
+            Optional<UserTopModel> user = userTopRepository.findByEmployeeId(employeeId);
+
+            if (user.isPresent()) {
+                // 사용자 비밀번호 업데이트
+                user.get().setPassword(passwordEncoder.encode(newPassword));
+                userTopRepository.save(user.get());
+            } else {
+                // 관리자 비밀번호 업데이트
+                Optional<AdminTopModel> admin = adminTopRepository.findByEmployeeId(employeeId);
+
+                if (admin.isEmpty()) {
+                    return ResponseEntity.status(ExceptionStatus.USER_NOT_FOUND.getHttpStatus())
+                            .body(Messenger.builder()
+                                    .message("User not found with employee ID: " + employeeId).build());
+                }
+
+                admin.get().setPassword(passwordEncoder.encode(newPassword));
+                adminTopRepository.save(admin.get());
+            }
+
+            // 토큰 무효화 처리 (필요 시)
+            passwordTokenProvider.invalidateToken(token);
+
+            return ResponseEntity.ok().body(Messenger.builder()
+                    .message("Password has been set successfully")
+                    .build());
+
+        }catch (Exception e){
+            log.error("Failed to set password for employee ID : {} ",employeeId,e);
+            return ResponseEntity.status(ExceptionStatus.INTERNAL_SERVER_ERROR.getHttpStatus())
+                    .body(Messenger.builder()
+                            .message("Failed to set password due to an internal error").build());
+        }
+    }
+
     private HttpHeaders createTokenCookies(String accessToken,String refreshToken){
         ResponseCookie accessTokenCookie=ResponseCookie.from("accessToken",accessToken)
                 .path("/")
@@ -265,6 +341,11 @@ public class AuthServiceImpl implements AuthService {
         headers.add(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
         headers.add(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
         return headers;
+    }
+
+    private boolean isValidPassword(String password){
+        String passwordPattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=]).{8,}$";
+        return password.matches(passwordPattern);
     }
 
 
