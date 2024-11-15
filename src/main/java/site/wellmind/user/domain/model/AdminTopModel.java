@@ -42,6 +42,7 @@ public class AdminTopModel extends BaseModel {
     @Column(name="ADMIN_PHONE_NUM",length = 50)
     private String phoneNum;
 
+    @Builder.Default
     @Column(name="AUTH_TYPE",length = 1)
     @Pattern(regexp = "[NM]",message = "authType must be 'N' or 'M'")
     private String authType="M";
@@ -50,6 +51,7 @@ public class AdminTopModel extends BaseModel {
     @Column(name = "AUTH_ADMIN_LEVEL_CODE_ID")
     private AdminRole authAdminLevelCodeId;
 
+    @Builder.Default
     @Column(name = "DELETE_FLAG")
     private Boolean deleteFlag= false;
 

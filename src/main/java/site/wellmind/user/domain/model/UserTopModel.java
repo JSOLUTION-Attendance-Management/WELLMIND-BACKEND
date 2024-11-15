@@ -48,17 +48,19 @@ public class UserTopModel extends BaseModel {
     @Column(name="USER_PHONE_NUM",length = 50)
     private String phoneNum;
 
+    @Builder.Default
     @Column(name="AUTH_TYPE",length = 1)
     @Pattern(regexp = "[NM]",message = "authType must be 'N' or 'M'")
     private String authType="N";
 
+    @Builder.Default
     @Column(name = "DELETE_FLAG")
     private Boolean deleteFlag= false;
 
     // ====================== user ========================
 
     @OneToMany(mappedBy = "userTopModel",cascade = CascadeType.ALL,orphanRemoval = true)
-    private List<UserEducationModel> userEduIds = new ArrayList<>();
+    private List<UserEducationModel> userEduIds;
 
     @OneToOne
     @JoinColumn(name = "USERINFO_IDX",referencedColumnName = "USERINFO_IDX")
@@ -77,18 +79,18 @@ public class UserTopModel extends BaseModel {
 
     // ====================== log ========================
     @OneToMany(mappedBy = "userId",cascade = CascadeType.MERGE,orphanRemoval = false)
-    private List<LogArchiveViewModel> viewLogIds= new ArrayList<>();
+    private List<LogArchiveViewModel> viewLogIds;
 
     @OneToMany(mappedBy = "userId",cascade = CascadeType.MERGE,orphanRemoval = false)
-    private List<LogArchiveUpdateModel> updateLogIds= new ArrayList<>();
+    private List<LogArchiveUpdateModel> updateLogIds;
 
     @OneToMany(mappedBy = "userId",cascade = CascadeType.MERGE,orphanRemoval = false)
-    private List<LogArchiveLoginModel> loginLogIds= new ArrayList<>();
+    private List<LogArchiveLoginModel> loginLogIds;
 
     @OneToMany(mappedBy = "userId",cascade = CascadeType.MERGE,orphanRemoval = false)
-    private List<LogArchiveDeleteModel> deleteLogIds= new ArrayList<>();
+    private List<LogArchiveDeleteModel> deleteLogIds;
 
     @OneToMany(mappedBy = "userId",cascade = CascadeType.MERGE,orphanRemoval = false)
-    private List<LogArchiveReportModel> reportLogIds= new ArrayList<>();
+    private List<LogArchiveReportModel> reportLogIds;
 
 }
