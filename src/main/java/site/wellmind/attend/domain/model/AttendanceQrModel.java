@@ -27,6 +27,7 @@ public class AttendanceQrModel extends BaseModel {
     @Column(name = "QR_TOKEN_EXPIRE",nullable = false)
     private LocalDateTime qrTokenExpire;
 
+    @Builder.Default
     @Column(name = "QR_TOKEN_IS_LAST")
     private Boolean qrTokenisLast=false;
 

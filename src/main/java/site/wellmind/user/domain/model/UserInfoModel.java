@@ -36,6 +36,7 @@ public class UserInfoModel extends BaseModel {
     @Column(name = "USER_PHOTO",nullable = true)
     private String photo;
 
+    @Builder.Default
     @Column(name = "USER_IS_LONG")
     private boolean isLong=false;
 
