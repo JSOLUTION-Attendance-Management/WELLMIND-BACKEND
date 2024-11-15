@@ -85,7 +85,7 @@ jobs:
             auth-code-expiration-millis: 1800000
 
           app:
-            domain: http://localhost:8080
+            domain: ${APP_DOMAIN}
 
           jwt:
             secret: ${JWT_SECRET}
