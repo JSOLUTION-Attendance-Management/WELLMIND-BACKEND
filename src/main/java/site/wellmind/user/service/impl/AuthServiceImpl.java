@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class AuthServiceImpl implements AuthService {
+
+    @Value("${app.domain}")
+    private String deployUrl;
 
     private final RestTemplate restTemplate;
     private final JwtTokenProvider jwtTokenProvider;
@@ -311,6 +315,7 @@ public class AuthServiceImpl implements AuthService {
     private HttpHeaders clearTokenCookies(){
         ResponseCookie accessTokenCookie=ResponseCookie.from("accessToken","")
                 .path("/")
+                .domain(deployUrl)
                 .maxAge(0L)
                 .httpOnly(true)
                 .secure(true)
@@ -319,6 +324,7 @@ public class AuthServiceImpl implements AuthService {
 
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", "")
                 .path("/")
+                .domain(deployUrl)
                 .maxAge(0L) // Set max age to 0 to delete the cookie
                 .httpOnly(true)
                 .secure(true)  // Enable for HTTPS in production
