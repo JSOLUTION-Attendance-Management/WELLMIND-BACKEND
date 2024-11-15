@@ -315,20 +315,19 @@ public class AuthServiceImpl implements AuthService {
     private HttpHeaders clearTokenCookies(){
         ResponseCookie accessTokenCookie=ResponseCookie.from("accessToken","")
                 .path("/")
-                .domain(deployUrl)
                 .maxAge(0L)
-                .httpOnly(true)
-                .secure(true)
-                .sameSite("Lax")
+//                .httpOnly(true)
+//                .secure(true)
+//                .sameSite("Lax")
                 .build();
 
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", "")
                 .path("/")
-                .domain(deployUrl)
+//                .domain(deployUrl)
                 .maxAge(0L) // Set max age to 0 to delete the cookie
-                .httpOnly(true)
-                .secure(true)  // Enable for HTTPS in production
-                .sameSite("Lax")
+//                .httpOnly(true)
+//                .secure(true)  // Enable for HTTPS in production
+//                .sameSite("Lax")
                 .build();
 
         HttpHeaders headers = new HttpHeaders();
