@@ -104,12 +104,6 @@ jobs:
         MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
         JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
-    - name: Build with Gradle
-      run: ./gradlew build
-
-    - name: Run Tests
-      run: ./gradlew test
-
     # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
@@ -118,8 +112,12 @@ jobs:
     - name: Set executable permission for gradlew
       run: chmod +x gradlew
 
-    - name: Build with Gradle Wrapper
-      run: ./gradlew check build
+    # Gradle build
+    - name: Build with Gradle
+      run: ./gradlew build
+
+    - name: Run Tests
+      run: ./gradlew test
 
     # Docker build & Push 
     - name: Docker build & push to Docker Hub
