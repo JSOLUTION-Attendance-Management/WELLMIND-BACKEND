@@ -26,6 +26,10 @@ jobs:
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
 
+    # Set executable permission for gradlew
+    - name: Set executable permission for gradlew
+      run: chmod +x gradlew
+
     - name: Build with Gradle Wrapper
       run: ./gradlew check build
 
