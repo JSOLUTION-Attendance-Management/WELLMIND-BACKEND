@@ -3,33 +3,26 @@ package site.wellmind.user.service.impl;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import site.wellmind.common.domain.dto.Messenger;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
-import site.wellmind.common.service.MailService;
 import site.wellmind.security.util.EncryptionUtil;
 import site.wellmind.transfer.domain.model.QDepartmentModel;
 import site.wellmind.transfer.domain.model.QPositionModel;
 import site.wellmind.transfer.domain.model.QTransferModel;
-import site.wellmind.transfer.domain.model.TransferModel;
 import site.wellmind.user.domain.dto.*;
-import site.wellmind.user.domain.model.QUserTopModel;
-import site.wellmind.user.domain.model.UserEducationModel;
-import site.wellmind.user.domain.model.UserInfoModel;
-import site.wellmind.user.domain.model.UserTopModel;
+import site.wellmind.user.domain.model.*;
+import site.wellmind.user.repository.AccountRoleRepository;
 import site.wellmind.user.repository.UserEducationRepository;
 import site.wellmind.user.repository.UserInfoRepository;
 import site.wellmind.user.repository.UserTopRepository;
-import site.wellmind.user.service.UserService;
+import site.wellmind.user.service.AccountService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
@@ -41,7 +34,7 @@ import java.util.stream.Collectors;
  *
  * @author Yuri Seok(tjrdbfl)
  * @version 1.0
- * @see UserService
+ * @see AccountService
  * @see UserTopRepository
  * @see UserInfoRepository
  * @see UserEducationRepository
@@ -50,12 +43,12 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class UserServiceImpl implements UserService {
+public class AccountServiceImpl implements AccountService {
 
     private final UserTopRepository userTopRepository;
     private final UserInfoRepository userInfoRepository;
     private final UserEducationRepository userEducationRepository;
-
+    private final AccountRoleRepository accountRoleRepository;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -85,6 +78,7 @@ public class UserServiceImpl implements UserService {
                     .significant(dto.getUserInfo().getSignificant())
                     .build());
 
+            AccountRoleModel accountRoleModel=accountRoleRepository.findByRoleId("UGL-11");
             UserTopModel savedUser = userTopRepository.save(UserTopModel.builder()
                     .employeeId(dto.getEmployeeId())
                     .email(dto.getEmail())
@@ -95,6 +89,7 @@ public class UserServiceImpl implements UserService {
                     .regNumberLat(EncryptionUtil.encrypt(dto.getRegNumberLat()))
                     .deleteFlag(false)
                     .userInfoModel(userInfoModel)
+                    .role(accountRoleModel)
                     .build());
 
             List<UserEducationModel> educationEntities = dto.getEducation().stream()

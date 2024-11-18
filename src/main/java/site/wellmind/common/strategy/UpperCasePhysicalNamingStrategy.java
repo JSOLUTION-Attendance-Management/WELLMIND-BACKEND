@@ -3,8 +3,6 @@ package site.wellmind.common.strategy;
 import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
-import site.wellmind.user.repository.UserTopRepository;
-import site.wellmind.user.service.UserService;
 
 /**
  * UpperCasePhysicalNamingStrategy

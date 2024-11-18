@@ -47,12 +47,18 @@ public class AdminTopModel extends BaseModel {
     @Pattern(regexp = "[NM]",message = "authType must be 'N' or 'M'")
     private String authType="M";
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "AUTH_ADMIN_LEVEL_CODE_ID")
-    private AdminRole authAdminLevelCodeId;
+    @Column(name = "ADMIN_ROLE_LEVEL",unique = true,nullable = false)
+    private Integer adminRoleLevel;
+
+    @Column(name="ADMIN_LEVEL_CODE_ID",length = 50)
+    private String authAdminLevelCodeId;
 
     @Builder.Default
     @Column(name = "DELETE_FLAG")
     private Boolean deleteFlag= false;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "ROLE_IDX", nullable = false)
+    private AccountRoleModel role;
 
 }

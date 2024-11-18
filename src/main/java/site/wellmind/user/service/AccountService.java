@@ -7,7 +7,7 @@ import site.wellmind.user.domain.dto.UserDto;
 import site.wellmind.user.domain.model.UserTopModel;
 
 /**
- * UserService
+ * AccountService
  * <p>User Service Interface</p>
  * @since 2024-10-08
  * @version 1.0
@@ -15,7 +15,7 @@ import site.wellmind.user.domain.model.UserTopModel;
  * @see CommandService
  * @see UserDto
  */
-public interface UserService extends CommandService<UserDto>, QueryService<UserDto> {
+public interface AccountService extends CommandService<UserDto>, QueryService<UserDto> {
     default UserTopModel dtoToEntity(UserTopModel dto){
         return UserTopModel.builder()
                 .employeeId(dto.getEmployeeId())

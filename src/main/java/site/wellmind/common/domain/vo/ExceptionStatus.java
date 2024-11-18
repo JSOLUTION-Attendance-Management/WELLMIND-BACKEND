@@ -2,8 +2,6 @@ package site.wellmind.common.domain.vo;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
-import site.wellmind.user.repository.UserTopRepository;
-import site.wellmind.user.service.UserService;
 
 /**
  * ExceptionStatus

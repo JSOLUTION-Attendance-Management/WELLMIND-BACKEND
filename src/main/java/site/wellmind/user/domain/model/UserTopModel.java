@@ -66,6 +66,10 @@ public class UserTopModel extends BaseModel {
     @JoinColumn(name = "USERINFO_IDX",referencedColumnName = "USERINFO_IDX")
     private UserInfoModel userInfoModel;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "ROLE_IDX", nullable = false)
+    private AccountRoleModel role;
+
     // ====================== transfer ========================
     @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TransferModel> transferIds;

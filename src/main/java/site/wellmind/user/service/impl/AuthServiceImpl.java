@@ -34,9 +34,6 @@ import java.util.Optional;
 @Slf4j
 public class AuthServiceImpl implements AuthService {
 
-    @Value("${app.domain}")
-    private String deployUrl;
-
     private final RestTemplate restTemplate;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordTokenProvider passwordTokenProvider;

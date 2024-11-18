@@ -219,9 +219,9 @@ public class JwtTokenProvider {
                     .employeeId(employeeId)
                     .id(id)
                     .authType("M")
-                    .authAdminLevelCodeId( "ROLE_ADMIN_UBL_55".equals(roles) ? AdminRole.UBL_55 :
-                            "ROLE_ADMIN_UBL_66".equals(roles) ? AdminRole.UBL_66 :
-                                    AdminRole.UML_77)
+                    .authAdminLevelCodeId( "ROLE_ADMIN_UBL_55".equals(roles) ? "UBL_55" :
+                            "ROLE_ADMIN_UBL_66".equals(roles) ?  "UBL_66" :
+                                    "UML_77")
                     .build());
         }
     }

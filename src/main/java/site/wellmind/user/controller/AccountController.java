@@ -13,9 +13,7 @@ import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
 import site.wellmind.common.service.MailService;
 import site.wellmind.user.domain.dto.UserDto;
-import site.wellmind.user.service.UserService;
-
-import java.util.Map;
+import site.wellmind.user.service.AccountService;
 
 /**
  * User Controller
@@ -28,12 +26,12 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/account")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*", allowedHeaders = "*")
-public class UserController {
+public class AccountController {
 
-    private final UserService userService;
+    private final AccountService userService;
     private final MailService mailService;
     @PostMapping("/register")
     public ResponseEntity<Messenger> register(@RequestBody UserDto dto) throws MessagingException {
