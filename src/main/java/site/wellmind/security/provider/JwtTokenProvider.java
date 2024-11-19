@@ -12,16 +12,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
-import site.wellmind.common.domain.vo.AdminRole;
 import site.wellmind.common.domain.vo.ExceptionStatus;
-import site.wellmind.common.domain.vo.Role;
 import site.wellmind.common.exception.GlobalException;
 import site.wellmind.security.domain.model.AccountTokenModel;
 import site.wellmind.security.domain.model.PrincipalAdminDetails;
 import site.wellmind.security.domain.model.PrincipalUserDetails;
 import site.wellmind.security.domain.vo.TokenStatus;
-import site.wellmind.security.handler.CustomAuthenticationFailureHandler;
-import site.wellmind.security.handler.CustomAuthenticationSuccessHandler;
 import site.wellmind.security.repository.AccountTokenRepository;
 import site.wellmind.user.domain.model.AdminTopModel;
 import site.wellmind.user.domain.model.UserTopModel;
@@ -76,7 +72,7 @@ public class JwtTokenProvider {
         return rolesString != null ? Arrays.asList(rolesString.split(",")) : Collections.emptyList();
     }
 
-    Long extractId(String jwt){
+    public Long extractId(String jwt){
         return extractClaim(jwt,i->i.get("id",Long.class));
     }
     private <T> T extractClaim(String jwt, Function<Claims,T> claimsResolver){
@@ -115,7 +111,7 @@ public class JwtTokenProvider {
         String username;
 
         if(principal instanceof PrincipalUserDetails principalUserDetails){
-            roles="ROLE_USER";
+            roles="ROLE_USER_UGL_11";
             id=principalUserDetails.getUser().getId();
             username=principalUserDetails.getUsername();
         }else if (principal instanceof PrincipalAdminDetails principalAdminDetails){
@@ -130,7 +126,7 @@ public class JwtTokenProvider {
 
         String token=Jwts.builder()
                 .claims(extractClaims)    // JWT 에 포함된 다양한 사용자 정보와 메타데이터를 담음
-                .subject(username)  //사용자를 식별하는 주요 정보
+                .subject(username)  //사용자를 식별하는 주요 정보, username : employeeId
                 .issuer(issuer)
                 .claim("roles",roles)
                 .claim("id",id)
@@ -145,10 +141,7 @@ public class JwtTokenProvider {
                             .employeeId(username)
                             .token(token)
                             .tokenStatus(TokenStatus.VALID)
-                            .roles("ROLE_USER".equals(roles) ? Role.ROLE_USER :
-                                    "ROLE_ADMIN_UBL_55".equals(roles) ? Role.ROLE_ADMIN_UBL_55 :
-                                    "ROLE_ADMIN_UBL_66".equals(roles) ? Role.ROLE_ADMIN_UBL_66 :
-                                    Role.ROLE_ADMIN_UML_77)
+                            .roles(roles)
                             .expirationTime(LocalDateTime.now().plusSeconds(refreshTokenExpired))
                     .build());
         }
@@ -177,7 +170,7 @@ public class JwtTokenProvider {
     private Boolean isTokenExpired(String token){
         try{
             Date expiration=extractClaim(token,Claims::getExpiration);
-            boolean isExpired=expiration.before(Date.from(Instant.now()));
+            boolean isExpired=expiration.before(new Date());
             if(isExpired){
                 expireToken(token);
             }
@@ -208,7 +201,8 @@ public class JwtTokenProvider {
         Long id=extractId(jwt);
         String employeeId = extractEmployeeId(jwt);
 
-        if("ROLE_USER".equals(roles)){
+        log.info("roles: {}",roles);
+        if("ROLE_USER_UGL_11".equals(roles)){
             return new PrincipalUserDetails(UserTopModel.builder()
                     .employeeId(employeeId)
                     .id(id)
@@ -219,9 +213,7 @@ public class JwtTokenProvider {
                     .employeeId(employeeId)
                     .id(id)
                     .authType("M")
-                    .authAdminLevelCodeId( "ROLE_ADMIN_UBL_55".equals(roles) ? "UBL_55" :
-                            "ROLE_ADMIN_UBL_66".equals(roles) ?  "UBL_66" :
-                                    "UML_77")
+                    .authAdminLevelCodeId(roles)
                     .build());
         }
     }

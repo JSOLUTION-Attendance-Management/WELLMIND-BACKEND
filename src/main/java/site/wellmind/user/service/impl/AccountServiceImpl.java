@@ -18,14 +18,12 @@ import site.wellmind.transfer.domain.model.QPositionModel;
 import site.wellmind.transfer.domain.model.QTransferModel;
 import site.wellmind.user.domain.dto.*;
 import site.wellmind.user.domain.model.*;
-import site.wellmind.user.repository.AccountRoleRepository;
-import site.wellmind.user.repository.UserEducationRepository;
-import site.wellmind.user.repository.UserInfoRepository;
-import site.wellmind.user.repository.UserTopRepository;
+import site.wellmind.user.repository.*;
 import site.wellmind.user.service.AccountService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -49,6 +47,7 @@ public class AccountServiceImpl implements AccountService {
     private final UserInfoRepository userInfoRepository;
     private final UserEducationRepository userEducationRepository;
     private final AccountRoleRepository accountRoleRepository;
+    private final AdminTopRepository adminTopRepository;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -128,7 +127,7 @@ public class AccountServiceImpl implements AccountService {
         if (existById(id)){
            userTopRepository.deleteById(id);
         }else{
-            throw new GlobalException(ExceptionStatus.USER_NOT_FOUND,"USERTOP_IDX not found");
+            throw new GlobalException(ExceptionStatus.ACCOUNT_NOT_FOUND,"USERTOP_IDX not found");
         }
 
     }
@@ -139,36 +138,78 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public UserDto findById(Long id) {
-        UserTopModel userTopModel = userTopRepository.findById(id)
-                .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND, ExceptionStatus.USER_NOT_FOUND.getMessage()));
-        UserInfoModel userInfoModel = userTopModel.getUserInfoModel();
-        List<UserEducationModel> userEducations = userTopModel.getUserEduIds();
+    public UserDto findById(Long id,Long currentAccountId,boolean isAdmin) {
 
-        return UserDto.builder()
-                .id(userTopModel.getId())
-                .email(userTopModel.getEmail())
-                .phoneNum(userTopModel.getPhoneNum())
-                .name(userTopModel.getName())
-                .authType(userTopModel.getAuthType())
-                .regNumberFor(userTopModel.getRegNumberFor())
-                .regNumberLat(userTopModel.getRegNumberLat())
-                .employeeId(userTopModel.getRegNumberLat())
-                .userInfo(UserInfoDto.builder()
-                        .photo(userInfoModel.getPhoto())
-                        .address(userInfoModel.getAddress())
-                        .significant(userInfoModel.getSignificant())
-                        .isLong(userInfoModel.isLong())
-                        .hobby(userInfoModel.getHobby())
-                        .build())
-                .education(userEducations.stream()
-                        .map(edu -> EducationDto.builder()
-                                .degree(edu.getDegree())
-                                .institutionName(edu.getInstitutionName())
-                                .major(edu.getMajor())
-                                .build())
-                        .collect(Collectors.toList()))
-                .build();
+        if(!isAdmin){
+            UserTopModel userTopModel = userTopRepository.findById(currentAccountId)
+                    .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND, ExceptionStatus.USER_NOT_FOUND.getMessage()));
+            UserInfoModel userInfoModel = userTopModel.getUserInfoModel();
+            List<UserEducationModel> userEducations = userTopModel.getUserEduIds();
+
+            return UserDto.builder()
+                    .id(userTopModel.getId())
+                    .email(userTopModel.getEmail())
+                    .phoneNum(userTopModel.getPhoneNum())
+                    .name(userTopModel.getName())
+                    .authType(userTopModel.getAuthType())
+                    //.regNumberFor(EncryptionUtil.decrypt(userTopModel.getRegNumberFor()))
+                    //.regNumberLat(EncryptionUtil.decrypt(userTopModel.getRegNumberLat()))
+                    .employeeId(userTopModel.getRegNumberLat())
+                    .userInfo(UserInfoDto.builder()
+                            .photo(userInfoModel.getPhoto())
+                            .address(userInfoModel.getAddress())
+                            .significant(userInfoModel.getSignificant())
+                            .isLong(userInfoModel.isLong())
+                            .hobby(userInfoModel.getHobby())
+                            .build())
+                    .education(userEducations.stream()
+                            .map(edu -> EducationDto.builder()
+                                    .degree(edu.getDegree())
+                                    .institutionName(edu.getInstitutionName())
+                                    .major(edu.getMajor())
+                                    .build())
+                            .collect(Collectors.toList()))
+                    .build();
+        }else{
+            AdminTopModel adminTopModel;
+
+            if(id==null){
+                adminTopModel = adminTopRepository.findById(currentAccountId)
+                        .orElseThrow(() -> new GlobalException(ExceptionStatus.ADMIN_NOT_FOUND, ExceptionStatus.ADMIN_NOT_FOUND.getMessage()));
+            }else{
+                adminTopModel = adminTopRepository.findById(id)
+                        .orElseThrow(() -> new GlobalException(ExceptionStatus.ADMIN_NOT_FOUND, ExceptionStatus.ADMIN_NOT_FOUND.getMessage()));
+
+            }
+
+            UserInfoModel userInfoModel = adminTopModel.getUserInfoModel();
+            List<UserEducationModel> userEducations = adminTopModel.getUserEduIds();
+
+            return UserDto.builder()
+                    .id(adminTopModel.getId())
+                    .email(adminTopModel.getEmail())
+                    .phoneNum(adminTopModel.getPhoneNum())
+                    .name(adminTopModel.getName())
+                    .authType(adminTopModel.getAuthType())
+                    //.regNumberFor(adminTopModel.getRegNumberFor())
+                    //.regNumberLat(adminTopModel.getRegNumberLat())
+                    .employeeId(adminTopModel.getRegNumberLat())
+                    .userInfo(UserInfoDto.builder()
+                            .photo(userInfoModel.getPhoto())
+                            .address(userInfoModel.getAddress())
+                            .significant(userInfoModel.getSignificant())
+                            .isLong(userInfoModel.isLong())
+                            .hobby(userInfoModel.getHobby())
+                            .build())
+                    .education(userEducations.stream()
+                            .map(edu -> EducationDto.builder()
+                                    .degree(edu.getDegree())
+                                    .institutionName(edu.getInstitutionName())
+                                    .major(edu.getMajor())
+                                    .build())
+                            .collect(Collectors.toList()))
+                    .build();
+        }
 
     }
 

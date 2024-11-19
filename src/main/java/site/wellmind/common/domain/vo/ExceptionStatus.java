@@ -23,9 +23,12 @@ public enum ExceptionStatus {
     NO_VALID_TOKEN(HttpStatus.NOT_FOUND, "No valid token found for the provided employee ID", 4042),
     INVALID_SIGNATURE(HttpStatus.UNAUTHORIZED,"Invalid Token Signature",4103),
     MALFORMED_TOKEN(HttpStatus.BAD_REQUEST, "Malformed Token", 4104),
-    NO_PERMISSION(HttpStatus.FORBIDDEN, "No Permission",403),
+    NO_PERMISSION(HttpStatus.FORBIDDEN, "Access Denied",403),
 
-    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "User or Admin not found with the provided employee ID", 4041),
+    ACCOUNT_NOT_FOUND(HttpStatus.NOT_FOUND, "User or Admin not found with the provided employee ID", 4041),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "User is not found with the provided employee ID", 4041),
+    ADMIN_NOT_FOUND(HttpStatus.NOT_FOUND, "Admin is not found with the provided employee ID", 4041),
+    ALREADY_LOGGED_IN(HttpStatus.CONFLICT, "User is already logged in",409),
     INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "Invalid username or password", 4011),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error",500),
     ;

@@ -1,17 +1,21 @@
 package site.wellmind.user.controller;
 
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import site.wellmind.common.domain.dto.Messenger;
 import site.wellmind.common.domain.vo.SuccessStatus;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
 import site.wellmind.common.service.MailService;
+import site.wellmind.security.provider.JwtTokenProvider;
 import site.wellmind.user.domain.dto.UserDto;
 import site.wellmind.user.service.AccountService;
 
@@ -26,13 +30,14 @@ import site.wellmind.user.service.AccountService;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/account")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*", allowedHeaders = "*")
-public class AccountController {
+public class  AccountController {
 
     private final AccountService userService;
     private final MailService mailService;
+    private final JwtTokenProvider jwtTokenProvider;
     @PostMapping("/register")
     public ResponseEntity<Messenger> register(@RequestBody UserDto dto) throws MessagingException {
 
@@ -77,11 +82,35 @@ public class AccountController {
 
     //jwt 에서 id 꺼내는 형식으로 바꾸기
     @GetMapping("/find-by-id")
-    public ResponseEntity<Messenger> findById(@RequestParam("id") Long id){
+    public ResponseEntity<Messenger> findById(@RequestParam(value="id",required = false) Long id,HttpServletRequest request){
+        Long currentAccountId= jwtTokenProvider.extractId(
+                jwtTokenProvider.getCookieValue(request,"accessToken")
+        );
+        log.info("findById {}",currentAccountId);
+
+        boolean isAdmin= SecurityContextHolder.getContext().getAuthentication()
+                .getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().startsWith("ROLE_ADMIN"));
+
+        if(!isAdmin && id!=null){
+            return ResponseEntity.status(ExceptionStatus.NO_PERMISSION.getHttpStatus()).
+                    body(Messenger.builder()
+                            .message("User can only access their own information.")
+                            .build());
+        }
+
+        if(currentAccountId==null){
+            return ResponseEntity.status(ExceptionStatus.ACCOUNT_NOT_FOUND.getHttpStatus()).
+                    body(Messenger.builder()
+                            .message(ExceptionStatus.ACCOUNT_NOT_FOUND.getMessage())
+                            .build());
+        }
+
+
         return ResponseEntity.ok(
                 Messenger.builder()
                         .message("user findById : "+SuccessStatus.OK.getMessage())
-                        .data(userService.findById(id))
+                        .data(userService.findById(id,currentAccountId,isAdmin))
                         .build()
         );
     }

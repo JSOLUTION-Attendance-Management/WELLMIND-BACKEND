@@ -28,6 +28,10 @@ public class UserEducationModel extends BaseModel {
     private String institutionName;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "USER_IDX", nullable = false)
+    @JoinColumn(name = "USER_IDX", nullable = true)
     private UserTopModel userTopModel;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ADMIN_IDX", nullable = true)
+    private AdminTopModel adminTopModel;
 }

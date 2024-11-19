@@ -1,5 +1,6 @@
 package site.wellmind.user.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,7 +31,7 @@ import site.wellmind.user.service.AuthService;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/public")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class AuthController {
@@ -62,6 +63,7 @@ public class AuthController {
         return authService.refresh(request);
     }
 
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request){
         return authService.logout(request);

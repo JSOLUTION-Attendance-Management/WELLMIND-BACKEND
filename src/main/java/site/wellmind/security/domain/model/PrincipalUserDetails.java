@@ -35,14 +35,11 @@ public class PrincipalUserDetails implements UserDetails {
     public PrincipalUserDetails(UserTopModel user){
         this.user=user;
     }
-    public PrincipalUserDetails(UserTopModel user,Map<String,Object> attributes){
-        this.user=user;
-        this.attributes=attributes;
-    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        authorities.add(new SimpleGrantedAuthority("ROLE_USER_UGL_11"));
         return authorities;
     }
 
