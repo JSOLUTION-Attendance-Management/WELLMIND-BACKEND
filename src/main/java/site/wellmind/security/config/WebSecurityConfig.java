@@ -21,6 +21,7 @@ import site.wellmind.security.handler.CustomAuthenticationEntryPoint;
 import site.wellmind.security.handler.CustomAuthenticationFailureHandler;
 import site.wellmind.security.handler.CustomAuthenticationSuccessHandler;
 import site.wellmind.security.provider.JwtTokenProvider;
+import site.wellmind.security.util.RoleManager;
 
 import java.util.List;
 
@@ -42,9 +43,13 @@ public class WebSecurityConfig {
     private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
     private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
     private final JwtTokenProvider jwtTokenProvider;
+    private final RoleManager roleManager;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
+    private static final String[] AUTH_BLACKLIST={
+          "/api/auth"
+    };
     private static final String[] AUTH_WHITELIST = {
             "/", "/home",
             "/api/v1/member/**", "/swagger-ui/**", "/api-docs", "/swagger-ui.html",
@@ -58,12 +63,13 @@ public class WebSecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .formLogin(form -> form.disable())
                 .httpBasic(AbstractHttpConfigurer::disable)  //jwt 사용으로 HTTP 기본 인증 필요 x
-                .addFilterBefore(new JwtAuthorizationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthorizationFilter(jwtTokenProvider,roleManager), UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling((exceptionHandling) ->
                         exceptionHandling
                                 .authenticationEntryPoint(customAuthenticationEntryPoint)
                                 .accessDeniedHandler(customAccessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(AUTH_BLACKLIST).authenticated()
                         .requestMatchers(AUTH_WHITELIST).permitAll()
                         .anyRequest().permitAll()
                 )

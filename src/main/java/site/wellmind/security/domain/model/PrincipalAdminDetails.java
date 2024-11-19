@@ -35,14 +35,10 @@ public class PrincipalAdminDetails implements UserDetails {
     public PrincipalAdminDetails(AdminTopModel admin){
         this.admin=admin;
     }
-    public PrincipalAdminDetails(AdminTopModel admin,Map<String,Object> attributes){
-        this.admin=admin;
-        this.attributes=attributes;
-    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
 
         // 관리자 권한 추가
         switch (admin.getAuthAdminLevelCodeId()) {

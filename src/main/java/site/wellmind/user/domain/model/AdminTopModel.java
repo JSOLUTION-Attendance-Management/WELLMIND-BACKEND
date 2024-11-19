@@ -7,6 +7,7 @@ import site.wellmind.common.domain.model.BaseModel;
 import site.wellmind.common.domain.vo.AdminRole;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -25,7 +26,8 @@ public class AdminTopModel extends BaseModel {
     @Column(name = "ADMIN_EMPLOYEE_ID",unique = true,nullable = false)
     private String employeeId;
 
-    @Column(name = "ADMIN_EMAIL",unique = true,nullable = false)
+    @Column(name = "ADMIN_EMAIL",unique = false,nullable = false)
+    //@Column(name = "ADMIN_EMAIL",unique = true,nullable = false)
     private String email;
 
     @Column(name = "ADMIN_PASSWORD", unique = true)
@@ -60,5 +62,12 @@ public class AdminTopModel extends BaseModel {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ROLE_IDX", nullable = false)
     private AccountRoleModel role;
+
+    @OneToMany(mappedBy = "adminTopModel",cascade = CascadeType.ALL,orphanRemoval = true)
+    private List<UserEducationModel> userEduIds;
+
+    @OneToOne
+    @JoinColumn(name = "USERINFO_IDX",referencedColumnName = "USERINFO_IDX")
+    private UserInfoModel userInfoModel;
 
 }

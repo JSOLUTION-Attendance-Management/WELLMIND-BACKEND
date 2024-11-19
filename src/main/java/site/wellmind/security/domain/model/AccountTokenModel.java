@@ -36,9 +36,8 @@ public class AccountTokenModel extends BaseModel {
     @Column(name = "ACCOUNT_TOKEN",nullable = false)
     private String token;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "ACCOUNT_TOKEN_ROLE")
-    private Role roles;
+    private String roles;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "ACCOUNT_TOKEN_STATUS")

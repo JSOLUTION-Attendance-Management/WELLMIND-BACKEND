@@ -14,11 +14,14 @@ import site.wellmind.common.domain.dto.Messenger;
 import site.wellmind.common.domain.dto.TokenValidationRequestDto;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
+import site.wellmind.security.domain.model.AccountTokenModel;
 import site.wellmind.security.domain.model.PrincipalAdminDetails;
 import site.wellmind.security.domain.model.PrincipalUserDetails;
+import site.wellmind.security.domain.vo.TokenStatus;
 import site.wellmind.security.provider.JwtTokenProvider;
 import site.wellmind.security.domain.dto.LoginDto;
 import site.wellmind.security.provider.PasswordTokenProvider;
+import site.wellmind.security.repository.AccountTokenRepository;
 import site.wellmind.user.domain.dto.PasswordSetupRequestDto;
 import site.wellmind.user.domain.model.AdminTopModel;
 import site.wellmind.user.domain.model.UserTopModel;
@@ -40,12 +43,18 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserTopRepository userTopRepository;
     private final AdminTopRepository adminTopRepository;
+    private final AccountTokenRepository accountTokenRepository;
     private final PasswordEncoder passwordEncoder;
     @Override
     @Transactional
     public ResponseEntity<Messenger> localLogin(LoginDto dto) {
         String employeeId=dto.getEmployeeId();
-        String password= dto.getPassword();;
+        String password= dto.getPassword();
+        Optional<AccountTokenModel> accountTokenModel=accountTokenRepository.findByEmployeeIdAndTokenStatus(employeeId, TokenStatus.VALID);
+        if(!accountTokenModel.isEmpty()){
+            throw new GlobalException(ExceptionStatus.ALREADY_LOGGED_IN,ExceptionStatus.ALREADY_LOGGED_IN.getMessage());
+        }
+
         Optional<UserTopModel> user=userTopRepository.findByEmployeeId(employeeId);
         Optional<AdminTopModel> admin=adminTopRepository.findByEmployeeId(employeeId);
 
