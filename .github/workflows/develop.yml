@@ -1,4 +1,4 @@
-name: JSolution-Attendance-Management Backend develop GitHub Actions
+gname: JSolution-Attendance-Management Backend develop GitHub Actions
 
 on:
   push:
