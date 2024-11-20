@@ -3,6 +3,7 @@ package site.wellmind.log.domain.model;
 import jakarta.persistence.*;
 import lombok.*;
 import site.wellmind.common.domain.model.BaseModel;
+import site.wellmind.user.domain.model.AdminTopModel;
 import site.wellmind.user.domain.model.UserTopModel;
 
 @Entity
@@ -19,6 +20,10 @@ public class LogArchiveLoginModel extends BaseModel {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "USER_IDX",nullable = false)
+    @JoinColumn(name = "USER_IDX", referencedColumnName = "USER_EMPLOYEE_ID",nullable = false)
     private UserTopModel userId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ADMIN_IDX", referencedColumnName = "ADMIN_EMPLOYEE_ID",nullable = false)
+    private AdminTopModel adminId;
 }

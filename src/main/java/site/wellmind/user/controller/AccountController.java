@@ -15,8 +15,10 @@ import site.wellmind.common.domain.vo.SuccessStatus;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
 import site.wellmind.common.service.MailService;
+import site.wellmind.security.annotation.CurrentAccount;
 import site.wellmind.security.annotation.CurrentAccountId;
 import site.wellmind.security.provider.JwtTokenProvider;
+import site.wellmind.user.domain.dto.AccountDto;
 import site.wellmind.user.domain.dto.UserDto;
 import site.wellmind.user.service.AccountService;
 
@@ -88,15 +90,10 @@ public class AccountController {
     @GetMapping("/find-by-id")
     public ResponseEntity<Messenger> findById(
             @RequestParam(value = "id", required = false) Long id,
-            @CurrentAccountId Long currentAccountId,
-            HttpServletRequest request
+            @CurrentAccount AccountDto accountDto
     ) {
-
-        log.info("findById {}", currentAccountId);
-
-        boolean isAdmin = SecurityContextHolder.getContext().getAuthentication()
-                .getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().startsWith("ROLE_ADMIN"));
+        boolean isAdmin = accountDto.isAdmin();
+        Long currentAccountId=accountDto.getAccountId();
 
         if (!isAdmin && id != null) {
             return ResponseEntity.status(ExceptionStatus.NO_PERMISSION.getHttpStatus()).
@@ -104,14 +101,6 @@ public class AccountController {
                             .message("User can only access their own information.")
                             .build());
         }
-
-        if (currentAccountId == null) {
-            return ResponseEntity.status(ExceptionStatus.ACCOUNT_NOT_FOUND.getHttpStatus()).
-                    body(Messenger.builder()
-                            .message(ExceptionStatus.ACCOUNT_NOT_FOUND.getMessage())
-                            .build());
-        }
-
 
         return ResponseEntity.ok(
                 Messenger.builder()

@@ -4,6 +4,7 @@ import org.springframework.data.domain.Pageable;
 import site.wellmind.common.service.CommandService;
 import site.wellmind.common.service.QueryService;
 import site.wellmind.user.domain.dto.UserDto;
+import site.wellmind.user.domain.model.AdminTopModel;
 import site.wellmind.user.domain.model.UserTopModel;
 
 import java.util.Optional;
@@ -51,7 +52,8 @@ public interface AccountService extends CommandService<UserDto>, QueryService<Us
     Boolean existByEmail(String email);
     Boolean existByEmployeeId(String employeeId);
 
-    Optional<UserTopModel> findByEmployeeId(String employeeId);
+    Optional<UserTopModel> findUserByEmployeeId(String employeeId);
+    Optional<AdminTopModel> findAdminByEmployeeId(String employeeId);
     Page<UserDto> findBy(String departName, String positionName, String name, Pageable pageable);
 
     Boolean modifyByPassword(String oldPassword, String newPassword);
