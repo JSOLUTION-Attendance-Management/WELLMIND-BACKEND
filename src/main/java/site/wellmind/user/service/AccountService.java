@@ -6,6 +6,8 @@ import site.wellmind.common.service.QueryService;
 import site.wellmind.user.domain.dto.UserDto;
 import site.wellmind.user.domain.model.UserTopModel;
 
+import java.util.Optional;
+
 /**
  * AccountService
  * <p>User Service Interface</p>
@@ -49,6 +51,7 @@ public interface AccountService extends CommandService<UserDto>, QueryService<Us
     Boolean existByEmail(String email);
     Boolean existByEmployeeId(String employeeId);
 
+    Optional<UserTopModel> findByEmployeeId(String employeeId);
     Page<UserDto> findBy(String departName, String positionName, String name, Pageable pageable);
 
     Boolean modifyByPassword(String oldPassword, String newPassword);

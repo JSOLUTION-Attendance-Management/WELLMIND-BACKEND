@@ -3,6 +3,7 @@ package site.wellmind.log.domain.model;
 import jakarta.persistence.*;
 import lombok.*;
 import site.wellmind.common.domain.model.BaseModel;
+import site.wellmind.user.domain.model.AdminTopModel;
 import site.wellmind.user.domain.model.UserTopModel;
 
 import java.time.LocalDateTime;
@@ -20,9 +21,6 @@ public class LogArchiveUpdateModel extends BaseModel{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "UPDATE_BY_IDX")
-    private Long updateById;
-
     @Lob
     @Column(name="PREVIOUS_VALUE")
     private String previousValue;
@@ -32,8 +30,11 @@ public class LogArchiveUpdateModel extends BaseModel{
     private String newValue;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "USER_IDX",nullable = false)
-    private UserTopModel userId;
-    
+    @JoinColumn(name = "UPDATED_IDX", referencedColumnName = "USER_EMPLOYEE_ID",nullable = false)
+    private UserTopModel userId;   //조회 대상
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "UPDATER_IDX", referencedColumnName = "ADMIN_EMPLOYEE_ID",nullable = false)
+    private AdminTopModel adminId;  //조회한 사람
     
 }

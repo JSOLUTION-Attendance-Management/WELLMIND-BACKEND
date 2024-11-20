@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import site.wellmind.common.domain.model.BaseModel;
 import site.wellmind.log.domain.vo.DeleteStatus;
+import site.wellmind.user.domain.model.AdminTopModel;
 import site.wellmind.user.domain.model.UserTopModel;
 
 import java.time.LocalDateTime;
@@ -22,9 +23,6 @@ public class LogArchiveDeleteModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "ACTION_BY_IDX")
-    private Long actionById;
-
     @Column(name = "DELETE_TYPE")
     private DeleteStatus deleteType;
 
@@ -32,7 +30,11 @@ public class LogArchiveDeleteModel {
     private LocalDateTime actionDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "USER_IDX",nullable = false)
-    private UserTopModel userId;
+    @JoinColumn(name = "DELETED_IDX", referencedColumnName = "USER_EMPLOYEE_ID",nullable = false)
+    private UserTopModel userId;   //조회 대상
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "DELETER_IDX", referencedColumnName = "ADMIN_EMPLOYEE_ID",nullable = false)
+    private AdminTopModel adminId;  //조회한 사람
 
 }
