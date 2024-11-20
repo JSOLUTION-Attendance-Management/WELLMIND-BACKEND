@@ -270,6 +270,11 @@ public class AccountServiceImpl implements AccountService {
         return userTopRepository.existsByEmployeeId(employeeId);
     }
 
+    @Override
+    public Optional<UserTopModel> findByEmployeeId(String employeeId) {
+        return userTopRepository.findByEmployeeId(employeeId);
+    }
+
 
     @Override
     public Page<UserDto> findBy(String departName, String positionName, String name, Pageable pageable) {
