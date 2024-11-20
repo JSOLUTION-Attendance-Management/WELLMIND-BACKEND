@@ -5,6 +5,7 @@ import lombok.*;
 import site.wellmind.common.domain.model.BaseModel;
 import site.wellmind.log.converter.AttendanceStatusConverter;
 import site.wellmind.log.domain.vo.ReportAttendanceStatus;
+import site.wellmind.user.domain.model.AdminTopModel;
 import site.wellmind.user.domain.model.UserTopModel;
 
 import java.util.List;
@@ -31,14 +32,15 @@ public class LogArchiveReportModel extends BaseModel {
     @Column(name = "REPORT_SUMMARY")
     private String summary;
 
-    @Column(name = "MANAGER_IDX")
-    private Long managerId;
-
     @Convert(converter = AttendanceStatusConverter.class)
     @Column(name = "REPORT_USER_TYPE")
     private List<ReportAttendanceStatus> userType;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "USER_IDX",nullable = false)
-    private UserTopModel userId;
+    @JoinColumn(name = "REPORTED_IDX", referencedColumnName = "USER_EMPLOYEE_ID",nullable = false)
+    private UserTopModel userId;   //조회 대상
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "REPORTER_IDX", referencedColumnName = "ADMIN_EMPLOYEE_ID",nullable = false)
+    private AdminTopModel adminId;  //조회한 사람
 }

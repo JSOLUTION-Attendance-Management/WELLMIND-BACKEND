@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import site.wellmind.common.domain.model.BaseModel;
 import site.wellmind.common.domain.vo.AdminRole;
+import site.wellmind.log.domain.model.LogArchiveViewModel;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -59,6 +60,8 @@ public class AdminTopModel extends BaseModel {
     @Column(name = "DELETE_FLAG")
     private Boolean deleteFlag= false;
 
+    // ====================== user ========================
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ROLE_IDX", nullable = false)
     private AccountRoleModel role;
@@ -69,5 +72,9 @@ public class AdminTopModel extends BaseModel {
     @OneToOne
     @JoinColumn(name = "USERINFO_IDX",referencedColumnName = "USERINFO_IDX")
     private UserInfoModel userInfoModel;
+
+    // ====================== log ========================
+    @OneToMany(mappedBy = "adminId",cascade = CascadeType.MERGE,orphanRemoval = false)
+    private List<LogArchiveViewModel> viewLogIds;
 
 }
