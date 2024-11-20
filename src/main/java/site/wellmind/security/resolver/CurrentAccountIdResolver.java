@@ -13,8 +13,10 @@ import site.wellmind.security.provider.JwtTokenProvider;
 
 /**
  * CurrentAccountIdResolver
- * <p>jwt에서 USER_IDX 또는 ADMIN_IDX 를 추출하도록 하는 Argument Resolver</p>
+ * <p>CurrentAccountId Custom Annotation 을 위한 Argument Resolver</p>
  *
+ *
+ * @see CurrentAccountId
  * @author Yuri Seok(tjrdbfl)
  * @version 1.0
  * @since 2024-11-20
