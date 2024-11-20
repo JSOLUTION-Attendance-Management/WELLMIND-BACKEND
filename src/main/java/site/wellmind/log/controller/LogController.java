@@ -9,6 +9,9 @@ import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.log.domain.dto.LogViewDto;
 import site.wellmind.log.domain.dto.ViewReasonDto;
 import site.wellmind.log.service.LogViewService;
+import site.wellmind.security.annotation.CurrentAccount;
+import site.wellmind.user.domain.dto.AccountDto;
+import site.wellmind.user.domain.model.AdminTopModel;
 import site.wellmind.user.domain.model.UserTopModel;
 import site.wellmind.user.service.AccountService;
 
@@ -34,16 +37,16 @@ public class LogController {
     private final AccountService accountService;
 
     @PostMapping("/view/register")
-    public ResponseEntity<Messenger> modifyByPassword(@RequestBody ViewReasonDto dto){
-        String viewedId=dto.getViewerId();
+    public ResponseEntity<Messenger> registerViewLog(@RequestBody ViewReasonDto viewReasonDto, @CurrentAccount AccountDto accountDto){
+        String viewedId=viewReasonDto.getViewerId();
 
-        if(viewedId.isEmpty() || dto.getViewReason().isEmpty()){
+        if(viewedId.isEmpty() || viewReasonDto.getViewReason().isEmpty()){
             return ResponseEntity.status(ExceptionStatus.INVALID_INPUT.getHttpStatus())
                     .body(Messenger.builder()
                             .message(ExceptionStatus.BAD_REQUEST.getMessage()).build());
         }
 
-        Optional<UserTopModel> userTopModel=accountService.findByEmployeeId(viewedId);
+        Optional<UserTopModel> userTopModel=accountService.findUserByEmployeeId(viewedId);
         if(userTopModel.isEmpty()){
             return ResponseEntity.status(ExceptionStatus.USER_NOT_FOUND.getHttpStatus())
                     .body(Messenger.builder()
@@ -51,11 +54,20 @@ public class LogController {
 
         }
 
+        Optional<AdminTopModel> adminTopModel=accountService.findAdminByEmployeeId(accountDto.getEmployeeId());
+        if(adminTopModel.isEmpty()){
+            return ResponseEntity.status(ExceptionStatus.ADMIN_NOT_FOUND.getHttpStatus())
+                    .body(Messenger.builder()
+                            .message(ExceptionStatus.ADMIN_NOT_FOUND.getMessage()).build());
+
+        }
+
         LogViewDto savedLog=viewLogService.save(LogViewDto.builder()
-                .viewReason(dto.getViewReason())
+                .viewReason(viewReasonDto.getViewReason())
                 .userId(userTopModel.get())
-                //.adminId()
+                .adminId(adminTopModel.get())
                 .build());
+
         return ResponseEntity.ok(Messenger.builder()
                 .state(savedLog!=null).build());
     }

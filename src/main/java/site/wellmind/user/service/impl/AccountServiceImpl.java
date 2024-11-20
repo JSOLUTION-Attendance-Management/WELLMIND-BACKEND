@@ -271,8 +271,13 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Optional<UserTopModel> findByEmployeeId(String employeeId) {
+    public Optional<UserTopModel> findUserByEmployeeId(String employeeId) {
         return userTopRepository.findByEmployeeId(employeeId);
+    }
+
+    @Override
+    public Optional<AdminTopModel> findAdminByEmployeeId(String employeeId) {
+        return adminTopRepository.findByEmployeeId(employeeId);
     }
 
 

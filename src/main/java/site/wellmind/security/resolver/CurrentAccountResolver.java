@@ -3,12 +3,15 @@ package site.wellmind.security.resolver;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
+import site.wellmind.common.domain.dto.Messenger;
+import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.security.annotation.CurrentAccount;
 import site.wellmind.security.provider.JwtTokenProvider;
 import site.wellmind.user.domain.dto.AccountDto;
@@ -42,6 +45,13 @@ public class CurrentAccountResolver implements HandlerMethodArgumentResolver {
         boolean isAdmin = SecurityContextHolder.getContext().getAuthentication()
                 .getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().startsWith("ROLE_ADMIN"));
+
+        if (accountId == null) {
+            return ResponseEntity.status(ExceptionStatus.ACCOUNT_NOT_FOUND.getHttpStatus()).
+                    body(Messenger.builder()
+                            .message(ExceptionStatus.ACCOUNT_NOT_FOUND.getMessage())
+                            .build());
+        }
 
         return AccountDto.builder()
                 .accountId(accountId)

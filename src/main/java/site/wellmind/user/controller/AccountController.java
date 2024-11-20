@@ -102,13 +102,6 @@ public class AccountController {
                             .build());
         }
 
-        if (currentAccountId == null) {
-            return ResponseEntity.status(ExceptionStatus.ACCOUNT_NOT_FOUND.getHttpStatus()).
-                    body(Messenger.builder()
-                            .message(ExceptionStatus.ACCOUNT_NOT_FOUND.getMessage())
-                            .build());
-        }
-
         return ResponseEntity.ok(
                 Messenger.builder()
                         .message("user findById : " + SuccessStatus.OK.getMessage())

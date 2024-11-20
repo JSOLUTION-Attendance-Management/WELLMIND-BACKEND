@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Setter
 @Getter
+@Builder
 @Table(name="jsol_logarchive_view")
 @ToString(exclude = {"id"})
 public class LogArchiveViewModel extends BaseModel {
