@@ -2,9 +2,9 @@ name: JSolution-Attendance-Management Backend develop GitHub Actions
 
 on:
   push:
-    branches: [ "main","develop","dev/feat/user","dev/feat/attend" ]
+    branches: [ "develop","dev/feat/user","dev/feat/attend" ]
   pull_request:
-    branches: [ "main","develop" ]
+    branches: [ "develop" ]
 
 jobs:
   build:
