@@ -262,6 +262,16 @@ public class AccountServiceImpl implements AccountService {
         return null;
     }
 
+    @Override
+    public Object findProfileById(Long currentAccountId, boolean isAdmin) {
+        if(isAdmin){
+            UserTopModel userTopModel = userTopRepository.findById(currentAccountId)
+                    .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND, ExceptionStatus.USER_NOT_FOUND.getMessage()));
+        }
+
+        return null;
+    }
+
     private void validateUserDto(UserDto dto) {
         if (dto.getEmployeeId().isEmpty() || dto.getPassword().isEmpty()) {
             throw new GlobalException(ExceptionStatus.INVALID_INPUT, "employeeeId or password cannot be empty");

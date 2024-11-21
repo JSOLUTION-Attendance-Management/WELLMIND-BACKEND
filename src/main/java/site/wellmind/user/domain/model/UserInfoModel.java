@@ -1,9 +1,12 @@
 package site.wellmind.user.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 import site.wellmind.common.domain.model.BaseModel;
 import site.wellmind.user.domain.vo.AddressVO;
+
+import java.time.LocalDateTime;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -39,5 +42,9 @@ public class UserInfoModel extends BaseModel {
     @Builder.Default
     @Column(name = "USER_IS_LONG")
     private boolean isLong=false;
+
+    @Column(name = "HIRE_DATE")
+    @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+    private LocalDateTime hireDate;
 
 }

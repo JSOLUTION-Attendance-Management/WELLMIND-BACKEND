@@ -14,8 +14,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ProfileDto {
     private String employeeId;
-    private String name;
     private String email;
+    private String name;
+    private String departName;
     private String phoneNum;
     private String photo;
     private Boolean deleteFlag;

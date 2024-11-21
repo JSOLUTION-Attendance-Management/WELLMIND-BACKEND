@@ -132,5 +132,7 @@ public interface AccountService extends CommandService<UserDto>, QueryService<Us
     Page<UserDto> findBy(String departName, String positionName, String name, Pageable pageable);
 
     Boolean modifyByPassword(String oldPassword, String newPassword);
+
+    Object findProfileById(Long currentAccountId, boolean isAdmin);
 }
 
