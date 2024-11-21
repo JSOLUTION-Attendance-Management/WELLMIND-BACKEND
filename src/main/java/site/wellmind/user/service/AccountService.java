@@ -6,6 +6,7 @@ import site.wellmind.common.service.CommandService;
 import site.wellmind.common.service.QueryService;
 import site.wellmind.security.util.EncryptionUtil;
 import site.wellmind.user.domain.dto.EducationDto;
+import site.wellmind.user.domain.dto.ProfileDto;
 import site.wellmind.user.domain.dto.UserDto;
 import site.wellmind.user.domain.dto.UserInfoDto;
 import site.wellmind.user.domain.model.*;
@@ -133,6 +134,6 @@ public interface AccountService extends CommandService<UserDto>, QueryService<Us
 
     Boolean modifyByPassword(String oldPassword, String newPassword);
 
-    Object findProfileById(Long currentAccountId, boolean isAdmin);
+    ProfileDto findProfileById(Long currentAccountId, boolean isAdmin);
 }
 

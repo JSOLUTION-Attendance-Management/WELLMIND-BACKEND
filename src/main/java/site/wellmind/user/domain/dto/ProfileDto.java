@@ -5,9 +5,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import site.wellmind.user.domain.vo.AddressVO;
 
 import java.time.LocalDateTime;
-
+/**
+ * ProfileDto
+ * <p>Profile Data Transfer Object</p>
+ * @since 2024-11-21
+ * @version 1.0
+ * @author Yuri Seok(tjrdbfl)
+ */
 @Data
 @Builder
 @AllArgsConstructor
@@ -16,11 +23,12 @@ public class ProfileDto {
     private String employeeId;
     private String email;
     private String name;
-    private String departName;
     private String phoneNum;
-    private String photo;
-    private Boolean deleteFlag;
-    @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
-    private LocalDateTime regDate;
     private String authType;
+
+    private String photo;
+    private AddressVO address;
+
+    private String departName;
+    private String positionName;
 }

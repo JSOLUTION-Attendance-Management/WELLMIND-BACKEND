@@ -6,6 +6,7 @@ import lombok.*;
 import site.wellmind.common.domain.model.BaseModel;
 import site.wellmind.common.domain.vo.AdminRole;
 import site.wellmind.log.domain.model.*;
+import site.wellmind.transfer.domain.model.TransferModel;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -73,6 +74,10 @@ public class AdminTopModel extends BaseModel {
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "USERINFO_IDX", referencedColumnName = "USERINFO_IDX")
     private UserInfoModel userInfoModel;
+
+    // ====================== transfer ========================
+    @OneToMany(mappedBy = "adminId", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
+    private List<TransferModel> transferIds;
 
     // ====================== log ========================
     @OneToMany(mappedBy = "adminId", cascade = CascadeType.MERGE, orphanRemoval = false)

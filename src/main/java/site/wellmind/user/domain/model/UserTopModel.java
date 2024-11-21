@@ -72,7 +72,7 @@ public class UserTopModel extends BaseModel {
     private AccountRoleModel role;
 
     // ====================== transfer ========================
-    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
     private List<TransferModel> transferIds;
 
     // ====================== attend ========================

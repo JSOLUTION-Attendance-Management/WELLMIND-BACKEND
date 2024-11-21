@@ -16,6 +16,7 @@ import site.wellmind.security.util.EncryptionUtil;
 import site.wellmind.transfer.domain.model.QDepartmentModel;
 import site.wellmind.transfer.domain.model.QPositionModel;
 import site.wellmind.transfer.domain.model.QTransferModel;
+import site.wellmind.transfer.domain.model.TransferModel;
 import site.wellmind.user.domain.dto.*;
 import site.wellmind.user.domain.model.*;
 import site.wellmind.user.repository.*;
@@ -263,13 +264,41 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Object findProfileById(Long currentAccountId, boolean isAdmin) {
-        if(isAdmin){
+    public ProfileDto findProfileById(Long currentAccountId, boolean isAdmin) {
+        if(!isAdmin){
             UserTopModel userTopModel = userTopRepository.findById(currentAccountId)
                     .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND, ExceptionStatus.USER_NOT_FOUND.getMessage()));
-        }
+            UserInfoModel userInfoModel=userTopModel.getUserInfoModel();
+            TransferModel transferModel= userTopModel.getTransferIds().get(0);
 
-        return null;
+            return ProfileDto.builder()
+                    .email(userTopModel.getEmail())
+                    .employeeId(userTopModel.getEmployeeId())
+                    .name(userTopModel.getName())
+                    .phoneNum(userTopModel.getPhoneNum())
+                    .authType("N")
+                    .address(userInfoModel.getAddress())
+                    .photo(userInfoModel.getPhoto())
+                    .departName(transferModel.getDepartment().getName())
+                    .positionName(transferModel.getPosition().getName())
+                    .build();
+        }
+        AdminTopModel adminTopModel=adminTopRepository.findById(currentAccountId)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.ADMIN_NOT_FOUND, ExceptionStatus.ADMIN_NOT_FOUND.getMessage()));
+        UserInfoModel userInfoModel=adminTopModel.getUserInfoModel();
+        TransferModel transferModel= adminTopModel.getTransferIds().get(0);
+
+        return ProfileDto.builder()
+                .email(adminTopModel.getEmail())
+                .employeeId(adminTopModel.getEmployeeId())
+                .name(adminTopModel.getName())
+                .phoneNum(adminTopModel.getPhoneNum())
+                .authType("M")
+                .address(userInfoModel.getAddress())
+                .photo(userInfoModel.getPhoto())
+                .departName(transferModel.getDepartment().getName())
+                .positionName(transferModel.getPosition().getName())
+                .build();
     }
 
     private void validateUserDto(UserDto dto) {
