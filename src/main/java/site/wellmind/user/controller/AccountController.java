@@ -84,20 +84,16 @@ public class AccountController {
     }
     @GetMapping("/profile/find-by-id")
     public ResponseEntity<Messenger> profileFindById(HttpServletRequest request) {
-//        AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
-//        boolean isAdmin = accountDto.isAdmin();
-//        Long currentAccountId=accountDto.getAccountId();
-//
-//        if (!isAdmin && id != null) {
-//            return ResponseEntity.status(ExceptionStatus.NO_PERMISSION.getHttpStatus()).
-//                    body(Messenger.builder()
-//                            .message("User can only access their own information.")
-//                            .build());
-//        }
+        AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
+        boolean isAdmin = accountDto.isAdmin();
+        Long currentAccountId=accountDto.getAccountId();
+
+        log.info("AccountController isAdmin :{}",isAdmin);
 
         return ResponseEntity.ok(
                 Messenger.builder()
                         .message("user findById : " + SuccessStatus.OK.getMessage())
+                        .data(accountService.findProfileById(currentAccountId,isAdmin))
                         .build()
         );
     }

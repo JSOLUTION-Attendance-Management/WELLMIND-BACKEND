@@ -3,8 +3,8 @@ package site.wellmind.user.domain.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
-import site.wellmind.attend.domain.model.AttendanceQrModel;
-import site.wellmind.attend.domain.model.AttendanceRecordModel;
+import site.wellmind.attend.domain.model.AttendQrModel;
+import site.wellmind.attend.domain.model.AttendRecordModel;
 import site.wellmind.common.domain.model.BaseModel;
 import site.wellmind.log.domain.model.*;
 import site.wellmind.transfer.domain.model.TransferModel;
@@ -77,10 +77,10 @@ public class UserTopModel extends BaseModel {
 
     // ====================== attend ========================
     @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AttendanceQrModel> qrTokenIds;
+    private List<AttendQrModel> qrTokenIds;
 
     @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AttendanceRecordModel> recordIds;
+    private List<AttendRecordModel> recordIds;
 
     // ====================== log ========================
     @OneToMany(mappedBy = "userId",cascade = CascadeType.MERGE,orphanRemoval = false)
