@@ -20,7 +20,8 @@ import java.util.List;
 @Setter
 @Getter
 @Table(name = "jsol_usertop")
-@ToString(exclude = {"id"})
+@ToString(exclude = {"id", "userEduIds", "userInfoModel", "role", "transferIds", "qrTokenIds", "recordIds",
+        "viewLogIds", "updateLogIds", "loginLogIds", "deleteLogIds", "reportLogIds"})
 public class UserTopModel extends BaseModel {
 
     @Id
@@ -59,10 +60,10 @@ public class UserTopModel extends BaseModel {
 
     // ====================== user ========================
 
-    @OneToMany(mappedBy = "userTopModel",cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany(mappedBy = "userTopModel",cascade = CascadeType.ALL,orphanRemoval = true,fetch = FetchType.EAGER)
     private List<UserEducationModel> userEduIds;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "USERINFO_IDX",referencedColumnName = "USERINFO_IDX")
     private UserInfoModel userInfoModel;
 

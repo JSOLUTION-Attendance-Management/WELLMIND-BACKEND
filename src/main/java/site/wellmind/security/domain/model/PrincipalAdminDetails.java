@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,6 +29,7 @@ import java.util.Map;
 @Getter
 @Setter
 @RequiredArgsConstructor
+@Slf4j(topic = "PrincipalAdminDetails")
 public class PrincipalAdminDetails implements UserDetails {
     private AdminTopModel admin;
     private Map<String,Object> attributes;
@@ -39,14 +41,21 @@ public class PrincipalAdminDetails implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> authorities = new ArrayList<>();
+        String authLevel = admin.getAuthAdminLevelCodeId();
+        authLevel = authLevel.replaceAll("[\\[\\]]", "");
+        log.info("AuthAdminLevelCodeId without brackets: {}", authLevel);
 
         // 관리자 권한 추가
-        switch (admin.getAuthAdminLevelCodeId()) {
-            case "UML_77" -> authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN_UML_77"));
-            case "UBL_66" -> authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN_UBL_66"));
-            case "UBL_55" -> authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN_UBL_55"));
+        switch (authLevel) {
+            case "ROLE_ADMIN_UML_77" -> authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN_UML_77"));
+            case "ROLE_ADMIN_UBL_66" -> authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN_UBL_66"));
+            case "ROLE_ADMIN_UBL_55" -> authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN_UBL_55"));
+            default -> log.warn("Unknown AuthAdminLevelCodeId: {}", authLevel);
         }
 
+        log.info("getAuthAdminLevelCodeId authorities : {}",authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList());
         return authorities;
     }
 

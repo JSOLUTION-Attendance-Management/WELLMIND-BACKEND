@@ -7,8 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import site.wellmind.common.domain.dto.Messenger;
 import site.wellmind.common.domain.vo.SuccessStatus;
@@ -16,7 +14,6 @@ import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
 import site.wellmind.common.service.MailService;
 import site.wellmind.security.annotation.CurrentAccount;
-import site.wellmind.security.annotation.CurrentAccountId;
 import site.wellmind.security.provider.JwtTokenProvider;
 import site.wellmind.user.domain.dto.AccountDto;
 import site.wellmind.user.domain.dto.UserDto;
@@ -32,14 +29,14 @@ import site.wellmind.user.service.AccountService;
  * @version 1.0
  * @since 2024-10-08
  */
-@Slf4j
+@Slf4j(topic = "AccountController")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class AccountController {
 
-    private final AccountService userService;
+    private final AccountService accountService;
     private final MailService mailService;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -47,7 +44,7 @@ public class AccountController {
     public ResponseEntity<Messenger> register(@RequestBody UserDto dto) throws MessagingException {
 
         try {
-            UserDto savedUser = userService.save(dto);
+            UserDto savedUser = accountService.save(dto);
             log.info("mail register : {}, {}", savedUser.getEmail(), savedUser.getEmployeeId());
             try {
                 mailService.sendPasswordSetupEmail(savedUser.getEmail(), savedUser.getEmployeeId());
@@ -73,7 +70,7 @@ public class AccountController {
         return ResponseEntity.ok(Messenger
                 .builder()
                 .message("user existByEmployeeId 조회 결과")
-                .state(userService.existByEmployeeId(employeeId))
+                .state(accountService.existByEmployeeId(employeeId))
                 .build());
     }
 
@@ -82,20 +79,40 @@ public class AccountController {
         return ResponseEntity.ok(Messenger
                 .builder()
                 .message("user findAll : " + SuccessStatus.OK.getMessage())
-                .data(userService.findAll())
+                .data(accountService.findAll())
                 .build());
     }
+    @GetMapping("/profile/find-by-id")
+    public ResponseEntity<Messenger> profileFindById(HttpServletRequest request) {
+//        AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
+//        boolean isAdmin = accountDto.isAdmin();
+//        Long currentAccountId=accountDto.getAccountId();
+//
+//        if (!isAdmin && id != null) {
+//            return ResponseEntity.status(ExceptionStatus.NO_PERMISSION.getHttpStatus()).
+//                    body(Messenger.builder()
+//                            .message("User can only access their own information.")
+//                            .build());
+//        }
 
-    //jwt 에서 id 꺼내는 형식으로 바꾸기
+        return ResponseEntity.ok(
+                Messenger.builder()
+                        .message("user findById : " + SuccessStatus.OK.getMessage())
+                        .build()
+        );
+    }
+
     @GetMapping("/find-by-id")
     public ResponseEntity<Messenger> findById(
-            @RequestParam(value = "id", required = false) Long id,
-            @CurrentAccount AccountDto accountDto
+            @RequestParam(value = "employeeId", required = false) String employeeId, HttpServletRequest request
     ) {
+        AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
         boolean isAdmin = accountDto.isAdmin();
         Long currentAccountId=accountDto.getAccountId();
 
-        if (!isAdmin && id != null) {
+        log.info("AccountController isAdmin :{}",isAdmin);
+
+        if (!isAdmin && employeeId != null) {
             return ResponseEntity.status(ExceptionStatus.NO_PERMISSION.getHttpStatus()).
                     body(Messenger.builder()
                             .message("User can only access their own information.")
@@ -105,24 +122,24 @@ public class AccountController {
         return ResponseEntity.ok(
                 Messenger.builder()
                         .message("user findById : " + SuccessStatus.OK.getMessage())
-                        .data(userService.findById(id, currentAccountId, isAdmin))
+                        .data(accountService.findById(employeeId, currentAccountId, isAdmin))
                         .build()
         );
     }
 
-    @GetMapping("/findBy")
+    @GetMapping("/find-by")
     public ResponseEntity<Page<UserDto>> findBy(@RequestParam(value = "departName", required = false) String departName,
                                                 @RequestParam(value = "positionName", required = false) String positionName,
                                                 @RequestParam(value = "name", required = false) String name,
                                                 Pageable pageable) {
-        return ResponseEntity.ok(userService.findBy(departName, positionName, name, pageable));
+        return ResponseEntity.ok(accountService.findBy(departName, positionName, name, pageable));
     }
 
     @GetMapping("/exist-by-email")
     public ResponseEntity<Messenger> existByEmail(@RequestParam("email") String email) {
         return ResponseEntity.ok(Messenger.builder()
                 .message("user existByEmail : " + SuccessStatus.OK.getMessage())
-                .state(userService.existByEmail(email))
+                .state(accountService.existByEmail(email))
                 .build());
     }
 
@@ -131,7 +148,7 @@ public class AccountController {
                                                       @RequestParam("newPassword") String newPassword) {
         return ResponseEntity.ok(Messenger.builder()
                 .message("user modifyByPassword : " + SuccessStatus.OK.name())
-                .state(userService.modifyByPassword(oldPassword, newPassword))
+                .state(accountService.modifyByPassword(oldPassword, newPassword))
                 .build());
     }
 

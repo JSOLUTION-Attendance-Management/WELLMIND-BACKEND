@@ -10,7 +10,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
@@ -27,6 +30,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+
 /**
  * JwtTokenProvider
  * <p>Handles JWT token generation, validation, and management.</p>
@@ -37,7 +42,7 @@ import java.util.function.Function;
  * @see PrincipalAdminDetails
  * @since 2024-11-10
  */
-@Slf4j
+@Slf4j(topic = "JwtTokenProvider")
 @Service
 @RequiredArgsConstructor
 public class JwtTokenProvider {
@@ -69,11 +74,29 @@ public class JwtTokenProvider {
     @SuppressWarnings("unchecked")
     public List<String> extractRoles(String jwt){
         String rolesString = extractClaim(jwt, claims -> claims.get("roles", String.class));
+        rolesString = rolesString.replaceAll("[\\[\\]]", "");
+
+        log.info("extractRoles: {}",rolesString);
+        log.info("extractRoles: {}",Arrays.asList(rolesString.split(",")));
         return rolesString != null ? Arrays.asList(rolesString.split(",")) : Collections.emptyList();
     }
 
     public Long extractId(String jwt){
         return extractClaim(jwt,i->i.get("id",Long.class));
+    }
+
+    public Authentication getAuthentication(String token){
+        Claims claims=extractAllClaims(token);
+        String username=claims.getSubject();
+        // roles 문자열에서 불필요한 공백이나 괄호 제거
+        List<GrantedAuthority> authorities = Arrays.stream(claims.get("roles").toString()
+                        .replace("[", "") // 괄호 제거
+                        .replace("]", "") // 괄호 제거
+                        .split(","))
+                .map(String::trim) // 불필요한 공백 제거
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+        return new UsernamePasswordAuthenticationToken(username,null,authorities);
     }
     private <T> T extractClaim(String jwt, Function<Claims,T> claimsResolver){
         return claimsResolver.apply(extractAllClaims(jwt));
@@ -120,6 +143,8 @@ public class JwtTokenProvider {
                     .toList().toString();
             id=principalAdminDetails.getAdmin().getId();
             username=principalAdminDetails.getUsername();
+
+            log.info("generate token roles : {}",roles);
         }else{
             throw new GlobalException(ExceptionStatus.BAD_REQUEST, "Invalid principal type: unable to generate token");
         }
@@ -201,7 +226,6 @@ public class JwtTokenProvider {
         Long id=extractId(jwt);
         String employeeId = extractEmployeeId(jwt);
 
-        log.info("roles: {}",roles);
         if("ROLE_USER_UGL_11".equals(roles)){
             return new PrincipalUserDetails(UserTopModel.builder()
                     .employeeId(employeeId)

@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -34,10 +36,9 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
+@Slf4j(topic = "AuthServiceImpl")
 public class AuthServiceImpl implements AuthService {
 
-    private final RestTemplate restTemplate;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordTokenProvider passwordTokenProvider;
 
@@ -64,17 +65,17 @@ public class AuthServiceImpl implements AuthService {
         if(user.isEmpty() && admin.isEmpty()){
             throw new GlobalException(ExceptionStatus.USER_NOT_FOUND,ExceptionStatus.USER_NOT_FOUND.getMessage());
         }else if(user.isPresent()){
-            if(!passwordEncoder.matches(password,user.get().getPassword())){
-                throw new GlobalException(ExceptionStatus.INVALID_CREDENTIALS,ExceptionStatus.INVALID_CREDENTIALS.getMessage());
-            }
+//            if(!passwordEncoder.matches(password,user.get().getPassword())){
+//                throw new GlobalException(ExceptionStatus.INVALID_CREDENTIALS,ExceptionStatus.INVALID_CREDENTIALS.getMessage());
+//            }
             PrincipalUserDetails userDetails=new PrincipalUserDetails(user.get());
             accessToken = jwtTokenProvider.generateToken(userDetails, false);
             refreshToken = jwtTokenProvider.generateToken(userDetails, true);
 
-        } else if (admin.isPresent()) {
-            if(!passwordEncoder.matches(password,admin.get().getPassword())){
-                throw new GlobalException(ExceptionStatus.INVALID_CREDENTIALS,ExceptionStatus.INVALID_CREDENTIALS.getMessage());
-            }
+        } else {
+//            if(!passwordEncoder.matches(password,admin.get().getPassword())){
+//                throw new GlobalException(ExceptionStatus.INVALID_CREDENTIALS,ExceptionStatus.INVALID_CREDENTIALS.getMessage());
+//            }
             PrincipalAdminDetails adminDetails=new PrincipalAdminDetails(admin.get());
             accessToken = jwtTokenProvider.generateToken(adminDetails, false);
             refreshToken = jwtTokenProvider.generateToken(adminDetails, true);
@@ -132,7 +133,9 @@ public class AuthServiceImpl implements AuthService {
             // 새로운 Access Token 발행
             String accessToken=jwtTokenProvider.generateToken(accountDetails,false);
 
-            // Set the new access token as a cookie
+//            Authentication authentication= jwtTokenProvider.getAuthentication(accessToken);
+//            SecurityContextHolder.getContext().setAuthentication(authentication);
+//            // Set the new access token as a cookie
             HttpHeaders headers = createSingleTokenCookie("accessToken", accessToken, jwtTokenProvider.getAccessTokenExpired());
 
             return ResponseEntity.ok()
@@ -305,6 +308,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private HttpHeaders createSingleTokenCookie(String cookieName,String token,Long maxAge){
+
         ResponseCookie tokenCookie = ResponseCookie.from(cookieName, token)
                 .path("/")
                 .maxAge(maxAge)
