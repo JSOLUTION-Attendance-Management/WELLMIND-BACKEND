@@ -44,6 +44,7 @@ public class LogController {
         String viewedId=viewReasonDto.getViewerId();
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
 
+        log.info("accountDto:{}",accountDto);
         if(accountDto==null){
             return ResponseEntity.status(ExceptionStatus.UNAUTHORIZED.getHttpStatus())
                     .body(Messenger.builder()

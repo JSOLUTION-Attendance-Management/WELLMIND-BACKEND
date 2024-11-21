@@ -17,7 +17,8 @@ import java.util.List;
 @Setter
 @Getter
 @Table(name = "jsol_admintop")
-@ToString(exclude = {"id"})
+@ToString(exclude = {"id", "userEduIds", "userInfoModel", "role",
+        "viewLogIds", "updateLogIds", "loginLogIds", "deleteLogIds", "reportLogIds"})
 public class AdminTopModel extends BaseModel {
     @Id
     @Column(name = "ADMIN_IDX", nullable = false)
@@ -66,10 +67,10 @@ public class AdminTopModel extends BaseModel {
     @JoinColumn(name = "ROLE_IDX", nullable = false)
     private AccountRoleModel role;
 
-    @OneToMany(mappedBy = "adminTopModel", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "adminTopModel", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
     private List<UserEducationModel> userEduIds;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "USERINFO_IDX", referencedColumnName = "USERINFO_IDX")
     private UserInfoModel userInfoModel;
 

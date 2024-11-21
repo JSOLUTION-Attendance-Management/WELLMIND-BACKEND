@@ -9,7 +9,7 @@ import java.util.List;
  * @author Yuri Seok(tjrdbfl)
  */
 public interface QueryService<T> {
-    T findById(Long id,Long currentAccountId, boolean isAdmin);
+    T findById(String employeeId,Long currentAccountId, boolean isAdmin);
     List<T> findAll();
     boolean existById(Long id);
     Long count();

@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -34,7 +36,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
+@Slf4j(topic = "AuthServiceImpl")
 public class AuthServiceImpl implements AuthService {
 
     private final JwtTokenProvider jwtTokenProvider;
@@ -131,7 +133,9 @@ public class AuthServiceImpl implements AuthService {
             // 새로운 Access Token 발행
             String accessToken=jwtTokenProvider.generateToken(accountDetails,false);
 
-            // Set the new access token as a cookie
+//            Authentication authentication= jwtTokenProvider.getAuthentication(accessToken);
+//            SecurityContextHolder.getContext().setAuthentication(authentication);
+//            // Set the new access token as a cookie
             HttpHeaders headers = createSingleTokenCookie("accessToken", accessToken, jwtTokenProvider.getAccessTokenExpired());
 
             return ResponseEntity.ok()
@@ -304,6 +308,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private HttpHeaders createSingleTokenCookie(String cookieName,String token,Long maxAge){
+
         ResponseCookie tokenCookie = ResponseCookie.from(cookieName, token)
                 .path("/")
                 .maxAge(maxAge)

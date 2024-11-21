@@ -19,7 +19,8 @@ import java.util.List;
 @Builder
 @Setter
 @Getter
-@Table(name = "jsol_usertop")@ToString(exclude = {"id", "userEduIds", "userInfoModel", "role", "transferIds", "qrTokenIds", "recordIds",
+@Table(name = "jsol_usertop")
+@ToString(exclude = {"id", "userEduIds", "userInfoModel", "role", "transferIds", "qrTokenIds", "recordIds",
         "viewLogIds", "updateLogIds", "loginLogIds", "deleteLogIds", "reportLogIds"})
 public class UserTopModel extends BaseModel {
 
@@ -59,14 +60,14 @@ public class UserTopModel extends BaseModel {
 
     // ====================== user ========================
 
-    @OneToMany(mappedBy = "userTopModel",cascade = CascadeType.ALL,orphanRemoval = true,fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "userTopModel",cascade = CascadeType.ALL,orphanRemoval = true,fetch = FetchType.EAGER)
     private List<UserEducationModel> userEduIds;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "USERINFO_IDX",referencedColumnName = "USERINFO_IDX")
     private UserInfoModel userInfoModel;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ROLE_IDX", nullable = false)
     private AccountRoleModel role;
 

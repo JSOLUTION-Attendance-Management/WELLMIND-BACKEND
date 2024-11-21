@@ -48,12 +48,13 @@ public class WebSecurityConfig {
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     private static final String[] AUTH_BLACKLIST={
-          "/api/auth"
+          "/swagger-ui/index.html/api/auth/**","/swagger-ui/index.html/api/log/**"
     };
     private static final String[] AUTH_WHITELIST = {
-            "/", "/home",
+            "/swagger-ui/index.html/api/public/**",
             "/api/v1/member/**", "/swagger-ui/**", "/api-docs", "/swagger-ui.html",
-            "/v3/api-docs/**", "/api-docs/**", "/swagger-ui.html", "/api/v1/auth/**"
+            "/v3/api-docs/**", "/api-docs/**", "/swagger-ui.html", "/api/v1/auth/**",
+            "/swagger-ui/index.html"
     };
 
     @Bean
@@ -63,16 +64,16 @@ public class WebSecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .formLogin(form -> form.disable())
                 .httpBasic(AbstractHttpConfigurer::disable)  //jwt 사용으로 HTTP 기본 인증 필요 x
-                .addFilterBefore(new JwtAuthorizationFilter(jwtTokenProvider,roleManager), UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling((exceptionHandling) ->
-                        exceptionHandling
-                                .authenticationEntryPoint(customAuthenticationEntryPoint)
-                                .accessDeniedHandler(customAccessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(AUTH_BLACKLIST).authenticated()
                         .requestMatchers(AUTH_WHITELIST).permitAll()
                         .anyRequest().permitAll()
                 )
+                .addFilterBefore(new JwtAuthorizationFilter(jwtTokenProvider,roleManager), UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling((exceptionHandling) ->
+                        exceptionHandling
+                                .authenticationEntryPoint(customAuthenticationEntryPoint)
+                                .accessDeniedHandler(customAccessDeniedHandler))
                 .sessionManagement((sessionManagement) ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );

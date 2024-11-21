@@ -11,6 +11,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+import site.wellmind.common.domain.vo.ExceptionStatus;
+import site.wellmind.common.exception.GlobalException;
 import site.wellmind.security.provider.JwtTokenProvider;
 import site.wellmind.user.domain.dto.AccountDto;
 
@@ -23,7 +25,7 @@ import site.wellmind.user.domain.dto.AccountDto;
  * @version 1.0
  * @since 2024-11-09
  */
-@Slf4j
+@Slf4j(topic = "AuthenticationInterceptor")
 @Component
 @RequiredArgsConstructor
 public class AuthenticationInterceptor implements HandlerInterceptor {
@@ -32,9 +34,16 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String accessToken = jwtTokenProvider.getCookieValue(request, "accessToken");
 
+        if (accessToken == null || accessToken.isEmpty()) {
+            log.warn("Access token is missing.");
+            throw new GlobalException(ExceptionStatus.UNAUTHORIZED, "Access token is missing.");
+        }
+
         Long accountId = jwtTokenProvider.extractId(accessToken);
         String employeeId = jwtTokenProvider.extractEmployeeId(accessToken);
         String role = jwtTokenProvider.extractRoles(accessToken).toString();
+        role = role.replaceAll("[\\[\\]]", "");
+
         boolean isAdmin = SecurityContextHolder.getContext().getAuthentication()
                 .getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().startsWith("ROLE_ADMIN"));
