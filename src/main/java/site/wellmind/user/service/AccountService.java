@@ -49,6 +49,7 @@ public interface AccountService extends CommandService<UserDto>, QueryService<Us
                 .modDate(model.getModDate())
                 .build();
     }
+
     Boolean existByEmail(String email);
     Boolean existByEmployeeId(String employeeId);
 

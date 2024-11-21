@@ -1,5 +1,6 @@
 package site.wellmind.log.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import site.wellmind.log.domain.dto.LogViewDto;
 import site.wellmind.log.domain.dto.ViewReasonDto;
 import site.wellmind.log.service.LogViewService;
 import site.wellmind.security.annotation.CurrentAccount;
+import site.wellmind.security.provider.JwtTokenProvider;
 import site.wellmind.user.domain.dto.AccountDto;
 import site.wellmind.user.domain.model.AdminTopModel;
 import site.wellmind.user.domain.model.UserTopModel;
@@ -37,14 +39,24 @@ public class LogController {
     private final AccountService accountService;
 
     @PostMapping("/view/register")
-    public ResponseEntity<Messenger> registerViewLog(@RequestBody ViewReasonDto viewReasonDto, @CurrentAccount AccountDto accountDto){
+    public ResponseEntity<Messenger> registerViewLog(@RequestBody ViewReasonDto viewReasonDto, HttpServletRequest request){
+
         String viewedId=viewReasonDto.getViewerId();
+        AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
+
+        if(accountDto==null){
+            return ResponseEntity.status(ExceptionStatus.UNAUTHORIZED.getHttpStatus())
+                    .body(Messenger.builder()
+                            .message("Access token is missing or invalid.").build());
+
+        }
 
         if(viewedId.isEmpty() || viewReasonDto.getViewReason().isEmpty()){
             return ResponseEntity.status(ExceptionStatus.INVALID_INPUT.getHttpStatus())
                     .body(Messenger.builder()
                             .message(ExceptionStatus.BAD_REQUEST.getMessage()).build());
         }
+
 
         Optional<UserTopModel> userTopModel=accountService.findUserByEmployeeId(viewedId);
         if(userTopModel.isEmpty()){

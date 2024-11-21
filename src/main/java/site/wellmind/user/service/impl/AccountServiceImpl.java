@@ -53,6 +53,7 @@ public class AccountServiceImpl implements AccountService {
 
     private final JPAQueryFactory queryFactory;
     private final QUserTopModel qUserTop=QUserTopModel.userTopModel;
+    private final QAdminTopModel qAdminTop=QAdminTopModel.adminTopModel;
     private final QTransferModel qTransfer=QTransferModel.transferModel;
     private final QPositionModel qPosition=QPositionModel.positionModel;
     private final QDepartmentModel qDepartment=QDepartmentModel.departmentModel;
@@ -78,13 +79,14 @@ public class AccountServiceImpl implements AccountService {
                     .build());
 
             AccountRoleModel accountRoleModel=accountRoleRepository.findByRoleId("UGL-11");
+            //UserTopModel savedUser = userTopRepository.save(dtoToEntity(dto));
             UserTopModel savedUser = userTopRepository.save(UserTopModel.builder()
                     .employeeId(dto.getEmployeeId())
                     .email(dto.getEmail())
                     .name(dto.getName())
                     .phoneNum(dto.getPhoneNum())
                     .authType("N")
-                    .regNumberFor(EncryptionUtil.encrypt(dto.getRegNumberFor()))
+                                        .regNumberFor(EncryptionUtil.encrypt(dto.getRegNumberFor()))
                     .regNumberLat(EncryptionUtil.encrypt(dto.getRegNumberLat()))
                     .deleteFlag(false)
                     .userInfoModel(userInfoModel)
@@ -272,12 +274,12 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Optional<UserTopModel> findUserByEmployeeId(String employeeId) {
-        return userTopRepository.findByEmployeeId(employeeId);
+          return userTopRepository.findByEmployeeId(employeeId);
     }
 
     @Override
     public Optional<AdminTopModel> findAdminByEmployeeId(String employeeId) {
-        return adminTopRepository.findByEmployeeId(employeeId);
+       return adminTopRepository.findByEmployeeId(employeeId);
     }
 
 

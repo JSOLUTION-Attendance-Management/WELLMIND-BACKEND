@@ -19,9 +19,9 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Messenger> handleGeneralException(Exception ex){
+    public ResponseEntity<Messenger> handleGeneralException(String message){
         return ResponseEntity.status(ExceptionStatus.INTERNAL_SERVER_ERROR.getHttpStatus())
                 .body(Messenger.builder()
-                        .message(ExceptionStatus.INTERNAL_SERVER_ERROR.getMessage()).build());
+                        .message(message).build());
     }
 }

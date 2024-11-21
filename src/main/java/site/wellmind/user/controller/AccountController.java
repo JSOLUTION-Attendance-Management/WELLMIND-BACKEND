@@ -7,8 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import site.wellmind.common.domain.dto.Messenger;
 import site.wellmind.common.domain.vo.SuccessStatus;
@@ -16,7 +14,6 @@ import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
 import site.wellmind.common.service.MailService;
 import site.wellmind.security.annotation.CurrentAccount;
-import site.wellmind.security.annotation.CurrentAccountId;
 import site.wellmind.security.provider.JwtTokenProvider;
 import site.wellmind.user.domain.dto.AccountDto;
 import site.wellmind.user.domain.dto.UserDto;
@@ -89,9 +86,9 @@ public class AccountController {
     //jwt 에서 id 꺼내는 형식으로 바꾸기
     @GetMapping("/find-by-id")
     public ResponseEntity<Messenger> findById(
-            @RequestParam(value = "id", required = false) Long id,
-            @CurrentAccount AccountDto accountDto
+            @RequestParam(value = "id", required = false) Long id, HttpServletRequest request
     ) {
+        AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
         boolean isAdmin = accountDto.isAdmin();
         Long currentAccountId=accountDto.getAccountId();
 
@@ -110,7 +107,7 @@ public class AccountController {
         );
     }
 
-    @GetMapping("/findBy")
+    @GetMapping("/find-by")
     public ResponseEntity<Page<UserDto>> findBy(@RequestParam(value = "departName", required = false) String departName,
                                                 @RequestParam(value = "positionName", required = false) String positionName,
                                                 @RequestParam(value = "name", required = false) String name,

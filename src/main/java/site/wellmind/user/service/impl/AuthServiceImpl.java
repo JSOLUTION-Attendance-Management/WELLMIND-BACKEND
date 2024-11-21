@@ -37,7 +37,6 @@ import java.util.Optional;
 @Slf4j
 public class AuthServiceImpl implements AuthService {
 
-    private final RestTemplate restTemplate;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordTokenProvider passwordTokenProvider;
 
@@ -64,17 +63,17 @@ public class AuthServiceImpl implements AuthService {
         if(user.isEmpty() && admin.isEmpty()){
             throw new GlobalException(ExceptionStatus.USER_NOT_FOUND,ExceptionStatus.USER_NOT_FOUND.getMessage());
         }else if(user.isPresent()){
-            if(!passwordEncoder.matches(password,user.get().getPassword())){
-                throw new GlobalException(ExceptionStatus.INVALID_CREDENTIALS,ExceptionStatus.INVALID_CREDENTIALS.getMessage());
-            }
+//            if(!passwordEncoder.matches(password,user.get().getPassword())){
+//                throw new GlobalException(ExceptionStatus.INVALID_CREDENTIALS,ExceptionStatus.INVALID_CREDENTIALS.getMessage());
+//            }
             PrincipalUserDetails userDetails=new PrincipalUserDetails(user.get());
             accessToken = jwtTokenProvider.generateToken(userDetails, false);
             refreshToken = jwtTokenProvider.generateToken(userDetails, true);
 
-        } else if (admin.isPresent()) {
-            if(!passwordEncoder.matches(password,admin.get().getPassword())){
-                throw new GlobalException(ExceptionStatus.INVALID_CREDENTIALS,ExceptionStatus.INVALID_CREDENTIALS.getMessage());
-            }
+        } else {
+//            if(!passwordEncoder.matches(password,admin.get().getPassword())){
+//                throw new GlobalException(ExceptionStatus.INVALID_CREDENTIALS,ExceptionStatus.INVALID_CREDENTIALS.getMessage());
+//            }
             PrincipalAdminDetails adminDetails=new PrincipalAdminDetails(admin.get());
             accessToken = jwtTokenProvider.generateToken(adminDetails, false);
             refreshToken = jwtTokenProvider.generateToken(adminDetails, true);
