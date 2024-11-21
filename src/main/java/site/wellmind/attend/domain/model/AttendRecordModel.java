@@ -3,7 +3,7 @@ package site.wellmind.attend.domain.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import site.wellmind.attend.domain.vo.AttendanceStatus;
+import site.wellmind.attend.domain.vo.AttendStatus;
 import site.wellmind.common.domain.model.BaseModel;
 import site.wellmind.user.domain.model.UserTopModel;
 
@@ -15,7 +15,7 @@ import site.wellmind.user.domain.model.UserTopModel;
 @Getter
 @Table(name = "jsol_attendance_record")
 @ToString(exclude = {"id"})
-public class AttendanceRecordModel extends BaseModel {
+public class AttendRecordModel extends BaseModel {
     @Id
     @Column(name = "ATTEND_RECORD_IDX",nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +23,7 @@ public class AttendanceRecordModel extends BaseModel {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "ATTEND_STATUS")
-    private AttendanceStatus attendStatus;
+    private AttendStatus attendStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_IDX",nullable = false)

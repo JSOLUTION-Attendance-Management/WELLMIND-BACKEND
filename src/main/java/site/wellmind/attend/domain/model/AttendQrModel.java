@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Getter
 @Table(name = "jsol_attendance_qr")
 @ToString(exclude = {"id"})
-public class AttendanceQrModel extends BaseModel {
+public class AttendQrModel extends BaseModel {
     @Id
     @Column(name = "ATTEND_QR_IDX",nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
