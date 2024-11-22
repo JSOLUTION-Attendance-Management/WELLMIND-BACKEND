@@ -3,6 +3,8 @@ package site.wellmind.user.domain.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import site.wellmind.attend.domain.model.AttendQrModel;
+import site.wellmind.attend.domain.model.AttendRecordModel;
 import site.wellmind.common.domain.model.BaseModel;
 import site.wellmind.common.domain.vo.AdminRole;
 import site.wellmind.log.domain.model.*;
@@ -78,6 +80,13 @@ public class AdminTopModel extends BaseModel {
     // ====================== transfer ========================
     @OneToMany(mappedBy = "adminId", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
     private List<TransferModel> transferIds;
+
+    // ====================== attend ========================
+    @OneToMany(mappedBy = "adminId", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AttendQrModel> qrTokenIds;
+
+    @OneToMany(mappedBy = "adminId", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AttendRecordModel> recordIds;
 
     // ====================== log ========================
     @OneToMany(mappedBy = "viewerId", cascade = CascadeType.MERGE, orphanRemoval = false)
