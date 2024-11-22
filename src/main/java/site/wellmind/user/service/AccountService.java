@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import site.wellmind.common.service.CommandService;
 import site.wellmind.common.service.QueryService;
 import site.wellmind.security.util.EncryptionUtil;
+import site.wellmind.transfer.domain.model.TransferModel;
 import site.wellmind.user.domain.dto.EducationDto;
 import site.wellmind.user.domain.dto.ProfileDto;
 import site.wellmind.user.domain.dto.UserDto;
@@ -44,6 +45,9 @@ public interface AccountService extends CommandService<UserDto>, QueryService<Us
     default UserDto entityToDtoUserAll(UserTopModel model) {
         UserInfoModel userInfoModel = model.getUserInfoModel();
         List<UserEducationModel> userEducations = model.getUserEduIds();
+        TransferModel transferModel=model.getTransferIds().get(0);
+        String departName=transferModel.getDepartment().getName();
+        String positionName=transferModel.getPosition().getName();
 
         return UserDto.builder()
                 .id(model.getId())
@@ -51,8 +55,8 @@ public interface AccountService extends CommandService<UserDto>, QueryService<Us
                 .email(model.getEmail())
                 .name(model.getName())
                 .phoneNum(model.getPhoneNum())
-                .regNumberFor(model.getRegNumberFor())
-                .regNumberLat(model.getRegNumberLat())
+//                .regNumberFor(EncryptionUtil.decrypt(model.getRegNumberFor()))
+//                .regNumberLat(EncryptionUtil.decrypt(model.getRegNumberLat()))
                 .deleteFlag(model.getDeleteFlag())
                 .authType(model.getAuthType())
                 .regDate(model.getRegDate())
@@ -61,11 +65,16 @@ public interface AccountService extends CommandService<UserDto>, QueryService<Us
                 .education(userEducations.stream()
                         .map(this::entityToDtoUserEdu)
                         .collect(Collectors.toList()))
+                .departName(departName)
+                .positionName(positionName)
                 .build();
     }
     default UserDto entityToDtoUserAll(AdminTopModel model) {
         UserInfoModel userInfoModel = model.getUserInfoModel();
         List<UserEducationModel> userEducations = model.getUserEduIds();
+        TransferModel transferModel=model.getTransferIds().get(0);
+        String departName=transferModel.getDepartment().getName();
+        String positionName=transferModel.getPosition().getName();
 
         return UserDto.builder()
                 .id(model.getId())
@@ -73,8 +82,8 @@ public interface AccountService extends CommandService<UserDto>, QueryService<Us
                 .email(model.getEmail())
                 .name(model.getName())
                 .phoneNum(model.getPhoneNum())
-                .regNumberFor(model.getRegNumberFor())
-                .regNumberLat(model.getRegNumberLat())
+//                .regNumberFor(EncryptionUtil.decrypt(model.getRegNumberFor()))
+//                .regNumberLat(EncryptionUtil.decrypt(model.getRegNumberLat()))
                 .deleteFlag(model.getDeleteFlag())
                 .authType(model.getAuthType())
                 .regDate(model.getRegDate())
@@ -83,6 +92,8 @@ public interface AccountService extends CommandService<UserDto>, QueryService<Us
                 .education(userEducations.stream()
                         .map(this::entityToDtoUserEdu)
                         .collect(Collectors.toList()))
+                .departName(departName)
+                .positionName(positionName)
                 .build();
     }
 

@@ -49,7 +49,9 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             "/v3/api-docs/**", "/api-docs/**", "/swagger-ui.html", "/api/v1/auth/**",
             "/swagger-ui/index.html"
     );
-
+    private static final List<String> AUTH_BLACKLIST=Arrays.asList(
+            "/api/public/logout"
+    );
 
 
     @Override
@@ -57,7 +59,9 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         String path=request.getRequestURI();
         log.info("Request URI: {}", path);
 
-        if (AUTH_WHITELIST.stream().anyMatch(pattern -> pathMatcher.match(pattern, path))) {
+        if (AUTH_BLACKLIST.stream().anyMatch(pattern -> pathMatcher.match(pattern, path))) {
+            log.info("AUTH_BLACKLIST - Authentication required for this path");
+        } else if (AUTH_WHITELIST.stream().anyMatch(pattern -> pathMatcher.match(pattern, path))) {
             log.info("AUTH_WHITELIST");
             filterChain.doFilter(request,response);
             return;

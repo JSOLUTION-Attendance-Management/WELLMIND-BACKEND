@@ -113,7 +113,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public UserDto findById(String employeeId, Long currentAccountId, boolean isAdmin) {
+    public UserDto findById(String employeeId, Long currentAccountId, boolean isAdmin,String role) {
 
         if (!isAdmin) {
             UserTopModel userTopModel = userTopRepository.findById(currentAccountId)

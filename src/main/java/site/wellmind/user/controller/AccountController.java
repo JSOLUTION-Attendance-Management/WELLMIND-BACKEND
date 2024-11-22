@@ -105,6 +105,7 @@ public class AccountController {
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
         boolean isAdmin = accountDto.isAdmin();
         Long currentAccountId=accountDto.getAccountId();
+        String role=accountDto.getRole();
 
         log.info("AccountController isAdmin :{}",isAdmin);
 
@@ -118,7 +119,7 @@ public class AccountController {
         return ResponseEntity.ok(
                 Messenger.builder()
                         .message("user findById : " + SuccessStatus.OK.getMessage())
-                        .data(accountService.findById(employeeId, currentAccountId, isAdmin))
+                        .data(accountService.findById(employeeId, currentAccountId, isAdmin,role))
                         .build()
         );
     }

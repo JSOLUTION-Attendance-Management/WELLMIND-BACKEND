@@ -18,7 +18,7 @@ import java.util.List;
 @Setter
 @Getter
 @Table(name = "jsol_admintop")
-@ToString(exclude = {"id", "userEduIds", "userInfoModel", "role",
+@ToString(exclude = {"id", "userEduIds", "userInfoModel", "role","transferIds",
         "viewLogIds", "updateLogIds", "loginLogIds", "deleteLogIds", "reportLogIds"})
 public class AdminTopModel extends BaseModel {
     @Id
