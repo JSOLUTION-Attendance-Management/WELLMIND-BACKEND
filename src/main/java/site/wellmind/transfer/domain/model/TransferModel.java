@@ -3,6 +3,7 @@ package site.wellmind.transfer.domain.model;
 import jakarta.persistence.*;
 import lombok.*;
 import site.wellmind.common.domain.model.BaseModel;
+import site.wellmind.user.domain.model.AdminTopModel;
 import site.wellmind.user.domain.model.UserTopModel;
 
 @Entity
@@ -19,19 +20,19 @@ public class TransferModel extends BaseModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "test")
-    private String test;
-
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "USER_IDX", nullable = false)
+    @JoinColumn(name = "USER_IDX", nullable = true)  // null 허용
     private UserTopModel userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ADMIN_IDX", nullable = true)  // null 허용
+    private AdminTopModel adminId;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "DEPART_IDX",nullable = false)
     private DepartmentModel department;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "POSITION_IDX",nullable = false)
     private PositionModel position;
 }

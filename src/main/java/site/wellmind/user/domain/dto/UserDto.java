@@ -43,6 +43,9 @@ public class UserDto {
     //UserEducationModel
     private List<EducationDto> education;
 
+    private String departName;
+    private String positionName;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     private LocalDateTime regDate;
     @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")

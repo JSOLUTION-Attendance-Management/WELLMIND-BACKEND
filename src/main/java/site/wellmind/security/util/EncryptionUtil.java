@@ -2,90 +2,73 @@ package site.wellmind.security.util;
 
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.nio.ByteBuffer;
+import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Base64;
 
 public class EncryptionUtil {
-    private static final String AES="AES";
-    private static final SecretKey secretKey=createSecretKey();
+    private static final String AES = "AES";
+    private static final String AES_TRANSFORMATION = "AES/CBC/PKCS5Padding";
+    @Value("${jwt.secret}")
+    private static String secretKey;
+    private static final byte[] IV = new byte[16]; // Example: Fixed IV (for testing)
 
-    //암호화 키 생성
-    private static SecretKey createSecretKey(){
-        try{
-            KeyGenerator keyGenerator=KeyGenerator.getInstance(AES);
-            keyGenerator.init(128); //AES-128
+    private static SecretKeySpec secretKeySpec;
 
-            return keyGenerator.generateKey();
-        } catch (Exception e){
-            throw new RuntimeException("Error creating Secret Key",e);
+    static {
+        secretKeySpec = new SecretKeySpec(secretKey.getBytes(), AES);
+    }
+
+    public static String encrypt(String data) {
+        try {
+            Cipher cipher = Cipher.getInstance(AES_TRANSFORMATION);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, new IvParameterSpec(IV));
+            byte[] encrypted = cipher.doFinal(data.getBytes());
+            return Base64.getEncoder().encodeToString(encrypted);
+        } catch (Exception e) {
+            throw new RuntimeException("Error encrypting data", e);
         }
     }
 
-    // 다양한 타입을 앟호화하는 메서드
-    public static <T> String encrypt(T data){
-        return encryptBytes(convertToBytes(data));
-    }
-
-    // 암호화
-    public static <T> String encryptBytes(byte[] dataBytes){
-        try{
-            Cipher cipher=Cipher.getInstance(AES);
-            cipher.init(Cipher.ENCRYPT_MODE,secretKey);
-            byte[] encryptedData=cipher.doFinal(dataBytes);
-            return Base64.getEncoder().encodeToString(encryptedData);
-        }catch (Exception e){
-            throw new RuntimeException("Error encrypting data",e);
-        }
-    }
-
-    // 복호화
-    public static String decrypt(String encryptedData){
-        try{
-            Cipher cipher=Cipher.getInstance(AES);
-            cipher.init(Cipher.DECRYPT_MODE,secretKey);
-            byte[] decodedData=Base64.getDecoder().decode(encryptedData);
-            byte[] originalData=cipher.doFinal(decodedData);
-            return new String(originalData);
-        }catch (Exception e){
+    public static String decrypt(String encryptedData) {
+        try {
+            Cipher cipher = Cipher.getInstance(AES_TRANSFORMATION);
+            byte[] decoded = Base64.getDecoder().decode(encryptedData);
+            byte[] iv = extractIV(decoded);
+            byte[] data = extractEncryptedData(decoded);
+            cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, new IvParameterSpec(iv));
+            return new String(cipher.doFinal(data));
+        } catch (Exception e) {
             throw new RuntimeException("Error decrypting data", e);
         }
     }
 
-    //복호화 메서드
-    public static String decryptToString(String encryptedData){
-        return new String(decryptedToBytes(encryptedData));
+    private static byte[] generateRandomIV() {
+        byte[] iv = new byte[16];
+        new SecureRandom().nextBytes(iv);
+        return iv;
     }
 
-    // 다양한 타입을 바이트 배열로 변환
-    private static <T> byte[] convertToBytes(T data){
-        if (data instanceof String) {
-            return ((String) data).getBytes();
-        } else if (data instanceof Integer) {
-            return ByteBuffer.allocate(Integer.BYTES).putInt((Integer) data).array();
-        } else if (data instanceof Long) {
-            return ByteBuffer.allocate(Long.BYTES).putLong((Long) data).array();
-        } else if (data instanceof Double) {
-            return ByteBuffer.allocate(Double.BYTES).putDouble((Double) data).array();
-        } else {
-            throw new IllegalArgumentException("Unsupported data type for encryption");
-        }
+    private static byte[] concatenate(byte[] iv, byte[] encryptedData) {
+        ByteBuffer buffer = ByteBuffer.allocate(iv.length + encryptedData.length);
+        buffer.put(iv);
+        buffer.put(encryptedData);
+        return buffer.array();
     }
 
-    // 바이트 배열 복호화
-    private static byte[] decryptedToBytes(String encryptedData){
-        try{
-            Cipher cipher=Cipher.getInstance(AES);
-            cipher.init(Cipher.DECRYPT_MODE,secretKey);
-            byte[] decodedData=Base64.getDecoder().decode(encryptedData);
-
-            return cipher.doFinal(decodedData);
-        }catch (Exception e){
-            throw new RuntimeException("Error decrypting data",e);
-        }
+    private static byte[] extractIV(byte[] combined) {
+        return Arrays.copyOfRange(combined, 0, 16);
     }
 
+    private static byte[] extractEncryptedData(byte[] combined) {
+        return Arrays.copyOfRange(combined, 16, combined.length);
+    }
 }

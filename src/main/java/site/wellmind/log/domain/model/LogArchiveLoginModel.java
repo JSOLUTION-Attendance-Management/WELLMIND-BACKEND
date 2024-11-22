@@ -13,6 +13,7 @@ import site.wellmind.user.domain.model.UserTopModel;
 @Getter
 @Table(name="jsol_logarchive_login")
 @ToString(exclude = {"id"})
+@Builder
 public class LogArchiveLoginModel extends BaseModel {
     @Id
     @Column(name = "LOGIN_LOG_IDX",nullable = false)
@@ -20,10 +21,10 @@ public class LogArchiveLoginModel extends BaseModel {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "USER_IDX", referencedColumnName = "USER_EMPLOYEE_ID",nullable = false)
+    @JoinColumn(name = "USER_IDX",nullable = true)
     private UserTopModel userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ADMIN_IDX", referencedColumnName = "ADMIN_EMPLOYEE_ID",nullable = false)
+    @JoinColumn(name = "ADMIN_IDX",nullable = true)
     private AdminTopModel adminId;
 }

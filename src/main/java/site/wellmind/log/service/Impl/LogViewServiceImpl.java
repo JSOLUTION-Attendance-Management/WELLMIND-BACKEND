@@ -52,7 +52,7 @@ public class LogViewServiceImpl implements LogViewService {
 
 
     @Override
-    public LogViewDto findById(String employeeId, Long currentAccountId, boolean isAdmin) {
+    public LogViewDto findById(String employeeId, Long currentAccountId, boolean isAdmin,String role) {
         return null;
     }
 

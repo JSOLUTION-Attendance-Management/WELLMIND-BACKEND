@@ -16,6 +16,8 @@ import site.wellmind.common.domain.dto.Messenger;
 import site.wellmind.common.domain.dto.TokenValidationRequestDto;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
+import site.wellmind.log.domain.model.LogArchiveLoginModel;
+import site.wellmind.log.repository.LogArchiveLoginRepository;
 import site.wellmind.security.domain.model.AccountTokenModel;
 import site.wellmind.security.domain.model.PrincipalAdminDetails;
 import site.wellmind.security.domain.model.PrincipalUserDetails;
@@ -45,30 +47,32 @@ public class AuthServiceImpl implements AuthService {
     private final UserTopRepository userTopRepository;
     private final AdminTopRepository adminTopRepository;
     private final AccountTokenRepository accountTokenRepository;
+    private final LogArchiveLoginRepository logArchiveLoginRepository;
     private final PasswordEncoder passwordEncoder;
+
     @Override
     @Transactional
     public ResponseEntity<Messenger> localLogin(LoginDto dto) {
-        String employeeId=dto.getEmployeeId();
-        String password= dto.getPassword();
-        Optional<AccountTokenModel> accountTokenModel=accountTokenRepository.findByEmployeeIdAndTokenStatus(employeeId, TokenStatus.VALID);
-        if(!accountTokenModel.isEmpty()){
-            throw new GlobalException(ExceptionStatus.ALREADY_LOGGED_IN,ExceptionStatus.ALREADY_LOGGED_IN.getMessage());
+        String employeeId = dto.getEmployeeId();
+        String password = dto.getPassword();
+        Optional<AccountTokenModel> accountTokenModel = accountTokenRepository.findByEmployeeIdAndTokenStatus(employeeId, TokenStatus.VALID);
+        if (!accountTokenModel.isEmpty()) {
+            throw new GlobalException(ExceptionStatus.ALREADY_LOGGED_IN, ExceptionStatus.ALREADY_LOGGED_IN.getMessage());
         }
 
-        Optional<UserTopModel> user=userTopRepository.findByEmployeeId(employeeId);
-        Optional<AdminTopModel> admin=adminTopRepository.findByEmployeeId(employeeId);
+        Optional<UserTopModel> user = userTopRepository.findByEmployeeId(employeeId);
+        Optional<AdminTopModel> admin = adminTopRepository.findByEmployeeId(employeeId);
 
-        String accessToken=null;
-        String refreshToken=null;
+        String accessToken = null;
+        String refreshToken = null;
 
-        if(user.isEmpty() && admin.isEmpty()){
-            throw new GlobalException(ExceptionStatus.USER_NOT_FOUND,ExceptionStatus.USER_NOT_FOUND.getMessage());
-        }else if(user.isPresent()){
+        if (user.isEmpty() && admin.isEmpty()) {
+            throw new GlobalException(ExceptionStatus.USER_NOT_FOUND, ExceptionStatus.USER_NOT_FOUND.getMessage());
+        } else if (user.isPresent()) {
 //            if(!passwordEncoder.matches(password,user.get().getPassword())){
 //                throw new GlobalException(ExceptionStatus.INVALID_CREDENTIALS,ExceptionStatus.INVALID_CREDENTIALS.getMessage());
 //            }
-            PrincipalUserDetails userDetails=new PrincipalUserDetails(user.get());
+            PrincipalUserDetails userDetails = new PrincipalUserDetails(user.get());
             accessToken = jwtTokenProvider.generateToken(userDetails, false);
             refreshToken = jwtTokenProvider.generateToken(userDetails, true);
 
@@ -76,15 +80,19 @@ public class AuthServiceImpl implements AuthService {
 //            if(!passwordEncoder.matches(password,admin.get().getPassword())){
 //                throw new GlobalException(ExceptionStatus.INVALID_CREDENTIALS,ExceptionStatus.INVALID_CREDENTIALS.getMessage());
 //            }
-            PrincipalAdminDetails adminDetails=new PrincipalAdminDetails(admin.get());
+            PrincipalAdminDetails adminDetails = new PrincipalAdminDetails(admin.get());
             accessToken = jwtTokenProvider.generateToken(adminDetails, false);
             refreshToken = jwtTokenProvider.generateToken(adminDetails, true);
         }
 
-        try{
+        try {
 
             HttpHeaders headers = createTokenCookies(accessToken, refreshToken);
             headers.add("Location", "http://localhost:3000/login/callback");
+
+            logArchiveLoginRepository.save(LogArchiveLoginModel.builder()
+                    .userId(user.orElse(null))
+                    .adminId(admin.orElse(null)).build());
 
             return ResponseEntity.ok()
                     .headers(headers)
@@ -93,36 +101,36 @@ public class AuthServiceImpl implements AuthService {
                             .message("Login Successful")
                             .build());
 
-        }catch(Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(
-                    Messenger.builder()
-                            .message("Invalid User")
-                            .build());
+                            Messenger.builder()
+                                    .message("Invalid User")
+                                    .build());
         }
     }
 
     @Override
     public ResponseEntity<Messenger> refresh(HttpServletRequest request) {
-        try{
-            String jwtToken=jwtTokenProvider.getCookieValue(request,"refreshToken");
+        try {
+            String jwtToken = jwtTokenProvider.getCookieValue(request, "refreshToken");
             //유효성 검사
             if (jwtToken == null) {
                 throw new GlobalException(ExceptionStatus.UNAUTHORIZED, "Refresh token is missing");
             }
 
-            if(!jwtTokenProvider.isTokenValid(jwtToken,true)){
-                throw new GlobalException(ExceptionStatus.UNAUTHORIZED,"Invalid Refresh Token");
+            if (!jwtTokenProvider.isTokenValid(jwtToken, true)) {
+                throw new GlobalException(ExceptionStatus.UNAUTHORIZED, "Invalid Refresh Token");
             }
 
             //사용자 정보 추출
-            Object accountDetails=jwtTokenProvider.extractPrincipalDetails(jwtToken);
+            Object accountDetails = jwtTokenProvider.extractPrincipalDetails(jwtToken);
             //db에 token 존재 여부
             boolean isTokenExists;
-            if (accountDetails instanceof PrincipalUserDetails){
-                isTokenExists= jwtTokenProvider.isTokenExists( ((PrincipalUserDetails) accountDetails).getUsername(),jwtToken);
-            }else if (accountDetails instanceof PrincipalAdminDetails) {
-                isTokenExists= jwtTokenProvider.isTokenExists( ((PrincipalAdminDetails) accountDetails).getUsername(),jwtToken);
+            if (accountDetails instanceof PrincipalUserDetails) {
+                isTokenExists = jwtTokenProvider.isTokenExists(((PrincipalUserDetails) accountDetails).getUsername(), jwtToken);
+            } else if (accountDetails instanceof PrincipalAdminDetails) {
+                isTokenExists = jwtTokenProvider.isTokenExists(((PrincipalAdminDetails) accountDetails).getUsername(), jwtToken);
             } else {
                 throw new GlobalException(ExceptionStatus.UNAUTHORIZED, "Token not found in DB");
             }
@@ -131,7 +139,7 @@ public class AuthServiceImpl implements AuthService {
             }
 
             // 새로운 Access Token 발행
-            String accessToken=jwtTokenProvider.generateToken(accountDetails,false);
+            String accessToken = jwtTokenProvider.generateToken(accountDetails, false);
 
 //            Authentication authentication= jwtTokenProvider.getAuthentication(accessToken);
 //            SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -161,32 +169,32 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ResponseEntity<Messenger> logout(HttpServletRequest request) {
-        try{
-            String jwtToken=jwtTokenProvider.getCookieValue(request,"accessToken");
+        try {
+            String jwtToken = jwtTokenProvider.getCookieValue(request, "accessToken");
             //유효성 검사
             if (jwtToken == null) {
                 throw new GlobalException(ExceptionStatus.UNAUTHORIZED, "Access token is missing");
             }
             //유효성 검사
-            if(!jwtTokenProvider.isTokenValid(jwtToken,false)){
-                throw new GlobalException(ExceptionStatus.UNAUTHORIZED,"Invalid Refresh Token");
+            if (!jwtTokenProvider.isTokenValid(jwtToken, false)) {
+                throw new GlobalException(ExceptionStatus.UNAUTHORIZED, "Invalid Refresh Token");
             }
 
-            Object accountDetails=jwtTokenProvider.extractPrincipalDetails(jwtToken);
-            log.info("accountDetails : {}",accountDetails);
+            Object accountDetails = jwtTokenProvider.extractPrincipalDetails(jwtToken);
+            log.info("accountDetails : {}", accountDetails);
 
             boolean isRemoved;
-            if (accountDetails instanceof PrincipalUserDetails){
-                isRemoved= jwtTokenProvider.invalidateToken(((PrincipalUserDetails) accountDetails).getUsername());
-            }else if (accountDetails instanceof PrincipalAdminDetails){
-                isRemoved= jwtTokenProvider.invalidateToken(((PrincipalAdminDetails) accountDetails).getUsername());
-            }else {
-                throw new GlobalException(ExceptionStatus.UNAUTHORIZED,"Invalid User Type");
+            if (accountDetails instanceof PrincipalUserDetails) {
+                isRemoved = jwtTokenProvider.invalidateToken(((PrincipalUserDetails) accountDetails).getUsername());
+            } else if (accountDetails instanceof PrincipalAdminDetails) {
+                isRemoved = jwtTokenProvider.invalidateToken(((PrincipalAdminDetails) accountDetails).getUsername());
+            } else {
+                throw new GlobalException(ExceptionStatus.UNAUTHORIZED, "Invalid User Type");
             }
 
             // if token not found in Redis, throw error
-            if(!isRemoved){
-                throw new GlobalException(ExceptionStatus.UNAUTHORIZED,"Token not found in DB");
+            if (!isRemoved) {
+                throw new GlobalException(ExceptionStatus.UNAUTHORIZED, "Token not found in DB");
             }
 
             // Clear the tokens from the cookies by setting them with maxAge 0
@@ -214,10 +222,10 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ResponseEntity<Messenger> validatePasswordSetupToken(TokenValidationRequestDto request) {
-        if(passwordTokenProvider.isPasswordSetupTokenValid(request.getToken())){
+        if (passwordTokenProvider.isPasswordSetupTokenValid(request.getToken())) {
             return ResponseEntity.ok(Messenger.builder()
                     .message("Password setup token is valid").build());
-        }else {
+        } else {
             return ResponseEntity.status(ExceptionStatus.UNAUTHORIZED.getHttpStatus())
                     .body(Messenger.builder()
                             .message("Invalid or expired token")
@@ -240,8 +248,8 @@ public class AuthServiceImpl implements AuthService {
             return ResponseEntity.status(ExceptionStatus.INVALID_INPUT.getHttpStatus()).body(Messenger.builder()
                     .message("Password does not meet the security requirements.").build());
         }
-        String employeeId=passwordTokenProvider.extractEmployeeId(request.getToken());
-        if(!request.getNewPassword().equals(request.getConfirmNewPassword())){
+        String employeeId = passwordTokenProvider.extractEmployeeId(request.getToken());
+        if (!request.getNewPassword().equals(request.getConfirmNewPassword())) {
             return ResponseEntity.badRequest().body(Messenger.builder()
                     .message("Passwords do not match").build());
         }
@@ -275,16 +283,16 @@ public class AuthServiceImpl implements AuthService {
                     .message("Password has been set successfully")
                     .build());
 
-        }catch (Exception e){
-            log.error("Failed to set password for employee ID : {} ",employeeId,e);
+        } catch (Exception e) {
+            log.error("Failed to set password for employee ID : {} ", employeeId, e);
             return ResponseEntity.status(ExceptionStatus.INTERNAL_SERVER_ERROR.getHttpStatus())
                     .body(Messenger.builder()
                             .message("Failed to set password due to an internal error").build());
         }
     }
 
-    private HttpHeaders createTokenCookies(String accessToken,String refreshToken){
-        ResponseCookie accessTokenCookie=ResponseCookie.from("accessToken",accessToken)
+    private HttpHeaders createTokenCookies(String accessToken, String refreshToken) {
+        ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", accessToken)
                 .path("/")
                 .maxAge(jwtTokenProvider.getAccessTokenExpired())
 //                    .httpOnly(true)
@@ -292,7 +300,7 @@ public class AuthServiceImpl implements AuthService {
 //                    .sameSite("Lax")
                 .build();
 
-        ResponseCookie refreshTokenCookie=ResponseCookie.from("refreshToken",refreshToken)
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .path("/")
                 .maxAge(jwtTokenProvider.getRefreshTokenExpired())
 //                    .httpOnly(true)
@@ -307,7 +315,7 @@ public class AuthServiceImpl implements AuthService {
         return headers;
     }
 
-    private HttpHeaders createSingleTokenCookie(String cookieName,String token,Long maxAge){
+    private HttpHeaders createSingleTokenCookie(String cookieName, String token, Long maxAge) {
 
         ResponseCookie tokenCookie = ResponseCookie.from(cookieName, token)
                 .path("/")
@@ -322,8 +330,8 @@ public class AuthServiceImpl implements AuthService {
         return headers;
     }
 
-    private HttpHeaders clearTokenCookies(){
-        ResponseCookie accessTokenCookie=ResponseCookie.from("accessToken","")
+    private HttpHeaders clearTokenCookies() {
+        ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", "")
                 .path("/")
                 .maxAge(0L)
 //                .httpOnly(true)
@@ -346,7 +354,7 @@ public class AuthServiceImpl implements AuthService {
         return headers;
     }
 
-    private boolean isValidPassword(String password){
+    private boolean isValidPassword(String password) {
         String passwordPattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=]).{8,}$";
         return password.matches(passwordPattern);
     }
