@@ -1,5 +1,7 @@
 package site.wellmind.common.service;
 
+import site.wellmind.user.domain.dto.AccountDto;
+
 import java.util.List;
 /**
  * Query Service
@@ -9,7 +11,7 @@ import java.util.List;
  * @author Yuri Seok(tjrdbfl)
  */
 public interface QueryService<T> {
-    T findById(String employeeId,Long currentAccountId, boolean isAdmin,String role);
+    T findById(String employeeId, AccountDto dto);
     List<T> findAll();
     boolean existById(Long id);
     Long count();

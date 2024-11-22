@@ -1,5 +1,7 @@
 package site.wellmind.common.service;
 
+import site.wellmind.user.domain.dto.AccountDto;
+
 import java.util.List;
 
 /**
@@ -15,5 +17,5 @@ public interface CommandService<T> {
 
     void deleteById(Long id);
 
-    T update(T t);
+    T modify(T t, AccountDto dto);
 }
