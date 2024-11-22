@@ -25,11 +25,12 @@ public class LogArchiveViewModel extends BaseModel {
     @Column(name = "VIEW_REASON")
     private String viewReason;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "VIEWED_IDX", referencedColumnName = "USER_EMPLOYEE_ID",nullable = false)
-    private UserTopModel userId;   //조회 대상
+
+    @Column(name = "VIEWED_IDX")
+    private String viewedId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "VIEWER_IDX", referencedColumnName = "ADMIN_EMPLOYEE_ID",nullable = false)
-    private AdminTopModel adminId;  //조회한 사람
+    @JoinColumn(name = "VIEWER_IDX",nullable = false)
+    private AdminTopModel viewerId;
+
 }

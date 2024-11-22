@@ -11,7 +11,7 @@ import java.util.List;
  * @author Yuri Seok(tjrdbfl)
  */
 public interface QueryService<T> {
-    T findById(String employeeId, AccountDto dto);
+    Object findById(String employeeId, AccountDto dto);
     List<T> findAll();
     boolean existById(Long id);
     Long count();

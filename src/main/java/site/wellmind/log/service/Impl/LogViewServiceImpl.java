@@ -26,8 +26,8 @@ public class LogViewServiceImpl implements LogViewService {
         try{
             viewRepository.save(LogArchiveViewModel.builder()
                     .viewReason(logViewDto.getViewReason())
-                    .userId(logViewDto.getUserId())
-                    .adminId(logViewDto.getAdminId()).build());
+                    .viewedId(logViewDto.getViewedId())
+                    .viewerId(logViewDto.getViewerId()).build());
 
             return LogViewDto.builder().build();
         }catch (Exception e){

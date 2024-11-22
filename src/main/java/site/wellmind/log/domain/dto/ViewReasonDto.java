@@ -24,7 +24,7 @@ import site.wellmind.user.domain.dto.AccountDto;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ViewReasonDto {
     @NotNull(message = "조회 대상 사원 번호은 필수입니다.")
-    private String viewerId;  //조회할 대상의 사원번호
+    private String viewedId;  //조회할 대상의 사원번호
 
     @NotNull(message = "조회 사유 입력은 필수입니다.")
     private String viewReason;

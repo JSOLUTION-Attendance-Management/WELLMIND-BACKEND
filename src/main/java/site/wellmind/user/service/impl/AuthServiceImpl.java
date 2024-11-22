@@ -141,9 +141,6 @@ public class AuthServiceImpl implements AuthService {
             // 새로운 Access Token 발행
             String accessToken = jwtTokenProvider.generateToken(accountDetails, false);
 
-//            Authentication authentication= jwtTokenProvider.getAuthentication(accessToken);
-//            SecurityContextHolder.getContext().setAuthentication(authentication);
-//            // Set the new access token as a cookie
             HttpHeaders headers = createSingleTokenCookie("accessToken", accessToken, jwtTokenProvider.getAccessTokenExpired());
 
             return ResponseEntity.ok()
@@ -341,7 +338,6 @@ public class AuthServiceImpl implements AuthService {
 
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", "")
                 .path("/")
-//                .domain(deployUrl)
                 .maxAge(0L) // Set max age to 0 to delete the cookie
 //                .httpOnly(true)
 //                .secure(true)  // Enable for HTTPS in production

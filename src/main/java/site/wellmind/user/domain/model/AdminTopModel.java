@@ -80,7 +80,7 @@ public class AdminTopModel extends BaseModel {
     private List<TransferModel> transferIds;
 
     // ====================== log ========================
-    @OneToMany(mappedBy = "adminId", cascade = CascadeType.MERGE, orphanRemoval = false)
+    @OneToMany(mappedBy = "viewerId", cascade = CascadeType.MERGE, orphanRemoval = false)
     private List<LogArchiveViewModel> viewLogIds;
 
     @OneToMany(mappedBy = "adminId", cascade = CascadeType.MERGE, orphanRemoval = false)

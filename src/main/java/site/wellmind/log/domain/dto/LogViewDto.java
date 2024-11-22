@@ -27,8 +27,8 @@ public class LogViewDto {
     private Long id;
     private String viewReason;
 
-    private UserTopModel userId;   //조회 대상
-    private AdminTopModel adminId;  //조회한 사람
+    private String viewedId;
+    private AdminTopModel viewerId;  //조회한 사람
 
     @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     private LocalDateTime regDate;

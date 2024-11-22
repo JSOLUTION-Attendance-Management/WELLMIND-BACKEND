@@ -153,7 +153,7 @@ public class JwtTokenProvider {
                 .claims(extractClaims)    // JWT 에 포함된 다양한 사용자 정보와 메타데이터를 담음
                 .subject(username)  //사용자를 식별하는 주요 정보, username : employeeId
                 .issuer(issuer)
-                .claim("roles",roles)
+                .claim("roles",roles.replaceAll("[\\[\\]]", ""))
                 .claim("id",id)
                 .claim("type",isRefreshToken? "refresh":"access")
                 .issuedAt(Date.from(Instant.now()))
