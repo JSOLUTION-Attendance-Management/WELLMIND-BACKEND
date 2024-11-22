@@ -29,12 +29,10 @@ public class LogArchiveDeleteModel {
     @Column(name = "ACTION_DATE")
     private LocalDateTime actionDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "DELETED_IDX", referencedColumnName = "USER_EMPLOYEE_ID",nullable = false)
-    private UserTopModel userId;   //조회 대상
+    @Column(name = "DELETED_IDX")
+    private String deletedEmployeeId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "DELETER_IDX", referencedColumnName = "ADMIN_EMPLOYEE_ID",nullable = false)
-    private AdminTopModel adminId;  //조회한 사람
-
+    @JoinColumn(name = "DELETER_IDX",nullable = false)
+    private AdminTopModel deleterId;
 }

@@ -41,7 +41,7 @@ public class LogController {
     @PostMapping("/view/register")
     public ResponseEntity<Messenger> registerViewLog(@RequestBody ViewReasonDto viewReasonDto, HttpServletRequest request){
 
-        String viewedId=viewReasonDto.getViewedId();
+        String viewedId=viewReasonDto.getViewedEmployeeId();
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
 
         log.info("accountDto:{}",accountDto);
@@ -85,7 +85,7 @@ public class LogController {
 
         LogViewDto savedLog=viewLogService.save(LogViewDto.builder()
                 .viewReason(viewReasonDto.getViewReason())
-                .viewedId(viewReasonDto.getViewedId())
+                .viewedEmployeeId(viewReasonDto.getViewedEmployeeId())
                 .viewerId(adminTopModel.get())
                 .build());
 

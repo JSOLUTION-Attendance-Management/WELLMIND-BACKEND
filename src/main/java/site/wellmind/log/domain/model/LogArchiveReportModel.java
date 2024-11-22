@@ -36,12 +36,11 @@ public class LogArchiveReportModel extends BaseModel {
     @Column(name = "REPORT_USER_TYPE")
     private List<ReportAttendanceStatus> userType;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "REPORTED_IDX", referencedColumnName = "USER_EMPLOYEE_ID",nullable = false)
-    private UserTopModel userId;   //조회 대상
+    @Column(name = "REPORTED_IDX")
+    private String reportedEmployeeId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REPORTER_IDX", referencedColumnName = "ADMIN_EMPLOYEE_ID",nullable = false)
-    private AdminTopModel adminId;  //조회한 사람
+    private AdminTopModel reporterId;  //조회한 사람
 
 }

@@ -29,12 +29,11 @@ public class LogArchiveUpdateModel extends BaseModel{
     @Column(name="NEW_VALUE")
     private String newValue;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "UPDATED_IDX", referencedColumnName = "USER_EMPLOYEE_ID",nullable = false)
-    private UserTopModel userId;   //조회 대상
+    @Column(name = "UPDATED_IDX")
+    private String updatedEmployeeId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "UPDATER_IDX", referencedColumnName = "ADMIN_EMPLOYEE_ID",nullable = false)
-    private AdminTopModel adminId;  //조회한 사람
-    
+    @JoinColumn(name = "UPDATER_IDX",nullable = false)
+    private AdminTopModel updaterId;
+
 }

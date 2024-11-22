@@ -92,16 +92,16 @@ public class AdminTopModel extends BaseModel {
     @OneToMany(mappedBy = "viewerId", cascade = CascadeType.MERGE, orphanRemoval = false)
     private List<LogArchiveViewModel> viewLogIds;
 
-    @OneToMany(mappedBy = "adminId", cascade = CascadeType.MERGE, orphanRemoval = false)
-    private List<LogArchiveReportModel> reportLogIds;
-
-    @OneToMany(mappedBy = "adminId", cascade = CascadeType.MERGE, orphanRemoval = false)
+    @OneToMany(mappedBy = "deleterId", cascade = CascadeType.MERGE, orphanRemoval = false)
     private List<LogArchiveDeleteModel> deleteLogIds;
 
     @OneToMany(mappedBy = "adminId", cascade = CascadeType.MERGE, orphanRemoval = false)
     private List<LogArchiveLoginModel> loginLogIds;
 
-    @OneToMany(mappedBy = "adminId", cascade = CascadeType.MERGE, orphanRemoval = false)
+    @OneToMany(mappedBy = "updaterId", cascade = CascadeType.MERGE, orphanRemoval = false)
     private List<LogArchiveUpdateModel> updateLogIds;
+
+    @OneToMany(mappedBy = "reporterId",cascade = CascadeType.MERGE,orphanRemoval = false)
+    private List<LogArchiveReportModel> reportLogIds;
 
 }
