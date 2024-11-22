@@ -25,9 +25,8 @@ public class LogArchiveViewModel extends BaseModel {
     @Column(name = "VIEW_REASON")
     private String viewReason;
 
-
     @Column(name = "VIEWED_IDX")
-    private String viewedId;
+    private String viewedEmployeeId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "VIEWER_IDX",nullable = false)

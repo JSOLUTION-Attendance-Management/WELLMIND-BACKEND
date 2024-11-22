@@ -27,7 +27,7 @@ public class LogViewDto {
     private Long id;
     private String viewReason;
 
-    private String viewedId;
+    private String viewedEmployeeId;
     private AdminTopModel viewerId;  //조회한 사람
 
     @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")

@@ -3,6 +3,7 @@ package site.wellmind.attend.domain.model;
 import jakarta.persistence.*;
 import lombok.*;
 import site.wellmind.common.domain.model.BaseModel;
+import site.wellmind.user.domain.model.AdminTopModel;
 import site.wellmind.user.domain.model.UserTopModel;
 
 import java.time.LocalDateTime;
@@ -32,8 +33,11 @@ public class AttendQrModel extends BaseModel {
     private Boolean qrTokenisLast=false;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "USER_IDX",nullable = false)
+    @JoinColumn(name = "USER_IDX",nullable = true)
     private UserTopModel userId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ADMIN_IDX", nullable = true)  // null 허용
+    private AdminTopModel adminId;
 
 }
