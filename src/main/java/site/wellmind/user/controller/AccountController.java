@@ -104,9 +104,6 @@ public class AccountController {
     ) {
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
         boolean isAdmin = accountDto.isAdmin();
-        Long currentAccountId=accountDto.getAccountId();
-        String role=accountDto.getRole();
-
         log.info("AccountController isAdmin :{}",isAdmin);
 
         if (!isAdmin && employeeId != null) {
@@ -119,7 +116,7 @@ public class AccountController {
         return ResponseEntity.ok(
                 Messenger.builder()
                         .message("user findById : " + SuccessStatus.OK.getMessage())
-                        .data(accountService.findById(employeeId, currentAccountId, isAdmin,role))
+                        .data(accountService.findById(employeeId, accountDto))
                         .build()
         );
     }
@@ -150,5 +147,24 @@ public class AccountController {
     }
 
     // 여러 개 데이터를 input 값으로 받고 modify
+    @PutMapping("/modify-by-id")
+    public ResponseEntity<Messenger> modifyById(@RequestBody UserDto dto, HttpServletRequest request){
+        AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
+        boolean isAdmin = accountDto.isAdmin();
+        String currentEmployeeId=accountDto.getEmployeeId();
 
+        if (!isAdmin && dto.getEmployeeId().equals(currentEmployeeId)) {
+            return ResponseEntity.status(ExceptionStatus.NO_PERMISSION.getHttpStatus()).
+                    body(Messenger.builder()
+                            .message("User can only modify their own information.")
+                            .build());
+        }
+
+        return ResponseEntity.ok(
+                Messenger.builder()
+                        .message("user findById : " + SuccessStatus.OK.getMessage())
+                        .data(accountService.modify(dto,accountDto))
+                        .build()
+        );
+    }
 }

@@ -108,14 +108,16 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public UserDto update(UserDto userDto) {
+    public UserDto modify(UserDto userDto,AccountDto accountDto) {
+
         return null;
     }
 
     @Override
-    public UserDto findById(String employeeId, Long currentAccountId, boolean isAdmin,String role) {
+    public UserDto findById(String employeeId, AccountDto accountDto) {
+        Long currentAccountId=accountDto.getAccountId();
 
-        if (!isAdmin) {
+        if (!accountDto.isAdmin()) {
             UserTopModel userTopModel = userTopRepository.findById(currentAccountId)
                     .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND, ExceptionStatus.USER_NOT_FOUND.getMessage()));
             return entityToDtoUserAll(userTopModel);

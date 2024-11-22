@@ -9,6 +9,7 @@ import site.wellmind.log.domain.dto.LogViewDto;
 import site.wellmind.log.domain.model.LogArchiveViewModel;
 import site.wellmind.log.repository.LogArchiveViewRepository;
 import site.wellmind.log.service.LogViewService;
+import site.wellmind.user.domain.dto.AccountDto;
 
 import java.util.List;
 import java.util.Optional;
@@ -46,13 +47,12 @@ public class LogViewServiceImpl implements LogViewService {
     }
 
     @Override
-    public LogViewDto update(LogViewDto logViewDto) {
+    public LogViewDto modify(LogViewDto logViewDto,AccountDto accountDto) {
         return null;
     }
 
-
     @Override
-    public LogViewDto findById(String employeeId, Long currentAccountId, boolean isAdmin,String role) {
+    public LogViewDto findById(String employeeId, AccountDto dto) {
         return null;
     }
 
