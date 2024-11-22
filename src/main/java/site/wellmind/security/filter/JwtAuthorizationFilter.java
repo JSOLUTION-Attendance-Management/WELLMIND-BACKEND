@@ -88,7 +88,6 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 throw new GlobalException(ExceptionStatus.NO_PERMISSION,"No permission");
             }
 
-
             Authentication authentication= jwtTokenProvider.getAuthentication(accessToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
 

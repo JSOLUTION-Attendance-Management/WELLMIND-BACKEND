@@ -83,8 +83,6 @@ public class UserTopModel extends BaseModel {
     private List<AttendRecordModel> recordIds;
 
     // ====================== log ========================
-    @OneToMany(mappedBy = "userId",cascade = CascadeType.MERGE,orphanRemoval = false)
-    private List<LogArchiveViewModel> viewLogIds;
 
     @OneToMany(mappedBy = "userId",cascade = CascadeType.MERGE,orphanRemoval = false)
     private List<LogArchiveUpdateModel> updateLogIds;

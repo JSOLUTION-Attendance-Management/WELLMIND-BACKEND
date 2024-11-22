@@ -20,7 +20,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProfileDto {
-    private String employeeId;
     private String email;
     private String name;
     private String phoneNum;

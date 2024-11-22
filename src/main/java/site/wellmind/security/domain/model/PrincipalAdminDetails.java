@@ -47,9 +47,9 @@ public class PrincipalAdminDetails implements UserDetails {
 
         // 관리자 권한 추가
         switch (authLevel) {
-            case "ROLE_ADMIN_UML_77" -> authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN_UML_77"));
-            case "ROLE_ADMIN_UBL_66" -> authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN_UBL_66"));
-            case "ROLE_ADMIN_UBL_55" -> authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN_UBL_55"));
+            case "UML_77" -> authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN_UML_77"));
+            case "UBL_66" -> authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN_UBL_66"));
+            case "UBL_55" -> authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN_UBL_55"));
             default -> log.warn("Unknown AuthAdminLevelCodeId: {}", authLevel);
         }
 

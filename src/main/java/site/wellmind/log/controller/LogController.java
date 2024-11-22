@@ -41,15 +41,23 @@ public class LogController {
     @PostMapping("/view/register")
     public ResponseEntity<Messenger> registerViewLog(@RequestBody ViewReasonDto viewReasonDto, HttpServletRequest request){
 
-        String viewedId=viewReasonDto.getViewerId();
+        String viewedId=viewReasonDto.getViewedId();
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
 
         log.info("accountDto:{}",accountDto);
+
         if(accountDto==null){
             return ResponseEntity.status(ExceptionStatus.UNAUTHORIZED.getHttpStatus())
                     .body(Messenger.builder()
                             .message("Access token is missing or invalid.").build());
 
+        }
+
+        if(!accountDto.isAdmin()){
+            return ResponseEntity.status(ExceptionStatus.NO_PERMISSION.getHttpStatus()).
+                    body(Messenger.builder()
+                            .message("User can only access their own information.")
+                            .build());
         }
 
         if(viewedId.isEmpty() || viewReasonDto.getViewReason().isEmpty()){
@@ -77,8 +85,8 @@ public class LogController {
 
         LogViewDto savedLog=viewLogService.save(LogViewDto.builder()
                 .viewReason(viewReasonDto.getViewReason())
-                .userId(userTopModel.get())
-                .adminId(adminTopModel.get())
+                .viewedId(viewReasonDto.getViewedId())
+                .viewerId(adminTopModel.get())
                 .build());
 
         return ResponseEntity.ok(Messenger.builder()

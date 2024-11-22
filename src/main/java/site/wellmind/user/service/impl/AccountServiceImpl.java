@@ -117,16 +117,26 @@ public class AccountServiceImpl implements AccountService {
     public UserDto findById(String employeeId, AccountDto accountDto) {
         Long currentAccountId=accountDto.getAccountId();
 
-        if (!accountDto.isAdmin()) {
+        if (!accountDto.isAdmin()) {  //사용자
             UserTopModel userTopModel = userTopRepository.findById(currentAccountId)
                     .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND, ExceptionStatus.USER_NOT_FOUND.getMessage()));
             return entityToDtoUserAll(userTopModel);
-        } else {
+        } else { //관리자
+
             if(employeeId!=null){
                 Optional<UserTopModel> user=findUserByEmployeeId(employeeId);
                 log.info("user : {}",user);
 
                 if(!user.isEmpty()){
+                    if(accountDto.getRole().equals("ROLE_ADMIN_UBL_66")){
+                        return UserDto.builder()
+                                .email(user.get().getEmail())
+                                .name(user.get().getName())
+                                .phoneNum(user.get().getPhoneNum())
+                                .authType("N")
+                                .phoneNum(user.get().getPhoneNum())
+                                .build();
+                    }
                     return entityToDtoUserAll(user.get());
                 }
                 Optional<AdminTopModel> admin=findAdminByEmployeeId(employeeId);
@@ -275,7 +285,6 @@ public class AccountServiceImpl implements AccountService {
 
             return ProfileDto.builder()
                     .email(userTopModel.getEmail())
-                    .employeeId(userTopModel.getEmployeeId())
                     .name(userTopModel.getName())
                     .phoneNum(userTopModel.getPhoneNum())
                     .authType("N")
@@ -292,7 +301,6 @@ public class AccountServiceImpl implements AccountService {
 
         return ProfileDto.builder()
                 .email(adminTopModel.getEmail())
-                .employeeId(adminTopModel.getEmployeeId())
                 .name(adminTopModel.getName())
                 .phoneNum(adminTopModel.getPhoneNum())
                 .authType("M")
