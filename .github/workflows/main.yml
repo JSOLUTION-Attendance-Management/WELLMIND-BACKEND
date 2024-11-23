@@ -95,6 +95,10 @@ jobs:
               refresh: 1209600000
             passwordSetup:
               expiration: 900
+        
+          encryption:
+            secret-key: ${ENCRYPTION_SECRET_KEY}
+            init-vector: ${INIT_VECTOR}
           EOF
       env:
         DB_URL: ${{ secrets.DB_URL }}
