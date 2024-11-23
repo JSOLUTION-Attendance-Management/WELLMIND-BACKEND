@@ -133,6 +133,41 @@ public interface AccountService extends CommandService<UserDto>, QueryService<Us
                 .major(edu.getMajor())
                 .build();
     }
+    
+    default ProfileDto entityToDtoUserProfile(UserTopModel user){
+        UserInfoModel userInfoModel = user.getUserInfoModel();
+        TransferModel transferModel=user.getTransferIds().get(0);
+
+        return ProfileDto.builder()
+                .email(user.getEmail())
+                .name(user.getName())
+                .phoneNum(user.getPhoneNum())
+                .authType("N")
+                .phoneNum(user.getPhoneNum())
+                .photo(userInfoModel.getPhoto())
+                .address(userInfoModel.getAddress())
+                .departName(transferModel.getDepartment().getName())
+                .positionName(transferModel.getPosition().getName())
+                .build();
+
+    }
+    default ProfileDto entityToDtoUserProfile(AdminTopModel admin){
+        UserInfoModel userInfoModel = admin.getUserInfoModel();
+        TransferModel transferModel=admin.getTransferIds().get(0);
+
+        return ProfileDto.builder()
+                .email(admin.getEmail())
+                .name(admin.getName())
+                .phoneNum(admin.getPhoneNum())
+                .authType("M")
+                .phoneNum(admin.getPhoneNum())
+                .photo(userInfoModel.getPhoto())
+                .address(userInfoModel.getAddress())
+                .departName(transferModel.getDepartment().getName())
+                .positionName(transferModel.getPosition().getName())
+                .build();
+
+    }
     Boolean existByEmail(String email);
 
     Boolean existByEmployeeId(String employeeId);

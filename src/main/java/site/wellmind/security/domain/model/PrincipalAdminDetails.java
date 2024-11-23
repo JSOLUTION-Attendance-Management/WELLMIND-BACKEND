@@ -41,21 +41,7 @@ public class PrincipalAdminDetails implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> authorities = new ArrayList<>();
-        String authLevel = admin.getAuthAdminLevelCodeId();
-        authLevel = authLevel.replaceAll("[\\[\\]]", "");
-        log.info("AuthAdminLevelCodeId without brackets: {}", authLevel);
-
-        // 관리자 권한 추가
-        switch (authLevel) {
-            case "UML_77" -> authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN_UML_77"));
-            case "UBL_66" -> authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN_UBL_66"));
-            case "UBL_55" -> authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN_UBL_55"));
-            default -> log.warn("Unknown AuthAdminLevelCodeId: {}", authLevel);
-        }
-
-        log.info("getAuthAdminLevelCodeId authorities : {}",authorities.stream()
-                .map(GrantedAuthority::getAuthority)
-                .toList());
+        authorities.add(new SimpleGrantedAuthority(admin.getAuthAdminLevelCodeId()));
         return authorities;
     }
 
