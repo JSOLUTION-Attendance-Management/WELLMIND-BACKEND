@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Setter
 @Getter
+@Builder
 @Table(name="jsol_logarchive_update")
 @ToString(exclude = {"id"})
 public class LogArchiveUpdateModel extends BaseModel{
@@ -22,11 +23,11 @@ public class LogArchiveUpdateModel extends BaseModel{
     private Long id;
 
     @Lob
-    @Column(name="PREVIOUS_VALUE")
+    @Column(name="PREVIOUS_VALUE", columnDefinition = "LONGTEXT")
     private String previousValue;
 
     @Lob
-    @Column(name="NEW_VALUE")
+    @Column(name="NEW_VALUE", columnDefinition = "LONGTEXT")
     private String newValue;
 
     @Column(name = "UPDATED_IDX")

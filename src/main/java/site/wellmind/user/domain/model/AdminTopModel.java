@@ -1,5 +1,8 @@
 package site.wellmind.user.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
@@ -22,6 +25,7 @@ import java.util.List;
 @Table(name = "jsol_admintop")
 @ToString(exclude = {"id", "userEduIds", "userInfoModel", "role","transferIds",
         "viewLogIds", "updateLogIds", "loginLogIds", "deleteLogIds", "reportLogIds"})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class AdminTopModel extends BaseModel {
     @Id
     @Column(name = "ADMIN_IDX", nullable = false)
@@ -36,6 +40,7 @@ public class AdminTopModel extends BaseModel {
     private String email;
 
     @Column(name = "ADMIN_PASSWORD", unique = true)
+    @JsonIgnore
     private String password;
 
     @Column(name = "ADMIN_NAME")
@@ -71,6 +76,7 @@ public class AdminTopModel extends BaseModel {
     private AccountRoleModel role;
 
     @OneToMany(mappedBy = "adminTopModel", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
+    @JsonManagedReference // 순환 참조 방지
     private List<UserEducationModel> userEduIds;
 
     @OneToOne(fetch = FetchType.EAGER)
