@@ -1,13 +1,9 @@
 package site.wellmind.common.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.web.client.RestTemplate;
-import site.wellmind.common.service.CommandService;
-import site.wellmind.common.service.QueryService;
-import site.wellmind.user.domain.dto.UserDto;
 
 /**
  * AppConfig

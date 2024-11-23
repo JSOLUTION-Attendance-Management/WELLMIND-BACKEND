@@ -68,7 +68,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     @Transactional
-    public Object save(UserDto dto) {
+    public Object save(UserAllDto dto) {
 
         try {
 
@@ -102,7 +102,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<UserDto> saveAll(List<UserDto> entities) {
+    public List<UserAllDto> saveAll(List<UserAllDto> entities) {
         return null;
     }
 
@@ -165,7 +165,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<UserDto> findAll() {
+    public List<UserAllDto> findAll() {
         List<UserTopModel> userTopModels = userTopRepository.findAll();
 
         return userTopModels.stream()
@@ -174,7 +174,7 @@ public class AccountServiceImpl implements AccountService {
                     List<UserEducationModel> userEducationModels = userTopModel.getUserEduIds();
                     userTopModel.setRegNumberFor(encryptionUtil.decrypt(userTopModel.getRegNumberFor()));
                     userTopModel.setRegNumberLat(encryptionUtil.decrypt(userTopModel.getRegNumberLat()));
-                    return UserDto.builder()
+                    return UserAllDto.builder()
                             .userTopDto(entityToDtoUserTop(userTopModel))
                             .userInfo(UserInfoDto.builder()
                                     .photo(userInfoModel.getPhoto())
@@ -210,8 +210,11 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Boolean existByEmployeeId(String employeeId) {
-        return userTopRepository.existsByEmployeeId(employeeId);
+    public Boolean existByEmployeeId(AccountDto accountDto) {
+        if(accountDto.isAdmin()){
+            return adminTopRepository.existsById(accountDto.getAccountId());
+        }
+        return userTopRepository.existsById(accountDto.getAccountId());
     }
 
     @Override
@@ -226,7 +229,7 @@ public class AccountServiceImpl implements AccountService {
 
 
     @Override
-    public Page<UserDto> findBy(String departName, String positionName, String name, Pageable pageable) {
+    public Page<UserAllDto> findBy(String departName, String positionName, String name, Pageable pageable) {
         BooleanBuilder whereClause = new BooleanBuilder();
         // 조건 추가 시 null 체크를 포함하여 안전하게 설정
         if (positionName != null) {
@@ -291,26 +294,48 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public UserDetailDto findDetailById(Long currentAccountId, boolean isAdmin) {
+        if (!isAdmin) {
+            UserTopModel userTopModel = userTopRepository.findById(currentAccountId)
+                    .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND, ExceptionStatus.USER_NOT_FOUND.getMessage()));
+
+            return entityToDtoUserDetail(userTopModel);
+        }
+        AdminTopModel adminTopModel = adminTopRepository.findById(currentAccountId)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.ADMIN_NOT_FOUND, ExceptionStatus.ADMIN_NOT_FOUND.getMessage()));
+
+        return entityToDtoUserDetail(adminTopModel);
+    }
+
+    @Override
     @Transactional
-    public UserDto modify(UserDto userDto, AccountDto accountDto) {
+    public UserAllDto modify(UserAllDto userAllDto, AccountDto accountDto) {
         if (accountDto.isAdmin()) {  // 관리자에 대한 로직
             ObjectMapper objectMapper=new ObjectMapper();
             objectMapper.registerModule(new JavaTimeModule());
             Optional<AdminTopModel> updater=adminTopRepository.findById(accountDto.getAccountId());
-            if ("ROLE_ADMIN_UBL_66".equals(accountDto.getRole())) {
-                Optional<AdminTopModel> admin = adminTopRepository.findByEmployeeId(userDto.getUserTopDto().getEmployeeId());
-                Optional<UserTopModel> user=userTopRepository.findByEmployeeId(userDto.getUserTopDto().getEmployeeId());
-                UserDto updatedDto;
+            if ("ROLE_ADMIN_UBL_55".equals(accountDto.getRole())){
+                if(
+                        !userAllDto.getUserTopDto().getRegNumberFor().isEmpty() ||
+                        !userAllDto.getUserTopDto().getRegNumberLat().isEmpty()
+                ){
+                    throw new GlobalException(ExceptionStatus.UNAUTHORIZED);
+                }
+            }
+            else {
+                Optional<AdminTopModel> admin = adminTopRepository.findByEmployeeId(userAllDto.getUserTopDto().getEmployeeId());
+                Optional<UserTopModel> user=userTopRepository.findByEmployeeId(userAllDto.getUserTopDto().getEmployeeId());
+                UserAllDto updatedDto;
                 String oldJsonString;
                 String newJsonString;
                 log.info("admin: {}",admin);
 
                 if(admin.isPresent()){
                     log.info("update admin");
-                    updatedDto=processAdminUpdate(userDto);
+                    updatedDto=processAdminUpdate(userAllDto);
                 }else{
                     log.info("update user");
-                    updatedDto=processUserUpdate(userDto);
+                    updatedDto=processUserUpdate(userAllDto);
                 }
 
                 try{
@@ -326,31 +351,27 @@ public class AccountServiceImpl implements AccountService {
                     throw new RuntimeException("JSON 변환 중 오류 발생",e);
                 }
                 LogArchiveUpdateModel updateModel = LogArchiveUpdateModel.builder()
-                        .updatedEmployeeId(userDto.getUserTopDto().getEmployeeId())
+                        .updatedEmployeeId(userAllDto.getUserTopDto().getEmployeeId())
                         .previousValue(oldJsonString)
                         .newValue(newJsonString)
                         .updaterId(updater.get())
                         .build();
                 logArchiveUpdateRepository.save(updateModel);
                 return updatedDto;
-            } else if ("ROLE_ADMIN_UBL_55".equals(accountDto.getRole())) {
-
-            } else {
-                throw new GlobalException(ExceptionStatus.NO_PERMISSION);
             }
         }
-        return processUserUpdate(userDto);
+        return processUserUpdate(userAllDto);
     }
 
 
-    private UserDto processUserUpdate(UserDto userDto) {
-        Optional<UserTopModel> userModelOpt = userTopRepository.findById(userDto.getUserTopDto().getId());
+    private UserAllDto processUserUpdate(UserAllDto userAllDto) {
+        Optional<UserTopModel> userModelOpt = userTopRepository.findById(userAllDto.getUserTopDto().getId());
         if (userModelOpt.isEmpty()) {
             throw new GlobalException(ExceptionStatus.USER_NOT_FOUND);
         }
 
         UserTopModel userModel = userModelOpt.get();
-        updateCommonFieldsForUser(userDto, userModel);
+        updateCommonFieldsForUser(userAllDto, userModel);
 
         UserTopModel savedUser = userTopRepository.save(userModel);
         userInfoRepository.save(userModel.getUserInfoModel());
@@ -362,40 +383,40 @@ public class AccountServiceImpl implements AccountService {
         return entityToDtoUserAll(savedUser);
     }
 
-    private UserDto processAdminUpdate(UserDto userDto) {
-        Optional<AdminTopModel> adminModelOpt = adminTopRepository.findById(userDto.getUserTopDto().getId());
+    private UserAllDto processAdminUpdate(UserAllDto userAllDto) {
+        Optional<AdminTopModel> adminModelOpt = adminTopRepository.findById(userAllDto.getUserTopDto().getId());
         if (adminModelOpt.isEmpty()) {
             return null;
         }
 
         AdminTopModel adminModel = adminModelOpt.get();
-        updateCommonFieldsForAdmin(userDto, adminModel);
+        updateCommonFieldsForAdmin(userAllDto, adminModel);
 
         AdminTopModel savedAdmin = adminTopRepository.save(adminModel);
 
         return entityToDtoUserAll(savedAdmin);
     }
 
-    private void updateCommonFieldsForUser(UserDto userDto, UserTopModel userModel) {
+    private void updateCommonFieldsForUser(UserAllDto userAllDto, UserTopModel userModel) {
         // 주민등록번호 암호화
-        userDto.getUserTopDto().setRegNumberFor(encryptionUtil.encrypt(userDto.getUserTopDto().getRegNumberFor()));
-        userDto.getUserTopDto().setRegNumberLat(encryptionUtil.encrypt(userDto.getUserTopDto().getRegNumberLat()));
+        userAllDto.getUserTopDto().setRegNumberFor(encryptionUtil.encrypt(userAllDto.getUserTopDto().getRegNumberFor()));
+        userAllDto.getUserTopDto().setRegNumberLat(encryptionUtil.encrypt(userAllDto.getUserTopDto().getRegNumberLat()));
 
         // 기본 정보 매핑
-        utilService.mapFields(userDto.getUserTopDto(), userModel);
-        utilService.mapFields(userDto.getUserInfo(), userModel.getUserInfoModel());
+        utilService.mapFields(userAllDto.getUserTopDto(), userModel);
+        utilService.mapFields(userAllDto.getUserInfo(), userModel.getUserInfoModel());
 
         // 교육 정보 업데이트
-        updateEducationInfo(userDto.getEducation(), userModel, null);
+        updateEducationInfo(userAllDto.getEducation(), userModel, null);
     }
 
-    private void updateCommonFieldsForAdmin(UserDto userDto, AdminTopModel adminModel) {
+    private void updateCommonFieldsForAdmin(UserAllDto userAllDto, AdminTopModel adminModel) {
         // 기본 정보 매핑
-        utilService.mapFields(userDto.getUserTopDto(), adminModel);
-        utilService.mapFields(userDto.getUserInfo(), adminModel.getUserInfoModel());
+        utilService.mapFields(userAllDto.getUserTopDto(), adminModel);
+        utilService.mapFields(userAllDto.getUserInfo(), adminModel.getUserInfoModel());
 
         // 교육 정보 업데이트
-        updateEducationInfo(userDto.getEducation(), null, adminModel);
+        updateEducationInfo(userAllDto.getEducation(), null, adminModel);
     }
 
     private void updateEducationInfo(List<EducationDto> educationDtos, UserTopModel userModel, AdminTopModel adminModel) {
