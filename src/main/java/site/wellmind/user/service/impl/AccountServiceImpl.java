@@ -12,6 +12,7 @@ import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
+import site.wellmind.common.handler.GlobalExceptionHandler;
 import site.wellmind.security.util.EncryptionUtil;
 import site.wellmind.transfer.domain.model.QDepartmentModel;
 import site.wellmind.transfer.domain.model.QPositionModel;
@@ -114,7 +115,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public UserDto findById(String employeeId, AccountDto accountDto) {
+    public Object findById(String employeeId, AccountDto accountDto) {
         Long currentAccountId=accountDto.getAccountId();
 
         if (!accountDto.isAdmin()) {  //사용자
@@ -128,25 +129,27 @@ public class AccountServiceImpl implements AccountService {
                 log.info("user : {}",user);
 
                 if(!user.isEmpty()){
-                    if(accountDto.getRole().equals("ROLE_ADMIN_UBL_66")){
-                        return UserDto.builder()
-                                .email(user.get().getEmail())
-                                .name(user.get().getName())
-                                .phoneNum(user.get().getPhoneNum())
-                                .authType("N")
-                                .phoneNum(user.get().getPhoneNum())
-                                .build();
+                    if(accountDto.getRole().equals("ROLE_ADMIN_UBL_55")){
+                        return entityToDtoUserProfile(user.get());
+                    }else if(accountDto.getRole().equals("ROLE_ADMIN_UBL_66")){
+                        return entityToDtoUserAll(user.get());
+                    }else{
+                        throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
                     }
-                    return entityToDtoUserAll(user.get());
                 }
                 Optional<AdminTopModel> admin=findAdminByEmployeeId(employeeId);
                 log.info("admin : {}",admin);
 
-                if(admin.isPresent()){
-                    return entityToDtoUserAll(admin.get());
+                if(!admin.isEmpty()){
+                    if(accountDto.getRole().equals("ROLE_ADMIN_UBL_55")){
+                        return entityToDtoUserProfile(admin.get());
+                    }else if(accountDto.getRole().equals("ROLE_ADMIN_UBL_66")){
+                        return entityToDtoUserAll(admin.get());
+                    }else{
+                        throw new GlobalException(ExceptionStatus.ADMIN_NOT_FOUND, ExceptionStatus.ADMIN_NOT_FOUND.getMessage());
+                    }
                 }
-                throw new GlobalException(ExceptionStatus.ADMIN_NOT_FOUND, ExceptionStatus.ADMIN_NOT_FOUND.getMessage());
-            }
+             }
 
             AdminTopModel admin = adminTopRepository.findById(currentAccountId)
                     .orElseThrow(() -> new GlobalException(ExceptionStatus.ADMIN_NOT_FOUND, ExceptionStatus.ADMIN_NOT_FOUND.getMessage()));
