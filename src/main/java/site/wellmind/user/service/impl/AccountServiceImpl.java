@@ -8,16 +8,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
-import site.wellmind.common.handler.GlobalExceptionHandler;
+import site.wellmind.common.service.UtilService;
+import site.wellmind.log.repository.LogArchiveUpdateRepository;
 import site.wellmind.security.util.EncryptionUtil;
 import site.wellmind.transfer.domain.model.QDepartmentModel;
 import site.wellmind.transfer.domain.model.QPositionModel;
 import site.wellmind.transfer.domain.model.QTransferModel;
-import site.wellmind.transfer.domain.model.TransferModel;
 import site.wellmind.user.domain.dto.*;
 import site.wellmind.user.domain.model.*;
 import site.wellmind.user.repository.*;
@@ -50,7 +49,10 @@ public class AccountServiceImpl implements AccountService {
     private final UserEducationRepository userEducationRepository;
     private final AccountRoleRepository accountRoleRepository;
     private final AdminTopRepository adminTopRepository;
+    private final LogArchiveUpdateRepository logArchiveUpdateRepository;
 
+    private final UtilService utilService;
+    private final EncryptionUtil encryptionUtil;
     private final PasswordEncoder passwordEncoder;
 
     private final JPAQueryFactory queryFactory;
@@ -62,7 +64,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     @Transactional
-    public UserDto save(UserDto dto) {
+    public Object save(UserDto dto) {
 
         try {
 
@@ -70,6 +72,8 @@ public class AccountServiceImpl implements AccountService {
 
             AccountRoleModel accountRoleModel = accountRoleRepository.findByRoleId("UGL_11");
             //UserTopModel savedUser = userTopRepository.save(dtoToEntity(dto));
+            dto.getUserTopDto().setRegNumberFor(encryptionUtil.encrypt(dto.getUserTopDto().getRegNumberFor()));
+            dto.getUserTopDto().setRegNumberLat(encryptionUtil.encrypt(dto.getUserTopDto().getRegNumberLat()));
             UserTopModel savedUser = userTopRepository.save(dtoToEntityUserAll(dto,userInfoModel,accountRoleModel));
 
             List<UserEducationModel> educationEntities = dto.getEducation().stream()
@@ -79,16 +83,16 @@ public class AccountServiceImpl implements AccountService {
             userEducationRepository.saveAll(educationEntities);
 
 
-            //authType,role 은 관리자 체크 옵션을 통해 나중에 설정
-            return UserDto.builder()
+            return UserTopDto.builder()
                     .id(savedUser.getId())
                     .email(savedUser.getEmail())
                     .employeeId(savedUser.getEmployeeId())
                     .name(savedUser.getName())
+                    .authType("N")
                     .regDate(savedUser.getRegDate())
                     .build();
         } catch (Exception e) {
-            throw new GlobalException(ExceptionStatus.INTERNAL_SERVER_ERROR, "Failed to save user data for employee ID : " + dto.getEmployeeId());
+            throw new GlobalException(ExceptionStatus.INTERNAL_SERVER_ERROR, "Failed to save user data for employee ID : " + dto.getUserTopDto().getEmployeeId());
         }
 
     }
@@ -109,8 +113,42 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @Transactional
     public UserDto modify(UserDto userDto,AccountDto accountDto) {
+        if(!accountDto.isAdmin()){ //사용자
+            Optional<UserTopModel> userModel=userTopRepository.findById(accountDto.getAccountId());
+            if(userModel.isEmpty()){
+                throw new GlobalException(ExceptionStatus.USER_NOT_FOUND);
+            }
+            userDto.getUserTopDto().setRegNumberFor(encryptionUtil.encrypt(userDto.getUserTopDto().getRegNumberFor()));
+            userDto.getUserTopDto().setRegNumberLat(encryptionUtil.encrypt(userDto.getUserTopDto().getRegNumberLat()));
 
+            UserInfoModel userInfoModel=userModel.get().getUserInfoModel();
+            utilService.mapFields(userDto.getUserTopDto(), userModel.get());
+            utilService.mapFields(userDto.getUserInfo(), userInfoModel);
+
+            List<UserEducationModel> userEducationModel=userModel.get().getUserEduIds();
+            List<EducationDto> educationDtos=userDto.getEducation();
+            if(educationDtos!=null){
+                userEducationModel.clear();
+                for(EducationDto educationDto:educationDtos){
+                    UserEducationModel newEducationModel = UserEducationModel.builder().build();
+                    utilService.mapFields(educationDto,newEducationModel);
+                    newEducationModel.setUserTopModel(userModel.get());
+                    userEducationModel.add(newEducationModel);
+                }
+                userEducationRepository.saveAll(userEducationModel);
+            }
+
+            UserTopModel savedUser=userTopRepository.save(userModel.get());
+            userInfoRepository.save(userInfoModel);
+
+            savedUser.setRegNumberFor(encryptionUtil.decrypt(savedUser.getRegNumberFor()));
+            savedUser.setRegNumberLat(encryptionUtil.decrypt(savedUser.getRegNumberLat()));
+            return entityToDtoUserAll(savedUser);
+        }else{ //관리자
+
+        }
         return null;
     }
 
@@ -169,16 +207,10 @@ public class AccountServiceImpl implements AccountService {
                 .map(userTopModel -> {
                     UserInfoModel userInfoModel = userTopModel.getUserInfoModel(); // 이미 페치된 상태
                     List<UserEducationModel> userEducationModels = userTopModel.getUserEduIds();
-
+                    userTopModel.setRegNumberFor(encryptionUtil.decrypt(userTopModel.getRegNumberFor()));
+                    userTopModel.setRegNumberLat(encryptionUtil.decrypt(userTopModel.getRegNumberLat()));
                     return UserDto.builder()
-                            .id(userTopModel.getId())
-                            .email(userTopModel.getEmail())
-                            .phoneNum(userTopModel.getPhoneNum())
-                            .name(userTopModel.getName())
-                            .authType(userTopModel.getAuthType())
-                            .regNumberFor(userTopModel.getRegNumberFor())
-                            .regNumberLat(userTopModel.getRegNumberLat())
-                            .employeeId(userTopModel.getRegNumberLat())
+                            .userTopDto(entityToDtoUserTop(userTopModel))
                             .userInfo(UserInfoDto.builder()
                                     .photo(userInfoModel.getPhoto())
                                     .address(userInfoModel.getAddress())
@@ -283,42 +315,14 @@ public class AccountServiceImpl implements AccountService {
         if(!isAdmin){
             UserTopModel userTopModel = userTopRepository.findById(currentAccountId)
                     .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND, ExceptionStatus.USER_NOT_FOUND.getMessage()));
-            UserInfoModel userInfoModel=userTopModel.getUserInfoModel();
-            TransferModel transferModel= userTopModel.getTransferIds().get(0);
 
-            return ProfileDto.builder()
-                    .email(userTopModel.getEmail())
-                    .name(userTopModel.getName())
-                    .phoneNum(userTopModel.getPhoneNum())
-                    .authType("N")
-                    .address(userInfoModel.getAddress())
-                    .photo(userInfoModel.getPhoto())
-                    .departName(transferModel.getDepartment().getName())
-                    .positionName(transferModel.getPosition().getName())
-                    .build();
+            return entityToDtoUserProfile(userTopModel);
         }
         AdminTopModel adminTopModel=adminTopRepository.findById(currentAccountId)
                 .orElseThrow(() -> new GlobalException(ExceptionStatus.ADMIN_NOT_FOUND, ExceptionStatus.ADMIN_NOT_FOUND.getMessage()));
-        UserInfoModel userInfoModel=adminTopModel.getUserInfoModel();
-        TransferModel transferModel= adminTopModel.getTransferIds().get(0);
 
-        return ProfileDto.builder()
-                .email(adminTopModel.getEmail())
-                .name(adminTopModel.getName())
-                .phoneNum(adminTopModel.getPhoneNum())
-                .authType("M")
-                .address(userInfoModel.getAddress())
-                .photo(userInfoModel.getPhoto())
-                .departName(transferModel.getDepartment().getName())
-                .positionName(transferModel.getPosition().getName())
-                .build();
+        return entityToDtoUserProfile(adminTopModel);
+
     }
-
-    private void validateUserDto(UserDto dto) {
-        if (dto.getEmployeeId().isEmpty() || dto.getPassword().isEmpty()) {
-            throw new GlobalException(ExceptionStatus.INVALID_INPUT, "employeeeId or password cannot be empty");
-        }
-    }
-
 
 }

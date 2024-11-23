@@ -44,10 +44,10 @@ public class AccountController {
     public ResponseEntity<Messenger> register(@RequestBody UserDto dto) throws MessagingException {
 
         try {
-            UserDto savedUser = accountService.save(dto);
-            log.info("mail register : {}, {}", savedUser.getEmail(), savedUser.getEmployeeId());
+            UserDto savedUser = (UserDto) accountService.save(dto);
+            log.info("mail register : {}, {}", savedUser.getUserTopDto().getEmail(), savedUser.getUserTopDto().getEmployeeId());
             try {
-                mailService.sendPasswordSetupEmail(savedUser.getEmail(), savedUser.getEmployeeId());
+                mailService.sendPasswordSetupEmail(savedUser.getUserTopDto().getEmail(), savedUser.getUserTopDto().getEmployeeId());
             } catch (MessagingException e) {
                 return ResponseEntity.status(ExceptionStatus.INTERNAL_SERVER_ERROR.getHttpStatus())
                         .body(Messenger.builder()
@@ -153,7 +153,7 @@ public class AccountController {
         boolean isAdmin = accountDto.isAdmin();
         String currentEmployeeId=accountDto.getEmployeeId();
 
-        if (!isAdmin && dto.getEmployeeId().equals(currentEmployeeId)) {
+        if (!isAdmin && !dto.getUserTopDto().getEmployeeId().equals(currentEmployeeId)) {
             return ResponseEntity.status(ExceptionStatus.NO_PERMISSION.getHttpStatus()).
                     body(Messenger.builder()
                             .message("User can only modify their own information.")

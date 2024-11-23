@@ -83,7 +83,7 @@ public class LogController {
 
         }
 
-        LogViewDto savedLog=viewLogService.save(LogViewDto.builder()
+        LogViewDto savedLog= (LogViewDto) viewLogService.save(LogViewDto.builder()
                 .viewReason(viewReasonDto.getViewReason())
                 .viewedEmployeeId(viewReasonDto.getViewedEmployeeId())
                 .viewerId(adminTopModel.get())

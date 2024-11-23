@@ -9,7 +9,7 @@ import site.wellmind.common.domain.model.BaseModel;
 @AllArgsConstructor
 @Builder
 @Table(name = "jsol_user_education")
-@Getter
+@Data
 @ToString(exclude = {"id"})
 public class UserEducationModel extends BaseModel {
 
