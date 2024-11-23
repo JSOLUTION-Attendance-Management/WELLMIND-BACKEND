@@ -21,7 +21,7 @@ import java.util.List;
 @Getter
 @Table(name = "jsol_usertop")
 @ToString(exclude = {"id", "userEduIds", "userInfoModel", "role", "transferIds", "qrTokenIds", "recordIds",
-        "viewLogIds", "updateLogIds", "loginLogIds", "deleteLogIds", "reportLogIds"})
+        "loginLogIds"})
 public class UserTopModel extends BaseModel {
 
     @Id

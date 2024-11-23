@@ -2,14 +2,12 @@ package site.wellmind.user.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import site.wellmind.common.domain.vo.AdminRole;
 import site.wellmind.common.service.CommandService;
 import site.wellmind.common.service.QueryService;
 import site.wellmind.security.util.EncryptionUtil;
 import site.wellmind.transfer.domain.model.TransferModel;
-import site.wellmind.user.domain.dto.EducationDto;
-import site.wellmind.user.domain.dto.ProfileDto;
-import site.wellmind.user.domain.dto.UserDto;
-import site.wellmind.user.domain.dto.UserInfoDto;
+import site.wellmind.user.domain.dto.*;
 import site.wellmind.user.domain.model.*;
 
 import java.util.List;
@@ -29,13 +27,13 @@ import java.util.stream.Collectors;
 public interface AccountService extends CommandService<UserDto>, QueryService<UserDto> {
     default UserTopModel dtoToEntityUserAll(UserDto dto, UserInfoModel userInfoModel, AccountRoleModel accountRoleModel) {
         return UserTopModel.builder()
-                .employeeId(dto.getEmployeeId())
-                .email(dto.getEmail())
-                .name(dto.getName())
-                .phoneNum(dto.getPhoneNum())
+                .employeeId(dto.getUserTopDto().getEmployeeId())
+                .email(dto.getUserTopDto().getEmail())
+                .name(dto.getUserTopDto().getName())
+                .phoneNum(dto.getUserTopDto().getPhoneNum())
                 .authType("N")
-                .regNumberFor(EncryptionUtil.encrypt(dto.getRegNumberFor()))
-                .regNumberLat(EncryptionUtil.encrypt(dto.getRegNumberLat()))
+                .regNumberFor(dto.getUserTopDto().getRegNumberFor())
+                .regNumberLat(dto.getUserTopDto().getRegNumberLat())
                 .deleteFlag(false)
                 .userInfoModel(userInfoModel)
                 .role(accountRoleModel)
@@ -50,17 +48,7 @@ public interface AccountService extends CommandService<UserDto>, QueryService<Us
         String positionName=transferModel.getPosition().getName();
 
         return UserDto.builder()
-                .id(model.getId())
-                .employeeId(model.getEmployeeId())
-                .email(model.getEmail())
-                .name(model.getName())
-                .phoneNum(model.getPhoneNum())
-//                .regNumberFor(EncryptionUtil.decrypt(model.getRegNumberFor()))
-//                .regNumberLat(EncryptionUtil.decrypt(model.getRegNumberLat()))
-                .deleteFlag(model.getDeleteFlag())
-                .authType(model.getAuthType())
-                .regDate(model.getRegDate())
-                .modDate(model.getModDate())
+                .userTopDto(entityToDtoUserTop(model))
                 .userInfo(entityToDtoUserInfo(userInfoModel))
                 .education(userEducations.stream()
                         .map(this::entityToDtoUserEdu)
@@ -77,17 +65,7 @@ public interface AccountService extends CommandService<UserDto>, QueryService<Us
         String positionName=transferModel.getPosition().getName();
 
         return UserDto.builder()
-                .id(model.getId())
-                .employeeId(model.getEmployeeId())
-                .email(model.getEmail())
-                .name(model.getName())
-                .phoneNum(model.getPhoneNum())
-//                .regNumberFor(EncryptionUtil.decrypt(model.getRegNumberFor()))
-//                .regNumberLat(EncryptionUtil.decrypt(model.getRegNumberLat()))
-                .deleteFlag(model.getDeleteFlag())
-                .authType(model.getAuthType())
-                .regDate(model.getRegDate())
-                .modDate(model.getModDate())
+                .userTopDto(entityToDtoUserTop(model))
                 .userInfo(entityToDtoUserInfo(userInfoModel))
                 .education(userEducations.stream()
                         .map(this::entityToDtoUserEdu)
@@ -97,6 +75,44 @@ public interface AccountService extends CommandService<UserDto>, QueryService<Us
                 .build();
     }
 
+    default UserTopModel dtoToEntityUserTop(UserTopDto dto){
+        return UserTopModel.builder()
+                .id(dto.getId())
+                .email(dto.getEmployeeId())
+                .name(dto.getName())
+                .phoneNum(dto.getPhoneNum())
+                .regNumberFor(dto.getRegNumberFor())
+                .regNumberLat(dto.getRegNumberLat())
+                .deleteFlag(dto.isDeleteFlag())
+                .authType(dto.getAuthType())
+                .build();
+    }
+    default UserTopDto entityToDtoUserTop(AdminTopModel model){
+        return UserTopDto.builder()
+                .id(model.getId())
+                .email(model.getEmployeeId())
+                .name(model.getName())
+                .phoneNum(model.getPhoneNum())
+                .regNumberFor(model.getRegNumberFor())
+                .regNumberLat(model.getRegNumberLat())
+                .deleteFlag(model.getDeleteFlag())
+                .authType(model.getAuthType())
+                .build();
+    }
+    default UserTopDto entityToDtoUserTop(UserTopModel model){
+        return UserTopDto.builder()
+                .id(model.getId())
+                .email(model.getEmployeeId())
+                .name(model.getName())
+                .phoneNum(model.getPhoneNum())
+                .regNumberFor(model.getRegNumberFor())
+                .regNumberLat(model.getRegNumberLat())
+                .deleteFlag(model.getDeleteFlag())
+                .authType(model.getAuthType())
+                .regDate(model.getRegDate())
+                .modDate(model.getModDate())
+                .build();
+    }
     default UserInfoModel dtoToEntityUserInfo(UserInfoDto dto) {
         return UserInfoModel.builder()
                 .address(dto.getAddress())
@@ -131,6 +147,8 @@ public interface AccountService extends CommandService<UserDto>, QueryService<Us
                 .degree(edu.getDegree())
                 .institutionName(edu.getInstitutionName())
                 .major(edu.getMajor())
+                .regDate(edu.getRegDate())
+                .modDate(edu.getModDate())
                 .build();
     }
     
