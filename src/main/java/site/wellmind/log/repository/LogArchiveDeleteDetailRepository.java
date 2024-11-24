@@ -7,4 +7,5 @@ import site.wellmind.log.domain.model.LogArchiveDeleteModel;
 
 @Repository
 public interface LogArchiveDeleteDetailRepository extends JpaRepository<LogArchiveDeleteDetailModel,Long> {
+
 }

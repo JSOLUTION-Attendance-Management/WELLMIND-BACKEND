@@ -16,7 +16,7 @@ import site.wellmind.common.service.MailService;
 import site.wellmind.security.provider.JwtTokenProvider;
 import site.wellmind.user.domain.dto.AccountDto;
 import site.wellmind.user.domain.dto.UserAllDto;
-import site.wellmind.user.domain.dto.UserDeleteDto;
+import site.wellmind.user.domain.dto.UserLogRequestDto;
 import site.wellmind.user.service.AccountService;
 
 /**
@@ -189,7 +189,7 @@ public class AccountController {
     }
 
     @DeleteMapping("/delete-by-id")
-    public ResponseEntity<Messenger> deleteById(@RequestBody UserDeleteDto userDeleteDto, HttpServletRequest request) {
+    public ResponseEntity<Messenger> deleteById(@RequestBody UserLogRequestDto userLogRequestDto, HttpServletRequest request) {
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
         if (!accountDto.isAdmin()) {
             return ResponseEntity.status(ExceptionStatus.NO_PERMISSION.getHttpStatus())
@@ -198,7 +198,7 @@ public class AccountController {
                             .build());
         }
 
-        accountService.deleteById(userDeleteDto,accountDto);
+        accountService.deleteById(userLogRequestDto,accountDto);
 
         return ResponseEntity.ok(Messenger.builder()
                 .message("User deleted successfully.")

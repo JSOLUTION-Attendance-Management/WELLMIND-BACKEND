@@ -106,8 +106,8 @@ public class AdminTopModel extends BaseModel {
 
     @OneToMany(mappedBy = "updaterId", cascade = CascadeType.MERGE, orphanRemoval = false)
     private List<LogArchiveUpdateModel> updateLogIds;
-
-    @OneToMany(mappedBy = "reporterId",cascade = CascadeType.MERGE,orphanRemoval = false)
-    private List<LogArchiveReportModel> reportLogIds;
+//
+//    @OneToMany(mappedBy = "reporterId",cascade = CascadeType.MERGE,orphanRemoval = false)
+//    private List<LogArchiveReportModel> reportLogIds;
 
 }

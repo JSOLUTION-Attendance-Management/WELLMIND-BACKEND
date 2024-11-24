@@ -11,10 +11,8 @@ import site.wellmind.log.domain.dto.LogViewDto;
 import site.wellmind.log.domain.dto.ViewReasonDto;
 import site.wellmind.log.service.LogDeleteService;
 import site.wellmind.log.service.LogViewService;
-import site.wellmind.security.annotation.CurrentAccount;
-import site.wellmind.security.provider.JwtTokenProvider;
 import site.wellmind.user.domain.dto.AccountDto;
-import site.wellmind.user.domain.dto.UserDeleteDto;
+import site.wellmind.user.domain.dto.UserLogRequestDto;
 import site.wellmind.user.domain.model.AdminTopModel;
 import site.wellmind.user.domain.model.UserTopModel;
 import site.wellmind.user.service.AccountService;
@@ -97,7 +95,7 @@ public class LogController {
     }
 
     @PostMapping("/delete/recovery")
-    public ResponseEntity<Messenger> deleteById(@RequestBody UserDeleteDto userDeleteDto, HttpServletRequest request) {
+    public ResponseEntity<Messenger> deleteById(@RequestBody UserLogRequestDto userLogRequestDto, HttpServletRequest request) {
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
 
         log.info("accountDto:{}", accountDto);
@@ -110,7 +108,7 @@ public class LogController {
         }
 
         try {
-            deleteService.recovery(userDeleteDto,accountDto);
+            deleteService.recovery(userLogRequestDto,accountDto);
 
             return ResponseEntity.ok(Messenger.builder()
                     .state(true).build());

@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import site.wellmind.user.domain.model.AdminTopModel;
+import site.wellmind.user.domain.model.UserTopModel;
 
 import java.time.LocalDateTime;
 
@@ -17,6 +19,8 @@ public class EducationDto {
     private String degree;
     private String major;
     private String institutionName;
+    private UserTopModel userTopModel;
+    private AdminTopModel adminTopModel;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     private LocalDateTime regDate;

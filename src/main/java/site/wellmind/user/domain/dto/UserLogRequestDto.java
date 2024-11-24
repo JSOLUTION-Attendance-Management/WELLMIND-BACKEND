@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * UserDeleteDto
+ * UserLogRequestDto
  * <p>User Delete Data Transfer Object</p>
  * @since 2024-11-24
  * @version 1.0
@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserDeleteDto {
-    private String deletedReason;
+public class UserLogRequestDto {
+    private String reason;
     private String employeeId;
 }

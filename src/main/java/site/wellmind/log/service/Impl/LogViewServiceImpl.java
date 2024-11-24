@@ -1,31 +1,17 @@
 package site.wellmind.log.service.Impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
 import site.wellmind.log.domain.dto.LogViewDto;
-import site.wellmind.log.domain.model.LogArchiveDeleteDetailModel;
-import site.wellmind.log.domain.model.LogArchiveDeleteModel;
 import site.wellmind.log.domain.model.LogArchiveViewModel;
-import site.wellmind.log.domain.vo.DeleteStatus;
-import site.wellmind.log.repository.LogArchiveDeleteDetailRepository;
-import site.wellmind.log.repository.LogArchiveDeleteRepository;
 import site.wellmind.log.repository.LogArchiveViewRepository;
 import site.wellmind.log.service.LogViewService;
 import site.wellmind.user.domain.dto.AccountDto;
-import site.wellmind.user.domain.dto.UserDeleteDto;
-import site.wellmind.user.domain.model.AdminTopModel;
-import site.wellmind.user.domain.model.UserTopModel;
-import site.wellmind.user.service.AccountService;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

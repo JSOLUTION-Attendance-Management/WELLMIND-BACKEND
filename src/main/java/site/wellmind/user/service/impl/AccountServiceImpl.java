@@ -17,8 +17,6 @@ import org.springframework.stereotype.Service;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
 import site.wellmind.common.service.UtilService;
-import site.wellmind.log.domain.model.LogArchiveDeleteDetailModel;
-import site.wellmind.log.domain.model.LogArchiveDeleteModel;
 import site.wellmind.log.domain.model.LogArchiveUpdateModel;
 import site.wellmind.log.domain.vo.DeleteStatus;
 import site.wellmind.log.event.UserDeletedEvent;
@@ -97,7 +95,7 @@ public class AccountServiceImpl implements AccountService {
             UserTopModel savedUser = userTopRepository.save(userDtoEntityMapper.dtoToEntityUserAll(dto, userInfoModel, accountRoleModel));
 
             List<UserEducationModel> educationEntities = dto.getEducation().stream()
-                    .map(educationDto -> userDtoEntityMapper.dtoToEntityUserEdu(educationDto, savedUser))
+                    .map(educationDto -> userDtoEntityMapper.dtoToEntityUserEdu(educationDto))
                     .collect(Collectors.toList());
 
             userEducationRepository.saveAll(educationEntities);
@@ -125,38 +123,38 @@ public class AccountServiceImpl implements AccountService {
     @Async
     @Override
     public void deleteById(Object ob, AccountDto accountDto) {
-        UserDeleteDto userDeleteDto = (UserDeleteDto) ob;
+        UserLogRequestDto userLogRequestDto = (UserLogRequestDto) ob;
         Optional<AdminTopModel> admin = findAdminByEmployeeId(accountDto.getEmployeeId());
-        Optional<UserTopModel> userTopModel = findUserByEmployeeId(userDeleteDto.getEmployeeId());
+        Optional<UserTopModel> userTopModel = findUserByEmployeeId(userLogRequestDto.getEmployeeId());
         if (userTopModel.isPresent()) {  //삭제하려는 대상이 사용자일 경우
             UserTopModel user = userTopModel.get();
             if (!user.getDeleteFlag()) { //논리 삭제의 경우
                 user.setDeleteFlag(true);
                 userTopRepository.save(user);
-                //saveDeleteLog(userTopModel.get(), userDeleteDto.getDeletedReason(), DeleteStatus.CACHE, admin.get());
-                eventPublisher.publishEvent(new UserDeletedEvent(this, user, userDeleteDto.getDeletedReason(), DeleteStatus.CACHE, admin.get()));
+                //saveDeleteLog(userTopModel.get(), userLogRequestDto.getDeletedReason(), DeleteStatus.CACHE, admin.get());
+                eventPublisher.publishEvent(new UserDeletedEvent(this, user, userLogRequestDto.getReason(), DeleteStatus.CACHE, admin.get()));
 
             } else {  //완전 삭제의 경우
-                //saveDeleteLog(userTopModel.get(), userDeleteDto.getDeletedReason(), DeleteStatus.CLEAR, admin.get());
-                eventPublisher.publishEvent(new UserDeletedEvent(this, user, userDeleteDto.getDeletedReason(), DeleteStatus.CLEAR, admin.get()));
+                //saveDeleteLog(userTopModel.get(), userLogRequestDto.getDeletedReason(), DeleteStatus.CLEAR, admin.get());
+                eventPublisher.publishEvent(new UserDeletedEvent(this, user, userLogRequestDto.getReason(), DeleteStatus.CLEAR, admin.get()));
                 userTopRepository.delete(user);
                 userInfoRepository.delete(user.getUserInfoModel());
                 List<UserEducationModel> userEducationModels=user.getUserEduIds();
                 userEducationRepository.deleteAll(userEducationModels);
             }
         } else {  //삭제하려는 대상이 관리자일 경우
-            Optional<AdminTopModel> adminTopModel = findAdminByEmployeeId(userDeleteDto.getEmployeeId());
+            Optional<AdminTopModel> adminTopModel = findAdminByEmployeeId(userLogRequestDto.getEmployeeId());
             if (!adminTopModel.isPresent()) {
                 AdminTopModel adminUser = adminTopModel.get();
                 if (!adminUser.getDeleteFlag()) { //논리 삭제의 경우
                     adminUser.setDeleteFlag(true);
                     adminTopRepository.save(adminUser);
-                   // saveDeleteLog(adminTopModel.get(), userDeleteDto.getDeletedReason(), DeleteStatus.CACHE, admin.get());
-                    eventPublisher.publishEvent(new UserDeletedEvent(this, adminUser, userDeleteDto.getDeletedReason(), DeleteStatus.CACHE, admin.get()));
+                   // saveDeleteLog(adminTopModel.get(), userLogRequestDto.getDeletedReason(), DeleteStatus.CACHE, admin.get());
+                    eventPublisher.publishEvent(new UserDeletedEvent(this, adminUser, userLogRequestDto.getReason(), DeleteStatus.CACHE, admin.get()));
 
                 } else {  //완전 삭제인 경우
-                    //saveDeleteLog(adminTopModel.get(), userDeleteDto.getDeletedReason(), DeleteStatus.CLEAR, admin.get());
-                    eventPublisher.publishEvent(new UserDeletedEvent(this, adminUser, userDeleteDto.getDeletedReason(), DeleteStatus.CLEAR, admin.get()));
+                    //saveDeleteLog(adminTopModel.get(), userLogRequestDto.getDeletedReason(), DeleteStatus.CLEAR, admin.get());
+                    eventPublisher.publishEvent(new UserDeletedEvent(this, adminUser, userLogRequestDto.getReason(), DeleteStatus.CLEAR, admin.get()));
 
                     adminTopRepository.delete(adminUser);
                     userInfoRepository.delete(adminUser.getUserInfoModel());

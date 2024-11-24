@@ -50,12 +50,13 @@ public class UserDtoEntityMapper {
 
     }
 
-    public UserEducationModel dtoToEntityUserEdu(EducationDto dto, UserTopModel userTopModel) {
+    public UserEducationModel dtoToEntityUserEdu(EducationDto dto) {
         return UserEducationModel.builder()
                 .degree(dto.getDegree())
                 .major(dto.getMajor())
                 .institutionName(dto.getInstitutionName())
-                .userTopModel(userTopModel)
+                .userTopModel(dto.getUserTopModel())
+                .adminTopModel(dto.getAdminTopModel())
                 .build();
     }
 
