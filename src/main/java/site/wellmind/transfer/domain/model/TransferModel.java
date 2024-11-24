@@ -21,7 +21,7 @@ public class TransferModel extends BaseModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "USER_IDX", nullable = true)  // null 허용
     @JsonBackReference // 순환 참조 방지
     private UserTopModel userId;

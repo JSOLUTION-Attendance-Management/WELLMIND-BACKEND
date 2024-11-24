@@ -122,6 +122,7 @@ public interface AccountService extends CommandService<UserAllDto>, QueryService
                 .hobby(dto.getHobby())
                 .isLong(dto.isLong())
                 .significant(dto.getSignificant())
+                .hireDate(dto.getHireDate())
                 .build();
 
     }
@@ -133,6 +134,7 @@ public interface AccountService extends CommandService<UserAllDto>, QueryService
                 .hobby(model.getHobby())
                 .isLong(model.isLong())
                 .significant(model.getSignificant())
+                .hireDate(model.getHireDate())
                 .build();
     }
 
