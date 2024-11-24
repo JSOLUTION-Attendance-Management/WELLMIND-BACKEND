@@ -50,13 +50,11 @@ public class AttendServiceImpl implements AttendService {
             if (!accountDto.isAdmin()) {
                 throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
             }
-            whereClause.and(qAttendRecord.userId.employeeId.eq(employeeId).or(qAttendRecord.adminId.employeeId.eq(employeeId)));
+            Long accountId = accountDto.getAccountId();
+            whereClause.and(qAttendRecord.userId.id.eq(accountId).or(qAttendRecord.adminId.id.eq(accountId)));
         } else {
-            whereClause.and(qAttendRecord.userId.employeeId.eq(accountDto.getEmployeeId()).or(qAttendRecord.adminId.employeeId.eq(accountDto.getEmployeeId())));
-        }
-
-        if (recentCount != null) {
-            whereClause.and(qAttendRecord.attendStatus.eq(AttendStatus.NA));
+            Long accountId = accountDto.getAccountId();
+            whereClause.and(qAttendRecord.userId.id.eq(accountId).or(qAttendRecord.adminId.id.eq(accountId)));
         }
 
         JPAQuery<AttendRecordModel> query = queryFactory
@@ -85,12 +83,17 @@ public class AttendServiceImpl implements AttendService {
 
     @Override
     public List<AttendDto> findRecentAttendances(String employeeId, AccountDto accountDto, Integer recentCount) {
+        if (employeeId == null) {
+            employeeId = accountDto.getEmployeeId();
+        }
+
         if (!accountDto.isAdmin() && !employeeId.equals(accountDto.getEmployeeId())) {
             throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
         }
 
+        Long accountId = accountDto.getAccountId();
         BooleanBuilder whereClause = new BooleanBuilder();
-        whereClause.and(qAttendRecord.userId.employeeId.eq(employeeId).or(qAttendRecord.adminId.employeeId.eq(employeeId)))
+        whereClause.and(qAttendRecord.userId.id.eq(accountId).or(qAttendRecord.adminId.id.eq(accountId)))
                 .and(qAttendRecord.attendStatus.in(AttendStatus.NA, AttendStatus.LA));
 
         JPAQuery<AttendRecordModel> query = queryFactory
