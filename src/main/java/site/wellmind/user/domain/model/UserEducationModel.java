@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import site.wellmind.common.domain.model.BaseModel;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor

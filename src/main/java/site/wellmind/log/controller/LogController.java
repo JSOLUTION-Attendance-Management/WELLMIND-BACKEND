@@ -9,10 +9,10 @@ import site.wellmind.common.domain.dto.Messenger;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.log.domain.dto.LogViewDto;
 import site.wellmind.log.domain.dto.ViewReasonDto;
+import site.wellmind.log.service.LogDeleteService;
 import site.wellmind.log.service.LogViewService;
-import site.wellmind.security.annotation.CurrentAccount;
-import site.wellmind.security.provider.JwtTokenProvider;
 import site.wellmind.user.domain.dto.AccountDto;
+import site.wellmind.user.domain.dto.UserLogRequestDto;
 import site.wellmind.user.domain.model.AdminTopModel;
 import site.wellmind.user.domain.model.UserTopModel;
 import site.wellmind.user.service.AccountService;
@@ -37,6 +37,7 @@ import java.util.Optional;
 public class LogController {
     private final LogViewService viewLogService;
     private final AccountService accountService;
+    private final LogDeleteService deleteService;
 
     @PostMapping("/view/register")
     public ResponseEntity<Messenger> registerViewLog(@RequestBody ViewReasonDto viewReasonDto, HttpServletRequest request){
@@ -91,6 +92,33 @@ public class LogController {
 
         return ResponseEntity.ok(Messenger.builder()
                 .state(savedLog!=null).build());
+    }
+
+    @PostMapping("/delete/recovery")
+    public ResponseEntity<Messenger> deleteById(@RequestBody UserLogRequestDto userLogRequestDto, HttpServletRequest request) {
+        AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
+
+        log.info("accountDto:{}", accountDto);
+
+        if (!accountDto.isAdmin()) {
+            return ResponseEntity.status(ExceptionStatus.NO_PERMISSION.getHttpStatus()).
+                    body(Messenger.builder()
+                            .message("User can only access their own information.")
+                            .build());
+        }
+
+        try {
+            deleteService.recovery(userLogRequestDto,accountDto);
+
+            return ResponseEntity.ok(Messenger.builder()
+                    .state(true).build());
+
+        } catch (Exception e) {
+            return ResponseEntity.status(ExceptionStatus.INTERNAL_SERVER_ERROR.getHttpStatus())
+                    .body(Messenger.builder()
+                            .message(ExceptionStatus.INTERNAL_SERVER_ERROR.getMessage()).build());
+        }
+
     }
 
 }

@@ -12,16 +12,14 @@ import site.wellmind.log.service.LogViewService;
 import site.wellmind.user.domain.dto.AccountDto;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class LogViewServiceImpl implements LogViewService {
+public class LogViewServiceImpl implements LogViewService{
 
     private final LogArchiveViewRepository viewRepository;
-
-    @Override
+     @Override
     public LogViewDto save(LogViewDto logViewDto) {
         try{
             viewRepository.save(LogArchiveViewModel.builder()
@@ -70,4 +68,8 @@ public class LogViewServiceImpl implements LogViewService {
     public Long count() {
         return null;
     }
+
+
+
+
 }

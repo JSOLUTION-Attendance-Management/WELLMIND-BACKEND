@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import site.wellmind.attend.domain.model.AttendQrModel;
 import site.wellmind.attend.domain.model.AttendRecordModel;
+import site.wellmind.attend.domain.model.AttendReportModel;
 import site.wellmind.common.domain.model.BaseModel;
 import site.wellmind.common.domain.vo.AdminRole;
 import site.wellmind.log.domain.model.*;
@@ -24,7 +25,7 @@ import java.util.List;
 @Getter
 @Table(name = "jsol_admintop")
 @ToString(exclude = {"id", "userEduIds", "userInfoModel", "role","transferIds",
-        "viewLogIds", "updateLogIds", "loginLogIds", "deleteLogIds", "reportLogIds"})
+        "viewLogIds", "updateLogIds", "loginLogIds", "deleteLogIds", "reportIds"})
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class AdminTopModel extends BaseModel {
     @Id
@@ -108,6 +109,6 @@ public class AdminTopModel extends BaseModel {
     private List<LogArchiveUpdateModel> updateLogIds;
 
     @OneToMany(mappedBy = "reporterId",cascade = CascadeType.MERGE,orphanRemoval = false)
-    private List<LogArchiveReportModel> reportLogIds;
+    private List<AttendReportModel> reportIds;
 
 }
