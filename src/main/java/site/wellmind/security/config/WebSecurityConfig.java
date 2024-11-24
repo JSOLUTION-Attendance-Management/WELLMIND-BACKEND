@@ -48,7 +48,7 @@ public class WebSecurityConfig {
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     private static final String[] AUTH_BLACKLIST={
-          "/swagger-ui/index.html/api/auth/**","/swagger-ui/index.html/api/log/**"
+          "/swagger-ui/index.html/api/auth/**","/swagger-ui/index.html/api/log/**","/swagger-ui/index.html/api/attend/**"
     };
     private static final String[] AUTH_WHITELIST = {
             "/swagger-ui/index.html/api/public/**",
