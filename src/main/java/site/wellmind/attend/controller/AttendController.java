@@ -11,6 +11,7 @@ import site.wellmind.common.domain.vo.SuccessStatus;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
 import site.wellmind.attend.domain.dto.AttendDto;
+import site.wellmind.attend.domain.dto.RecentAttendDto;
 import site.wellmind.attend.service.AttendService;
 import site.wellmind.user.domain.dto.AccountDto;
 
@@ -65,7 +66,7 @@ public class AttendController {
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
 
         try {
-            List<AttendDto> recentAttendances = attendService.findRecentAttendances(employeeId, accountDto, recentCount);
+            List<RecentAttendDto> recentAttendances = attendService.findRecentAttendances(employeeId, accountDto, recentCount);
             return ResponseEntity.ok(Messenger.builder()
                     .message("Recent attendance records retrieved successfully")
                     .data(recentAttendances)

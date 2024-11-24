@@ -15,8 +15,6 @@ import site.wellmind.attend.domain.vo.*;
 import site.wellmind.attend.repository.*;
 import site.wellmind.attend.service.AttendService;
 import site.wellmind.user.domain.dto.AccountDto;
-import site.wellmind.user.domain.model.UserTopModel;
-import site.wellmind.user.domain.model.AdminTopModel;
 import site.wellmind.common.exception.GlobalException;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 
@@ -82,7 +80,7 @@ public class AttendServiceImpl implements AttendService {
     }
 
     @Override
-    public List<AttendDto> findRecentAttendances(String employeeId, AccountDto accountDto, Integer recentCount) {
+    public List<RecentAttendDto> findRecentAttendances(String employeeId, AccountDto accountDto, Integer recentCount) {
         if (employeeId == null) {
             employeeId = accountDto.getEmployeeId();
         }
@@ -103,7 +101,7 @@ public class AttendServiceImpl implements AttendService {
                 .limit(recentCount);
 
         return query.fetch().stream()
-                .map(this::entityToDtoAttendRecord)
+                .map(this::entityToDtoRecentAttendRecord)
                 .collect(Collectors.toList());
     }
 }
