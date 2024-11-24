@@ -1,5 +1,8 @@
 package site.wellmind.user.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -12,6 +15,12 @@ import org.springframework.stereotype.Service;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
 import site.wellmind.common.service.UtilService;
+import site.wellmind.log.domain.model.LogArchiveDeleteDetailModel;
+import site.wellmind.log.domain.model.LogArchiveDeleteModel;
+import site.wellmind.log.domain.model.LogArchiveUpdateModel;
+import site.wellmind.log.domain.vo.DeleteStatus;
+import site.wellmind.log.repository.LogArchiveDeleteDetailRepository;
+import site.wellmind.log.repository.LogArchiveDeleteRepository;
 import site.wellmind.log.repository.LogArchiveUpdateRepository;
 import site.wellmind.security.util.EncryptionUtil;
 import site.wellmind.transfer.domain.model.QDepartmentModel;
@@ -50,6 +59,8 @@ public class AccountServiceImpl implements AccountService {
     private final AccountRoleRepository accountRoleRepository;
     private final AdminTopRepository adminTopRepository;
     private final LogArchiveUpdateRepository logArchiveUpdateRepository;
+    private final LogArchiveDeleteRepository logArchiveDeleteRepository;
+    private final LogArchiveDeleteDetailRepository logArchiveDeleteDetailRepository;
 
     private final UtilService utilService;
     private final EncryptionUtil encryptionUtil;
@@ -64,7 +75,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     @Transactional
-    public Object save(UserDto dto) {
+    public Object save(UserAllDto dto) {
 
         try {
 
@@ -74,7 +85,7 @@ public class AccountServiceImpl implements AccountService {
             //UserTopModel savedUser = userTopRepository.save(dtoToEntity(dto));
             dto.getUserTopDto().setRegNumberFor(encryptionUtil.encrypt(dto.getUserTopDto().getRegNumberFor()));
             dto.getUserTopDto().setRegNumberLat(encryptionUtil.encrypt(dto.getUserTopDto().getRegNumberLat()));
-            UserTopModel savedUser = userTopRepository.save(dtoToEntityUserAll(dto,userInfoModel,accountRoleModel));
+            UserTopModel savedUser = userTopRepository.save(dtoToEntityUserAll(dto, userInfoModel, accountRoleModel));
 
             List<UserEducationModel> educationEntities = dto.getEducation().stream()
                     .map(educationDto -> dtoToEntityUserEdu(educationDto, savedUser))
@@ -98,63 +109,97 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<UserDto> saveAll(List<UserDto> entities) {
+    public List<UserAllDto> saveAll(List<UserAllDto> entities) {
         return null;
     }
 
     @Override
-    public void deleteById(Long id) {
-        if (existById(id)) {
-            userTopRepository.deleteById(id);
+    public void deleteById(Object ob, AccountDto accountDto) {
+        UserDeleteDto userDeleteDto = (UserDeleteDto) ob;
+        Optional<AdminTopModel> admin = findAdminByEmployeeId(accountDto.getEmployeeId());
+        Optional<UserTopModel> userTopModel = findUserByEmployeeId(userDeleteDto.getEmployeeId());
+        if (userTopModel.isPresent()) {
+            if (!userTopModel.get().getDeleteFlag()) { //논리 삭제의 경우
+                userTopModel.get().setDeleteFlag(true);
+                userTopRepository.save(userTopModel.get());
+                saveDeleteLog(userTopModel.get(), userDeleteDto.getDeletedReason(), DeleteStatus.CACHE, admin.get());
+            } else {
+                saveDeleteLog(userTopModel.get(), userDeleteDto.getDeletedReason(), DeleteStatus.CLEAR, admin.get());
+                userTopRepository.delete(userTopModel.get());
+            }
         } else {
-            throw new GlobalException(ExceptionStatus.ACCOUNT_NOT_FOUND, "USERTOP_IDX not found");
+            Optional<AdminTopModel> adminTopModel = findAdminByEmployeeId(userDeleteDto.getEmployeeId());
+            if (!adminTopModel.isPresent()) {
+                if (!adminTopModel.get().getDeleteFlag()) { //논리 삭제의 경우
+                    adminTopModel.get().setDeleteFlag(true);
+                    adminTopRepository.save(adminTopModel.get());
+                    saveDeleteLog(adminTopModel.get(), userDeleteDto.getDeletedReason(), DeleteStatus.CACHE, admin.get());
+                } else {
+                    saveDeleteLog(userTopModel.get(), userDeleteDto.getDeletedReason(), DeleteStatus.CLEAR, admin.get());
+                    userTopRepository.delete(userTopModel.get());
+                }
+            } else {
+                throw new GlobalException(ExceptionStatus.ACCOUNT_NOT_FOUND);
+            }
         }
-
     }
 
-    @Override
-    @Transactional
-    public UserDto modify(UserDto userDto,AccountDto accountDto) {
-        if(!accountDto.isAdmin()){ //사용자
-            Optional<UserTopModel> userModel=userTopRepository.findById(accountDto.getAccountId());
-            if(userModel.isEmpty()){
-                throw new GlobalException(ExceptionStatus.USER_NOT_FOUND);
+    private void saveDeleteLog(UserTopModel user, String reason, DeleteStatus deleteType, AdminTopModel admin) {
+        try {
+
+            LogArchiveDeleteModel masterLog = LogArchiveDeleteModel.builder()
+                    .deleteReason(reason)
+                    .deleteType(deleteType)
+                    .deleterId(admin).build();
+            logArchiveDeleteRepository.save(masterLog);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.registerModule(new JavaTimeModule());
+
+            String userTopString = objectMapper.writeValueAsString(entityToDtoUserTop(user));
+            String userInfoString = objectMapper.writeValueAsString(entityToDtoUserInfo(user.getUserInfoModel()));
+
+            LogArchiveDeleteDetailModel userTopLog = LogArchiveDeleteDetailModel.builder()
+                    .masterDeleteLogId(masterLog)
+                    .tableName("jsol_usertop")
+                    .deletedEmployeeId(user.getEmployeeId())
+                    .deletedValue(userTopString)
+                    .build();
+            logArchiveDeleteDetailRepository.save(userTopLog);
+
+            if (user.getUserInfoModel() != null) {
+                LogArchiveDeleteDetailModel userInfoLog = LogArchiveDeleteDetailModel.builder()
+                        .masterDeleteLogId(masterLog)
+                        .tableName("jsol_userinfo")
+                        .deletedEmployeeId(user.getEmployeeId())
+                        .deletedValue(userInfoString)
+                        .build();
+                logArchiveDeleteDetailRepository.save(userInfoLog);
             }
-            userDto.getUserTopDto().setRegNumberFor(encryptionUtil.encrypt(userDto.getUserTopDto().getRegNumberFor()));
-            userDto.getUserTopDto().setRegNumberLat(encryptionUtil.encrypt(userDto.getUserTopDto().getRegNumberLat()));
-
-            UserInfoModel userInfoModel=userModel.get().getUserInfoModel();
-            utilService.mapFields(userDto.getUserTopDto(), userModel.get());
-            utilService.mapFields(userDto.getUserInfo(), userInfoModel);
-
-            List<UserEducationModel> userEducationModel=userModel.get().getUserEduIds();
-            List<EducationDto> educationDtos=userDto.getEducation();
-            if(educationDtos!=null){
-                userEducationModel.clear();
-                for(EducationDto educationDto:educationDtos){
-                    UserEducationModel newEducationModel = UserEducationModel.builder().build();
-                    utilService.mapFields(educationDto,newEducationModel);
-                    newEducationModel.setUserTopModel(userModel.get());
-                    userEducationModel.add(newEducationModel);
+            if (user.getUserEduIds() != null) {
+                for (UserEducationModel edu : user.getUserEduIds()) {
+                    LogArchiveDeleteDetailModel eduLog = LogArchiveDeleteDetailModel.builder()
+                            .masterDeleteLogId(masterLog)
+                            .tableName("jsol_user_education")
+                            .deletedEmployeeId(user.getEmployeeId())
+                            .deletedValue(userInfoString)
+                            .build();
+                    logArchiveDeleteDetailRepository.save(eduLog);
                 }
-                userEducationRepository.saveAll(userEducationModel);
             }
 
-            UserTopModel savedUser=userTopRepository.save(userModel.get());
-            userInfoRepository.save(userInfoModel);
-
-            savedUser.setRegNumberFor(encryptionUtil.decrypt(savedUser.getRegNumberFor()));
-            savedUser.setRegNumberLat(encryptionUtil.decrypt(savedUser.getRegNumberLat()));
-            return entityToDtoUserAll(savedUser);
-        }else{ //관리자
-
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error saving delete log", e);
         }
-        return null;
+    }
+
+    private void saveDeleteLog(AdminTopModel user, String reason, DeleteStatus deleteType, AdminTopModel admin) {
+
     }
 
     @Override
     public Object findById(String employeeId, AccountDto accountDto) {
-        Long currentAccountId=accountDto.getAccountId();
+        Long currentAccountId = accountDto.getAccountId();
 
         if (!accountDto.isAdmin()) {  //사용자
             UserTopModel userTopModel = userTopRepository.findById(currentAccountId)
@@ -162,36 +207,36 @@ public class AccountServiceImpl implements AccountService {
             return entityToDtoUserAll(userTopModel);
         } else { //관리자
 
-            if(employeeId!=null){
-                Optional<UserTopModel> user=findUserByEmployeeId(employeeId);
-                log.info("user : {}",user);
+            if (employeeId != null) {
+                Optional<UserTopModel> user = findUserByEmployeeId(employeeId);
+                log.info("user : {}", user);
 
-                if(!user.isEmpty()){
-                    if(accountDto.getRole().equals("ROLE_ADMIN_UBL_55")){
+                if (!user.isEmpty()) {
+                    if (accountDto.getRole().equals("ROLE_ADMIN_UBL_55")) {
                         return entityToDtoUserProfile(user.get());
-                    }else if(accountDto.getRole().equals("ROLE_ADMIN_UBL_66")){
+                    } else if (accountDto.getRole().equals("ROLE_ADMIN_UBL_66")) {
                         return entityToDtoUserAll(user.get());
-                    }else{
+                    } else {
                         throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
                     }
                 }
-                Optional<AdminTopModel> admin=findAdminByEmployeeId(employeeId);
-                log.info("admin : {}",admin);
+                Optional<AdminTopModel> admin = findAdminByEmployeeId(employeeId);
+                log.info("admin : {}", admin);
 
-                if(!admin.isEmpty()){
-                    if(accountDto.getRole().equals("ROLE_ADMIN_UBL_55")){
+                if (!admin.isEmpty()) {
+                    if (accountDto.getRole().equals("ROLE_ADMIN_UBL_55")) {
                         return entityToDtoUserProfile(admin.get());
-                    }else if(accountDto.getRole().equals("ROLE_ADMIN_UBL_66")){
+                    } else if (accountDto.getRole().equals("ROLE_ADMIN_UBL_66")) {
                         return entityToDtoUserAll(admin.get());
-                    }else{
+                    } else {
                         throw new GlobalException(ExceptionStatus.ADMIN_NOT_FOUND, ExceptionStatus.ADMIN_NOT_FOUND.getMessage());
                     }
                 }
-             }
+            }
 
             AdminTopModel admin = adminTopRepository.findById(currentAccountId)
                     .orElseThrow(() -> new GlobalException(ExceptionStatus.ADMIN_NOT_FOUND, ExceptionStatus.ADMIN_NOT_FOUND.getMessage()));
-            log.info("admin : {}",admin);
+            log.info("admin : {}", admin);
 
             return entityToDtoUserAll(admin);
 
@@ -200,7 +245,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<UserDto> findAll() {
+    public List<UserAllDto> findAll() {
         List<UserTopModel> userTopModels = userTopRepository.findAll();
 
         return userTopModels.stream()
@@ -209,7 +254,7 @@ public class AccountServiceImpl implements AccountService {
                     List<UserEducationModel> userEducationModels = userTopModel.getUserEduIds();
                     userTopModel.setRegNumberFor(encryptionUtil.decrypt(userTopModel.getRegNumberFor()));
                     userTopModel.setRegNumberLat(encryptionUtil.decrypt(userTopModel.getRegNumberLat()));
-                    return UserDto.builder()
+                    return UserAllDto.builder()
                             .userTopDto(entityToDtoUserTop(userTopModel))
                             .userInfo(UserInfoDto.builder()
                                     .photo(userInfoModel.getPhoto())
@@ -245,8 +290,11 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Boolean existByEmployeeId(String employeeId) {
-        return userTopRepository.existsByEmployeeId(employeeId);
+    public Boolean existByEmployeeId(AccountDto accountDto) {
+        if (accountDto.isAdmin()) {
+            return adminTopRepository.existsById(accountDto.getAccountId());
+        }
+        return userTopRepository.existsById(accountDto.getAccountId());
     }
 
     @Override
@@ -261,7 +309,7 @@ public class AccountServiceImpl implements AccountService {
 
 
     @Override
-    public Page<UserDto> findBy(String departName, String positionName, String name, Pageable pageable) {
+    public Page<UserAllDto> findBy(String departName, String positionName, String name, Pageable pageable) {
         BooleanBuilder whereClause = new BooleanBuilder();
         // 조건 추가 시 null 체크를 포함하여 안전하게 설정
         if (positionName != null) {
@@ -312,17 +360,172 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public ProfileDto findProfileById(Long currentAccountId, boolean isAdmin) {
-        if(!isAdmin){
+        if (!isAdmin) {
             UserTopModel userTopModel = userTopRepository.findById(currentAccountId)
                     .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND, ExceptionStatus.USER_NOT_FOUND.getMessage()));
 
             return entityToDtoUserProfile(userTopModel);
         }
-        AdminTopModel adminTopModel=adminTopRepository.findById(currentAccountId)
+        AdminTopModel adminTopModel = adminTopRepository.findById(currentAccountId)
                 .orElseThrow(() -> new GlobalException(ExceptionStatus.ADMIN_NOT_FOUND, ExceptionStatus.ADMIN_NOT_FOUND.getMessage()));
 
         return entityToDtoUserProfile(adminTopModel);
 
     }
 
+    @Override
+    public UserDetailDto findDetailById(Long currentAccountId, boolean isAdmin) {
+        if (!isAdmin) {
+            UserTopModel userTopModel = userTopRepository.findById(currentAccountId)
+                    .orElseThrow(() -> new GlobalException(ExceptionStatus.USER_NOT_FOUND, ExceptionStatus.USER_NOT_FOUND.getMessage()));
+
+            return entityToDtoUserDetail(userTopModel);
+        }
+        AdminTopModel adminTopModel = adminTopRepository.findById(currentAccountId)
+                .orElseThrow(() -> new GlobalException(ExceptionStatus.ADMIN_NOT_FOUND, ExceptionStatus.ADMIN_NOT_FOUND.getMessage()));
+
+        return entityToDtoUserDetail(adminTopModel);
+    }
+
+    @Override
+    @Transactional
+    public UserAllDto modify(UserAllDto userAllDto, AccountDto accountDto) {
+        if (accountDto.isAdmin()) {  // 관리자에 대한 로직
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.registerModule(new JavaTimeModule());
+            Optional<AdminTopModel> updater = adminTopRepository.findById(accountDto.getAccountId());
+            if ("ROLE_ADMIN_UBL_55".equals(accountDto.getRole())) {
+                if (
+                        !userAllDto.getUserTopDto().getRegNumberFor().isEmpty() ||
+                                !userAllDto.getUserTopDto().getRegNumberLat().isEmpty()
+                ) {
+                    throw new GlobalException(ExceptionStatus.UNAUTHORIZED);
+                }
+            } else {
+                Optional<AdminTopModel> admin = adminTopRepository.findByEmployeeId(userAllDto.getUserTopDto().getEmployeeId());
+                Optional<UserTopModel> user = userTopRepository.findByEmployeeId(userAllDto.getUserTopDto().getEmployeeId());
+                UserAllDto updatedDto;
+                String oldJsonString;
+                String newJsonString;
+                log.info("admin: {}", admin);
+
+                if (admin.isPresent()) {
+                    log.info("update admin");
+                    updatedDto = processAdminUpdate(userAllDto);
+                } else {
+                    log.info("update user");
+                    updatedDto = processUserUpdate(userAllDto);
+                }
+
+                try {
+                    if (admin.isPresent()) {
+                        oldJsonString = objectMapper.writeValueAsString(entityToDtoUserAll(admin.get()));
+                    } else {
+                        oldJsonString = objectMapper.writeValueAsString(entityToDtoUserAll(user.get()));
+                    }
+                    newJsonString = objectMapper.writeValueAsString(updatedDto);
+                    System.out.println("JSON 형태의 문자열: " + oldJsonString);
+                    System.out.println("JSON 형태의 문자열: " + newJsonString);
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException("JSON 변환 중 오류 발생", e);
+                }
+                LogArchiveUpdateModel updateModel = LogArchiveUpdateModel.builder()
+                        .updatedEmployeeId(userAllDto.getUserTopDto().getEmployeeId())
+                        .previousValue(oldJsonString)
+                        .newValue(newJsonString)
+                        .updaterId(updater.get())
+                        .build();
+                logArchiveUpdateRepository.save(updateModel);
+                return updatedDto;
+            }
+        }
+        return processUserUpdate(userAllDto);
+    }
+
+
+    private UserAllDto processUserUpdate(UserAllDto userAllDto) {
+        Optional<UserTopModel> userModelOpt = userTopRepository.findById(userAllDto.getUserTopDto().getId());
+        if (userModelOpt.isEmpty()) {
+            throw new GlobalException(ExceptionStatus.USER_NOT_FOUND);
+        }
+
+        UserTopModel userModel = userModelOpt.get();
+        updateCommonFieldsForUser(userAllDto, userModel);
+
+        UserTopModel savedUser = userTopRepository.save(userModel);
+        userInfoRepository.save(userModel.getUserInfoModel());
+
+        // 주민등록번호 복호화
+        savedUser.setRegNumberFor(encryptionUtil.decrypt(savedUser.getRegNumberFor()));
+        savedUser.setRegNumberLat(encryptionUtil.decrypt(savedUser.getRegNumberLat()));
+
+        return entityToDtoUserAll(savedUser);
+    }
+
+    private UserAllDto processAdminUpdate(UserAllDto userAllDto) {
+        Optional<AdminTopModel> adminModelOpt = adminTopRepository.findById(userAllDto.getUserTopDto().getId());
+        if (adminModelOpt.isEmpty()) {
+            return null;
+        }
+
+        AdminTopModel adminModel = adminModelOpt.get();
+        updateCommonFieldsForAdmin(userAllDto, adminModel);
+
+        AdminTopModel savedAdmin = adminTopRepository.save(adminModel);
+
+        return entityToDtoUserAll(savedAdmin);
+    }
+
+    private void updateCommonFieldsForUser(UserAllDto userAllDto, UserTopModel userModel) {
+        // 주민등록번호 암호화
+        userAllDto.getUserTopDto().setRegNumberFor(encryptionUtil.encrypt(userAllDto.getUserTopDto().getRegNumberFor()));
+        userAllDto.getUserTopDto().setRegNumberLat(encryptionUtil.encrypt(userAllDto.getUserTopDto().getRegNumberLat()));
+
+        // 기본 정보 매핑
+        utilService.mapFields(userAllDto.getUserTopDto(), userModel);
+        utilService.mapFields(userAllDto.getUserInfo(), userModel.getUserInfoModel());
+
+        // 교육 정보 업데이트
+        updateEducationInfo(userAllDto.getEducation(), userModel, null);
+    }
+
+    private void updateCommonFieldsForAdmin(UserAllDto userAllDto, AdminTopModel adminModel) {
+        // 기본 정보 매핑
+        utilService.mapFields(userAllDto.getUserTopDto(), adminModel);
+        utilService.mapFields(userAllDto.getUserInfo(), adminModel.getUserInfoModel());
+
+        // 교육 정보 업데이트
+        updateEducationInfo(userAllDto.getEducation(), null, adminModel);
+    }
+
+    private void updateEducationInfo(List<EducationDto> educationDtos, UserTopModel userModel, AdminTopModel adminModel) {
+        if (educationDtos == null) {
+            return;
+        }
+
+        List<UserEducationModel> educationModels;
+        if (userModel != null) {
+            educationModels = userModel.getUserEduIds();
+        } else if (adminModel != null) {
+            educationModels = adminModel.getUserEduIds();
+        } else {
+            throw new IllegalArgumentException("Both userModel and adminModel cannot be null");
+        }
+
+        educationModels.clear();
+        for (EducationDto educationDto : educationDtos) {
+            UserEducationModel newEducationModel = UserEducationModel.builder().build();
+            utilService.mapFields(educationDto, newEducationModel);
+
+            if (userModel != null) {
+                newEducationModel.setUserTopModel(userModel);
+            } else if (adminModel != null) {
+                newEducationModel.setAdminTopModel(adminModel);
+            }
+
+            educationModels.add(newEducationModel);
+        }
+
+        userEducationRepository.saveAll(educationModels);
+    }
 }

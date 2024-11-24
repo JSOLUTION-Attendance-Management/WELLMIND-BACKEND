@@ -42,7 +42,7 @@ public class LogViewServiceImpl implements LogViewService {
     }
 
     @Override
-    public void deleteById(Long id) {
+    public void deleteById(Object ob, AccountDto dto) {
 
     }
 

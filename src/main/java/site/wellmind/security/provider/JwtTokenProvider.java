@@ -76,9 +76,7 @@ public class JwtTokenProvider {
         String rolesString = extractClaim(jwt, claims -> claims.get("roles", String.class));
         rolesString = rolesString.replaceAll("[\\[\\]]", "");
 
-        log.info("extractRoles: {}",rolesString);
-        log.info("extractRoles: {}",Arrays.asList(rolesString.split(",")));
-        return rolesString != null ? Arrays.asList(rolesString.split(",")) : Collections.emptyList();
+       return rolesString != null ? Arrays.asList(rolesString.split(",")) : Collections.emptyList();
     }
 
     public Long extractId(String jwt){
@@ -143,7 +141,7 @@ public class JwtTokenProvider {
                     .toList().toString();
             id=principalAdminDetails.getAdmin().getId();
             username=principalAdminDetails.getUsername();
-
+            roles=roles.replaceAll("[\\[\\]]", "");
             log.info("generate token roles : {}",roles);
         }else{
             throw new GlobalException(ExceptionStatus.BAD_REQUEST, "Invalid principal type: unable to generate token");
@@ -153,7 +151,7 @@ public class JwtTokenProvider {
                 .claims(extractClaims)    // JWT 에 포함된 다양한 사용자 정보와 메타데이터를 담음
                 .subject(username)  //사용자를 식별하는 주요 정보, username : employeeId
                 .issuer(issuer)
-                .claim("roles",roles.replaceAll("[\\[\\]]", ""))
+                .claim("roles",roles)
                 .claim("id",id)
                 .claim("type",isRefreshToken? "refresh":"access")
                 .issuedAt(Date.from(Instant.now()))

@@ -1,5 +1,8 @@
 package site.wellmind.user.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
@@ -22,6 +25,7 @@ import java.util.List;
 @Table(name = "jsol_usertop")
 @ToString(exclude = {"id", "userEduIds", "userInfoModel", "role", "transferIds", "qrTokenIds", "recordIds",
         "loginLogIds"})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class UserTopModel extends BaseModel {
 
     @Id
@@ -36,6 +40,7 @@ public class UserTopModel extends BaseModel {
     private String email;
 
     @Column(name = "USER_PASSWORD", unique = true)
+    @JsonIgnore
     private String password;
 
     @Column(name = "USER_NAME")
@@ -61,18 +66,22 @@ public class UserTopModel extends BaseModel {
     // ====================== user ========================
 
     @OneToMany(mappedBy = "userTopModel",cascade = CascadeType.ALL,orphanRemoval = true,fetch = FetchType.EAGER)
+    @JsonManagedReference // 순환 참조 방지
     private List<UserEducationModel> userEduIds;
 
     @OneToOne(fetch = FetchType.EAGER)
+    @JsonManagedReference // 순환 참조 방지
     @JoinColumn(name = "USERINFO_IDX",referencedColumnName = "USERINFO_IDX")
     private UserInfoModel userInfoModel;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @JsonManagedReference // 순환 참조 방지
     @JoinColumn(name = "ROLE_IDX", nullable = false)
     private AccountRoleModel role;
 
     // ====================== transfer ========================
     @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
+    @JsonManagedReference // 순환 참조 방지
     private List<TransferModel> transferIds;
 
     // ====================== attend ========================

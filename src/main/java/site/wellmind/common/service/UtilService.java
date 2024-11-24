@@ -67,12 +67,5 @@ public class UtilService {
             }
         });
 
-        try {
-            Field modDateField = destination.getClass().getDeclaredField("modDate");
-            modDateField.setAccessible(true);
-            modDateField.set(destination, LocalDateTime.now());
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            log.warn("modDate setting skipped", e);
-        }
     }
 }
