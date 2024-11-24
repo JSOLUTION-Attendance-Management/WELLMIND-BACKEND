@@ -9,7 +9,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import site.wellmind.common.domain.dto.MailDto;
 import site.wellmind.security.provider.PasswordTokenProvider;
-import site.wellmind.user.domain.dto.UserDto;
 
 import java.util.Random;
 /**

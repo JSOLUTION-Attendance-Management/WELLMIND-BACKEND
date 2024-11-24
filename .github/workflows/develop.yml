@@ -2,7 +2,7 @@ name: JSolution-Attendance-Management Backend develop GitHub Actions
 
 on:
   push:
-    branches: [ "develop","dev/feat/user","dev/feat/attend" ]
+    branches: [ "develop", "dev/feat/user", "dev/feat/attend" ]
   pull_request:
     branches: [ "develop" ]
 
@@ -13,17 +13,17 @@ jobs:
       contents: read
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-    # application.yml
-    - name: Create application.yml
-      run: |
+      # application.yml
+      - name: Create application.yml
+        run: |
           mkdir -p src/main/resources 
           cat <<EOF > src/main/resources/application.yml
           spring:
@@ -95,30 +95,32 @@ jobs:
               refresh: 1209600000
             passwordSetup:
               expiration: 900
-        
-        encryption:
-          secret-key: ${ENCRYPTION_SECRET_KEY}
-          init-vector: ${INIT_VECTOR}
+
+          encryption:
+            secret-key: ${ENCRYPTION_SECRET_KEY}
+            init-vector: ${INIT_VECTOR}
           EOF
-      env:
-        DB_URL: ${{ secrets.DB_URL }}
-        DB_USERNAME: ${{ secrets.DB_USERNAME }}
-        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
-        MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
-        JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          ENCRYPTION_SECRET_KEY: ${{ secrets.ENCRYPTION_SECRET_KEY }}
+          INIT_VECTOR: ${{ secrets.INIT_VECTOR }}
 
-    # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v3
+      # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
 
-    # Set executable permission for gradlew
-    - name: Set executable permission for gradlew
-      run: chmod +x gradlew
+      # Set executable permission for gradlew
+      - name: Set executable permission for gradlew
+        run: chmod +x gradlew
 
-    # Gradle build
-    - name: Build with Gradle
-      run: ./gradlew build
+      # Gradle build
+      - name: Build with Gradle
+        run: ./gradlew build
 
-    - name: Run Tests
-      run: ./gradlew test
+      - name: Run Tests
+        run: ./gradlew test

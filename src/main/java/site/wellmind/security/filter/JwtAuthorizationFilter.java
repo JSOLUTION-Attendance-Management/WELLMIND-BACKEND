@@ -79,7 +79,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             //Check if user has required roles
             List<String> accountRoles=jwtTokenProvider.extractRoles(accessToken).stream()
                     .toList();
-            boolean hasRole=accountRoles.stream().anyMatch(roleManager.getRoles()::contains);
+            boolean hasRole=accountRoles.stream().anyMatch(roleManager.getRoleIds()::contains);
 
             log.info("accountRoles: {} ",accountRoles);
             log.info("accountId: {} ",jwtTokenProvider.extractEmployeeId(accessToken));

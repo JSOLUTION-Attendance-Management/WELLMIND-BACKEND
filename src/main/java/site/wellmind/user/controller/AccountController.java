@@ -13,10 +13,10 @@ import site.wellmind.common.domain.vo.SuccessStatus;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
 import site.wellmind.common.service.MailService;
-import site.wellmind.security.annotation.CurrentAccount;
 import site.wellmind.security.provider.JwtTokenProvider;
 import site.wellmind.user.domain.dto.AccountDto;
-import site.wellmind.user.domain.dto.UserDto;
+import site.wellmind.user.domain.dto.UserAllDto;
+import site.wellmind.user.domain.dto.UserDeleteDto;
 import site.wellmind.user.service.AccountService;
 
 /**
@@ -41,10 +41,10 @@ public class AccountController {
     private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/register")
-    public ResponseEntity<Messenger> register(@RequestBody UserDto dto) throws MessagingException {
+    public ResponseEntity<Messenger> register(@RequestBody UserAllDto dto) throws MessagingException {
 
         try {
-            UserDto savedUser = (UserDto) accountService.save(dto);
+            UserAllDto savedUser = (UserAllDto) accountService.save(dto);
             log.info("mail register : {}, {}", savedUser.getUserTopDto().getEmail(), savedUser.getUserTopDto().getEmployeeId());
             try {
                 mailService.sendPasswordSetupEmail(savedUser.getUserTopDto().getEmail(), savedUser.getUserTopDto().getEmployeeId());
@@ -66,11 +66,13 @@ public class AccountController {
     }
 
     @GetMapping("/exist-by-employeeId")
-    public ResponseEntity<Messenger> existByEmployeeId(@RequestParam("employeeId") String employeeId) {
+    public ResponseEntity<Messenger> existByEmployeeId(HttpServletRequest request) {
+        AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
+
         return ResponseEntity.ok(Messenger
                 .builder()
                 .message("user existByEmployeeId 조회 결과")
-                .state(accountService.existByEmployeeId(employeeId))
+                .state(accountService.existByEmployeeId(accountDto))
                 .build());
     }
 
@@ -82,21 +84,7 @@ public class AccountController {
                 .data(accountService.findAll())
                 .build());
     }
-    @GetMapping("/profile/find-by-id")
-    public ResponseEntity<Messenger> profileFindById(HttpServletRequest request) {
-        AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
-        boolean isAdmin = accountDto.isAdmin();
-        Long currentAccountId=accountDto.getAccountId();
 
-        log.info("AccountController isAdmin :{}",isAdmin);
-
-        return ResponseEntity.ok(
-                Messenger.builder()
-                        .message("user findById : " + SuccessStatus.OK.getMessage())
-                        .data(accountService.findProfileById(currentAccountId,isAdmin))
-                        .build()
-        );
-    }
 
     @GetMapping("/find-by-id")
     public ResponseEntity<Messenger> findById(
@@ -104,7 +92,7 @@ public class AccountController {
     ) {
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
         boolean isAdmin = accountDto.isAdmin();
-        log.info("AccountController isAdmin :{}",isAdmin);
+        log.info("AccountController isAdmin :{}", isAdmin);
 
         if (!isAdmin && employeeId != null) {
             return ResponseEntity.status(ExceptionStatus.NO_PERMISSION.getHttpStatus()).
@@ -121,11 +109,43 @@ public class AccountController {
         );
     }
 
+    @GetMapping("/find-by-id/profile")
+    public ResponseEntity<Messenger> profileFindById(HttpServletRequest request) {
+        AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
+        boolean isAdmin = accountDto.isAdmin();
+        Long currentAccountId = accountDto.getAccountId();
+
+        log.info("AccountController isAdmin :{}", isAdmin);
+
+        return ResponseEntity.ok(
+                Messenger.builder()
+                        .message("user findById : " + SuccessStatus.OK.getMessage())
+                        .data(accountService.findProfileById(currentAccountId, isAdmin))
+                        .build()
+        );
+    }
+
+    @GetMapping("/find-by-id/detail")
+    public ResponseEntity<Messenger> detailFindById(HttpServletRequest request) {
+        AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
+        boolean isAdmin = accountDto.isAdmin();
+        Long currentAccountId = accountDto.getAccountId();
+
+        log.info("AccountController isAdmin :{}", isAdmin);
+
+        return ResponseEntity.ok(
+                Messenger.builder()
+                        .message("user findById : " + SuccessStatus.OK.getMessage())
+                        .data(accountService.findDetailById(currentAccountId, isAdmin))
+                        .build()
+        );
+    }
+
     @GetMapping("/find-by")
-    public ResponseEntity<Page<UserDto>> findBy(@RequestParam(value = "departName", required = false) String departName,
-                                                @RequestParam(value = "positionName", required = false) String positionName,
-                                                @RequestParam(value = "name", required = false) String name,
-                                                Pageable pageable) {
+    public ResponseEntity<Page<UserAllDto>> findBy(@RequestParam(value = "departName", required = false) String departName,
+                                                   @RequestParam(value = "positionName", required = false) String positionName,
+                                                   @RequestParam(value = "name", required = false) String name,
+                                                   Pageable pageable) {
         return ResponseEntity.ok(accountService.findBy(departName, positionName, name, pageable));
     }
 
@@ -148,10 +168,10 @@ public class AccountController {
 
     // 여러 개 데이터를 input 값으로 받고 modify
     @PutMapping("/modify-by-id")
-    public ResponseEntity<Messenger> modifyById(@RequestBody UserDto dto, HttpServletRequest request){
+    public ResponseEntity<Messenger> modifyById(@RequestBody UserAllDto dto, HttpServletRequest request) {
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
         boolean isAdmin = accountDto.isAdmin();
-        String currentEmployeeId=accountDto.getEmployeeId();
+        String currentEmployeeId = accountDto.getEmployeeId();
 
         if (!isAdmin && !dto.getUserTopDto().getEmployeeId().equals(currentEmployeeId)) {
             return ResponseEntity.status(ExceptionStatus.NO_PERMISSION.getHttpStatus()).
@@ -163,8 +183,25 @@ public class AccountController {
         return ResponseEntity.ok(
                 Messenger.builder()
                         .message("user findById : " + SuccessStatus.OK.getMessage())
-                        .data(accountService.modify(dto,accountDto))
+                        .data(accountService.modify(dto, accountDto))
                         .build()
         );
+    }
+
+    @DeleteMapping("/delete-by-id")
+    public ResponseEntity<Messenger> deleteById(@RequestBody UserDeleteDto userDeleteDto, HttpServletRequest request) {
+        AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
+        if (!accountDto.isAdmin()) {
+            return ResponseEntity.status(ExceptionStatus.NO_PERMISSION.getHttpStatus())
+                    .body(Messenger.builder()
+                            .message(ExceptionStatus.NO_PERMISSION.getMessage())
+                            .build());
+        }
+
+        accountService.deleteById(userDeleteDto,accountDto);
+
+        return ResponseEntity.ok(Messenger.builder()
+                .message("User deleted successfully.")
+                .state(true).build());
     }
 }

@@ -8,15 +8,16 @@ import site.wellmind.user.domain.model.AdminTopModel;
 import site.wellmind.user.domain.model.UserTopModel;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Setter
-@Getter
+@Data
 @Table(name="jsol_logarchive_delete")
 @ToString(exclude = {"id"})
-public class LogArchiveDeleteModel {
+@Builder
+public class LogArchiveDeleteModel extends BaseModel{
 
     @Id
     @Column(name = "DELETE_LOG_IDX",nullable = false)
@@ -26,13 +27,14 @@ public class LogArchiveDeleteModel {
     @Column(name = "DELETE_TYPE")
     private DeleteStatus deleteType;
 
-    @Column(name = "ACTION_DATE")
-    private LocalDateTime actionDate;
-
-    @Column(name = "DELETED_IDX")
-    private String deletedEmployeeId;
+    @Column(name="DELETE_REASON")
+    private String deleteReason;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "DELETER_IDX",nullable = false)
     private AdminTopModel deleterId;
+
+    @OneToMany(mappedBy = "masterDeleteLogId",cascade = CascadeType.MERGE,orphanRemoval = false)
+    private List<LogArchiveDeleteDetailModel> logDeleteDetailLogIds;
+
 }

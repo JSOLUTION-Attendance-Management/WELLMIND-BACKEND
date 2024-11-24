@@ -1,5 +1,6 @@
 package site.wellmind.transfer.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import site.wellmind.common.domain.model.BaseModel;
@@ -22,10 +23,12 @@ public class TransferModel extends BaseModel {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_IDX", nullable = true)  // null 허용
+    @JsonBackReference // 순환 참조 방지
     private UserTopModel userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ADMIN_IDX", nullable = true)  // null 허용
+    @JsonBackReference // 순환 참조 방지
     private AdminTopModel adminId;
 
     @ManyToOne(fetch = FetchType.EAGER)

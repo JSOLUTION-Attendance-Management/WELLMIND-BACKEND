@@ -43,6 +43,6 @@ out/
 # 구성 파일
 **/application.yml
 docker-compose.yml
-*.ymlg
+*.yml
 # Ignore all .sql files
 *.sql

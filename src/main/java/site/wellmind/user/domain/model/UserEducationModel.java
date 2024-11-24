@@ -1,5 +1,6 @@
 package site.wellmind.user.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import site.wellmind.common.domain.model.BaseModel;
@@ -29,9 +30,11 @@ public class UserEducationModel extends BaseModel {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_IDX", nullable = true)
+    @JsonBackReference // 순환 참조 방지
     private UserTopModel userTopModel;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ADMIN_IDX", nullable = true)
+    @JsonBackReference // 순환 참조 방지
     private AdminTopModel adminTopModel;
 }
