@@ -22,15 +22,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AttendDto {
-    private AttendStatus attendStatus;
-
+public class RecentAttendDto {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private String date;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private String time;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss")
-    private String timeSec;
 }

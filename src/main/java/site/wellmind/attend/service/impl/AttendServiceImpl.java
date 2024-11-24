@@ -15,8 +15,6 @@ import site.wellmind.attend.domain.vo.*;
 import site.wellmind.attend.repository.*;
 import site.wellmind.attend.service.AttendService;
 import site.wellmind.user.domain.dto.AccountDto;
-import site.wellmind.user.domain.model.UserTopModel;
-import site.wellmind.user.domain.model.AdminTopModel;
 import site.wellmind.common.exception.GlobalException;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 
@@ -50,13 +48,11 @@ public class AttendServiceImpl implements AttendService {
             if (!accountDto.isAdmin()) {
                 throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
             }
-            whereClause.and(qAttendRecord.userId.employeeId.eq(employeeId).or(qAttendRecord.adminId.employeeId.eq(employeeId)));
+            Long accountId = accountDto.getAccountId();
+            whereClause.and(qAttendRecord.userId.id.eq(accountId).or(qAttendRecord.adminId.id.eq(accountId)));
         } else {
-            whereClause.and(qAttendRecord.userId.employeeId.eq(accountDto.getEmployeeId()).or(qAttendRecord.adminId.employeeId.eq(accountDto.getEmployeeId())));
-        }
-
-        if (recentCount != null) {
-            whereClause.and(qAttendRecord.attendStatus.eq(AttendStatus.NA));
+            Long accountId = accountDto.getAccountId();
+            whereClause.and(qAttendRecord.userId.id.eq(accountId).or(qAttendRecord.adminId.id.eq(accountId)));
         }
 
         JPAQuery<AttendRecordModel> query = queryFactory
@@ -84,13 +80,18 @@ public class AttendServiceImpl implements AttendService {
     }
 
     @Override
-    public List<AttendDto> findRecentAttendances(String employeeId, AccountDto accountDto, Integer recentCount) {
+    public List<RecentAttendDto> findRecentAttendances(String employeeId, AccountDto accountDto, Integer recentCount) {
+        if (employeeId == null) {
+            employeeId = accountDto.getEmployeeId();
+        }
+
         if (!accountDto.isAdmin() && !employeeId.equals(accountDto.getEmployeeId())) {
             throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
         }
 
+        Long accountId = accountDto.getAccountId();
         BooleanBuilder whereClause = new BooleanBuilder();
-        whereClause.and(qAttendRecord.userId.employeeId.eq(employeeId).or(qAttendRecord.adminId.employeeId.eq(employeeId)))
+        whereClause.and(qAttendRecord.userId.id.eq(accountId).or(qAttendRecord.adminId.id.eq(accountId)))
                 .and(qAttendRecord.attendStatus.in(AttendStatus.NA, AttendStatus.LA));
 
         JPAQuery<AttendRecordModel> query = queryFactory
@@ -100,7 +101,7 @@ public class AttendServiceImpl implements AttendService {
                 .limit(recentCount);
 
         return query.fetch().stream()
-                .map(this::entityToDtoAttendRecord)
+                .map(this::entityToDtoRecentAttendRecord)
                 .collect(Collectors.toList());
     }
 }
