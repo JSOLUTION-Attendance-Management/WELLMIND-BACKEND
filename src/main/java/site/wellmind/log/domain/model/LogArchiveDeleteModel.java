@@ -13,10 +13,10 @@ import java.util.List;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Setter
-@Getter
+@Data
 @Table(name="jsol_logarchive_delete")
 @ToString(exclude = {"id"})
+@Builder
 public class LogArchiveDeleteModel extends BaseModel{
 
     @Id

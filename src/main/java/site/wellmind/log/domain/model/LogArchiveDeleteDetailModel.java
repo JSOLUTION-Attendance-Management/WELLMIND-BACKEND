@@ -2,15 +2,12 @@ package site.wellmind.log.domain.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import site.wellmind.log.domain.vo.DeleteStatus;
-import site.wellmind.user.domain.model.AdminTopModel;
-import site.wellmind.user.domain.model.UserTopModel;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Setter
-@Getter
+@Data
+@Builder
 @Table(name="jsol_logarchive_delete_detail")
 @ToString(exclude = {"id"})
 public class LogArchiveDeleteDetailModel {

@@ -16,6 +16,7 @@ import site.wellmind.common.service.MailService;
 import site.wellmind.security.provider.JwtTokenProvider;
 import site.wellmind.user.domain.dto.AccountDto;
 import site.wellmind.user.domain.dto.UserAllDto;
+import site.wellmind.user.domain.dto.UserDeleteDto;
 import site.wellmind.user.service.AccountService;
 
 /**
@@ -91,7 +92,7 @@ public class AccountController {
     ) {
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
         boolean isAdmin = accountDto.isAdmin();
-        log.info("AccountController isAdmin :{}",isAdmin);
+        log.info("AccountController isAdmin :{}", isAdmin);
 
         if (!isAdmin && employeeId != null) {
             return ResponseEntity.status(ExceptionStatus.NO_PERMISSION.getHttpStatus()).
@@ -107,33 +108,35 @@ public class AccountController {
                         .build()
         );
     }
+
     @GetMapping("/find-by-id/profile")
     public ResponseEntity<Messenger> profileFindById(HttpServletRequest request) {
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
         boolean isAdmin = accountDto.isAdmin();
-        Long currentAccountId=accountDto.getAccountId();
+        Long currentAccountId = accountDto.getAccountId();
 
-        log.info("AccountController isAdmin :{}",isAdmin);
+        log.info("AccountController isAdmin :{}", isAdmin);
 
         return ResponseEntity.ok(
                 Messenger.builder()
                         .message("user findById : " + SuccessStatus.OK.getMessage())
-                        .data(accountService.findProfileById(currentAccountId,isAdmin))
+                        .data(accountService.findProfileById(currentAccountId, isAdmin))
                         .build()
         );
     }
+
     @GetMapping("/find-by-id/detail")
     public ResponseEntity<Messenger> detailFindById(HttpServletRequest request) {
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
         boolean isAdmin = accountDto.isAdmin();
-        Long currentAccountId=accountDto.getAccountId();
+        Long currentAccountId = accountDto.getAccountId();
 
-        log.info("AccountController isAdmin :{}",isAdmin);
+        log.info("AccountController isAdmin :{}", isAdmin);
 
         return ResponseEntity.ok(
                 Messenger.builder()
                         .message("user findById : " + SuccessStatus.OK.getMessage())
-                        .data(accountService.findDetailById(currentAccountId,isAdmin))
+                        .data(accountService.findDetailById(currentAccountId, isAdmin))
                         .build()
         );
     }
@@ -165,10 +168,10 @@ public class AccountController {
 
     // 여러 개 데이터를 input 값으로 받고 modify
     @PutMapping("/modify-by-id")
-    public ResponseEntity<Messenger> modifyById(@RequestBody UserAllDto dto, HttpServletRequest request){
+    public ResponseEntity<Messenger> modifyById(@RequestBody UserAllDto dto, HttpServletRequest request) {
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
         boolean isAdmin = accountDto.isAdmin();
-        String currentEmployeeId=accountDto.getEmployeeId();
+        String currentEmployeeId = accountDto.getEmployeeId();
 
         if (!isAdmin && !dto.getUserTopDto().getEmployeeId().equals(currentEmployeeId)) {
             return ResponseEntity.status(ExceptionStatus.NO_PERMISSION.getHttpStatus()).
@@ -180,10 +183,25 @@ public class AccountController {
         return ResponseEntity.ok(
                 Messenger.builder()
                         .message("user findById : " + SuccessStatus.OK.getMessage())
-                        .data(accountService.modify(dto,accountDto))
+                        .data(accountService.modify(dto, accountDto))
                         .build()
         );
     }
 
+    @DeleteMapping("/delete-by-id")
+    public ResponseEntity<Messenger> deleteById(@RequestBody UserDeleteDto userDeleteDto, HttpServletRequest request) {
+        AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
+        if (!accountDto.isAdmin()) {
+            return ResponseEntity.status(ExceptionStatus.NO_PERMISSION.getHttpStatus())
+                    .body(Messenger.builder()
+                            .message(ExceptionStatus.NO_PERMISSION.getMessage())
+                            .build());
+        }
 
+        accountService.deleteById(userDeleteDto,accountDto);
+
+        return ResponseEntity.ok(Messenger.builder()
+                .message("User deleted successfully.")
+                .state(true).build());
+    }
 }
