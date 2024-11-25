@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import site.wellmind.attend.domain.dto.BaseAttendDto;
 import site.wellmind.common.domain.dto.Messenger;
 import site.wellmind.common.domain.vo.SuccessStatus;
 import site.wellmind.common.domain.vo.ExceptionStatus;
@@ -45,7 +46,7 @@ public class AttendController {
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
 
         try {
-            Page<AttendDto> attendRecords = attendService.findBy(employeeId, accountDto, pageable, recentCount);
+            Page<BaseAttendDto> attendRecords = attendService.findBy(employeeId, accountDto, pageable, recentCount);
             return ResponseEntity.ok(Messenger.builder()
                     .message("Attendance records retrieved successfully")
                     .data(attendRecords)
@@ -60,13 +61,12 @@ public class AttendController {
 
     @GetMapping("/recent-attendances")
     public ResponseEntity<Messenger> findRecentAttendances(
-            @RequestParam(value = "employeeId", required = false) String employeeId,
             @RequestParam(value = "recentCount", required = true) Integer recentCount,
             HttpServletRequest request) {
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
 
         try {
-            List<RecentAttendDto> recentAttendances = attendService.findRecentAttendances(employeeId, accountDto, recentCount);
+            List<RecentAttendDto> recentAttendances = attendService.findRecentAttendances(accountDto, recentCount);
             return ResponseEntity.ok(Messenger.builder()
                     .message("Recent attendance records retrieved successfully")
                     .data(recentAttendances)
