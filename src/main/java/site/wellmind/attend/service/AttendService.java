@@ -3,13 +3,18 @@ package site.wellmind.attend.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import site.wellmind.attend.domain.dto.AttendDto;
+import site.wellmind.attend.domain.dto.SimpleAttendDto;
+import site.wellmind.attend.domain.dto.BaseAttendDto;
 import site.wellmind.attend.domain.dto.RecentAttendDto;
 import site.wellmind.attend.domain.model.*;
 import site.wellmind.user.domain.dto.AccountDto;
+import site.wellmind.user.domain.model.AdminTopModel;
+import site.wellmind.user.domain.model.UserTopModel;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * AttendService
@@ -30,6 +35,14 @@ public interface AttendService {
                 .build();
     }
 
+    default SimpleAttendDto entityToDtoSimpleAttendRecord(AttendRecordModel model) {
+        LocalDateTime regDate = model.getRegDate();
+        return SimpleAttendDto.builder()
+                .attendStatus(model.getAttendStatus())
+                .date(regDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .build();
+    }
+
     default RecentAttendDto entityToDtoRecentAttendRecord(AttendRecordModel model) {
         LocalDateTime regDate = model.getRegDate();
         return RecentAttendDto.builder()
@@ -38,7 +51,11 @@ public interface AttendService {
                 .build();
     }
 
-    Page<AttendDto> findBy(String employeeId, AccountDto accountDto, Pageable pageable, Integer recentCount);
+    Page<BaseAttendDto> findBy(String employeeId, AccountDto accountDto, Pageable pageable, Integer recentCount);
 
-    List<RecentAttendDto> findRecentAttendances(String employeeId, AccountDto accountDto, Integer recentCount);
+    List<RecentAttendDto> findRecentAttendances(AccountDto accountDto, Integer recentCount);
+
+    Optional<UserTopModel> findUserByEmployeeId(String employeeId);
+
+    Optional<AdminTopModel> findAdminByEmployeeId(String employeeId);
 }
