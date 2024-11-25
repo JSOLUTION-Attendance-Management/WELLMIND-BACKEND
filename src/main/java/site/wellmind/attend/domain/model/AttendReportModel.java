@@ -15,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @Setter
 @Getter
-@Table(name="jsol_logarchive_report")
+@Table(name="jsol_attendance_report")
 @ToString(exclude = {"id"})
 public class AttendReportModel extends BaseModel {
     @Id

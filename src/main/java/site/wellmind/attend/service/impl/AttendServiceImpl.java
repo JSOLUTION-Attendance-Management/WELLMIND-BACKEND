@@ -17,8 +17,13 @@ import site.wellmind.attend.service.AttendService;
 import site.wellmind.user.domain.dto.AccountDto;
 import site.wellmind.common.exception.GlobalException;
 import site.wellmind.common.domain.vo.ExceptionStatus;
+import site.wellmind.user.domain.model.AdminTopModel;
+import site.wellmind.user.domain.model.UserTopModel;
+import site.wellmind.user.repository.AdminTopRepository;
+import site.wellmind.user.repository.UserTopRepository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -37,22 +42,68 @@ import java.util.stream.Collectors;
 public class AttendServiceImpl implements AttendService {
 
     private final AttendRecordRepository attendRecordRepository;
+    private final UserTopRepository userTopRepository;
+    private final AdminTopRepository adminTopRepository;
     private final JPAQueryFactory queryFactory;
     private final QAttendRecordModel qAttendRecord = QAttendRecordModel.attendRecordModel;
 
     @Override
-    public Page<AttendDto> findBy(String employeeId, AccountDto accountDto, Pageable pageable, Integer recentCount) {
+    public Page<BaseAttendDto> findBy(String employeeId, AccountDto accountDto, Pageable pageable, Integer recentCount) {
         BooleanBuilder whereClause = new BooleanBuilder();
+        Long currentAccountId = accountDto.getAccountId();
+        List<BaseAttendDto> attendDtos;
 
-        if (employeeId != null && !employeeId.equals(accountDto.getEmployeeId())) {
+        if (employeeId != null && !employeeId.equals(currentAccountId)) {
             if (!accountDto.isAdmin()) {
                 throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
             }
-            Long accountId = accountDto.getAccountId();
-            whereClause.and(qAttendRecord.userId.id.eq(accountId).or(qAttendRecord.adminId.id.eq(accountId)));
+            Optional<UserTopModel> user = findUserByEmployeeId(employeeId);
+            Optional<AdminTopModel> admin = findAdminByEmployeeId(employeeId);
+
+            if (user.isPresent()) {
+                Long accountId = user.get().getId();
+                whereClause.and(qAttendRecord.userId.id.eq(accountId));
+            } else if (admin.isPresent()) {
+                Long accountId = admin.get().getId();
+                whereClause.and(qAttendRecord.adminId.id.eq(accountId));
+            } else {
+                throw new GlobalException(ExceptionStatus.USER_NOT_FOUND, ExceptionStatus.USER_NOT_FOUND.getMessage());
+            }
+
+            if (accountDto.getRole().equals("ROLE_ADMIN_UBL_55")) {
+                JPAQuery<AttendRecordModel> query = queryFactory
+                        .selectFrom(qAttendRecord)
+                        .where(whereClause)
+                        .orderBy(qAttendRecord.regDate.desc());
+
+                if (recentCount != null) {
+                    query.limit(recentCount);
+                }
+
+                query.offset(pageable.getOffset())
+                        .limit(pageable.getPageSize());
+
+                attendDtos = query.fetch().stream()
+                        .map(this::entityToDtoSimpleAttendRecord)
+                        .collect(Collectors.toList());
+
+                JPAQuery<Long> countQuery = queryFactory
+                        .select(qAttendRecord.count())
+                        .from(qAttendRecord)
+                        .where(whereClause);
+
+                return PageableExecutionUtils.getPage(attendDtos, pageable, countQuery::fetchOne);
+
+            } else if (!accountDto.getRole().equals("ROLE_ADMIN_UBL_66")) {
+                throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
+            }
         } else {
-            Long accountId = accountDto.getAccountId();
-            whereClause.and(qAttendRecord.userId.id.eq(accountId).or(qAttendRecord.adminId.id.eq(accountId)));
+            boolean isAdmin = accountDto.isAdmin();
+            if (isAdmin) {
+                whereClause.and(qAttendRecord.adminId.id.eq(currentAccountId));
+            } else {
+                whereClause.and(qAttendRecord.userId.id.eq(currentAccountId));
+            }
         }
 
         JPAQuery<AttendRecordModel> query = queryFactory
@@ -67,7 +118,7 @@ public class AttendServiceImpl implements AttendService {
         query.offset(pageable.getOffset())
                 .limit(pageable.getPageSize());
 
-        List<AttendDto> attendDtos = query.fetch().stream()
+        attendDtos = query.fetch().stream()
                 .map(this::entityToDtoAttendRecord)
                 .collect(Collectors.toList());
 
@@ -80,19 +131,15 @@ public class AttendServiceImpl implements AttendService {
     }
 
     @Override
-    public List<RecentAttendDto> findRecentAttendances(String employeeId, AccountDto accountDto, Integer recentCount) {
-        if (employeeId == null) {
-            employeeId = accountDto.getEmployeeId();
-        }
-
-        if (!accountDto.isAdmin() && !employeeId.equals(accountDto.getEmployeeId())) {
-            throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
-        }
-
+    public List<RecentAttendDto> findRecentAttendances(AccountDto accountDto, Integer recentCount) {
         Long accountId = accountDto.getAccountId();
+        boolean isAdmin = accountDto.isAdmin();
         BooleanBuilder whereClause = new BooleanBuilder();
-        whereClause.and(qAttendRecord.userId.id.eq(accountId).or(qAttendRecord.adminId.id.eq(accountId)))
-                .and(qAttendRecord.attendStatus.in(AttendStatus.NA, AttendStatus.LA));
+        if (isAdmin) {
+            whereClause.and(qAttendRecord.adminId.id.eq(accountId)).and(qAttendRecord.attendStatus.in(AttendStatus.NA, AttendStatus.LA));
+        } else {
+            whereClause.and(qAttendRecord.userId.id.eq(accountId)).and(qAttendRecord.attendStatus.in(AttendStatus.NA, AttendStatus.LA));
+        }
 
         JPAQuery<AttendRecordModel> query = queryFactory
                 .selectFrom(qAttendRecord)
@@ -103,5 +150,15 @@ public class AttendServiceImpl implements AttendService {
         return query.fetch().stream()
                 .map(this::entityToDtoRecentAttendRecord)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<UserTopModel> findUserByEmployeeId(String employeeId) {
+        return userTopRepository.findByEmployeeId(employeeId);
+    }
+
+    @Override
+    public Optional<AdminTopModel> findAdminByEmployeeId(String employeeId) {
+        return adminTopRepository.findByEmployeeId(employeeId);
     }
 }
