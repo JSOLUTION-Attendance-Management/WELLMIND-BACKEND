@@ -51,20 +51,8 @@ public class UserEntityDtoMapper {
     public UserTopDto entityToDtoUserTop(AdminTopModel model) {
         return UserTopDto.builder()
                 .id(model.getId())
-                .email(model.getEmployeeId())
-                .name(model.getName())
-                .phoneNum(model.getPhoneNum())
-                .regNumberFor(model.getRegNumberFor())
-                .regNumberLat(model.getRegNumberLat())
-                .deleteFlag(model.getDeleteFlag())
-                .authType(model.getAuthType())
-                .build();
-    }
-
-    public UserTopDto entityToDtoUserTop(UserTopModel model) {
-        return UserTopDto.builder()
-                .id(model.getId())
-                .email(model.getEmployeeId())
+                .employeeId(model.getEmployeeId())
+                .email(model.getEmail())
                 .name(model.getName())
                 .phoneNum(model.getPhoneNum())
                 .regNumberFor(model.getRegNumberFor())
@@ -73,12 +61,33 @@ public class UserEntityDtoMapper {
                 .authType(model.getAuthType())
                 .regDate(model.getRegDate())
                 .modDate(model.getModDate())
+                .userInfoId(model.getUserInfoModel().getId())
+                .roleId(model.getRole().getId())
+                .build();
+    }
+
+    public UserTopDto entityToDtoUserTop(UserTopModel model) {
+        return UserTopDto.builder()
+                .id(model.getId())
+                .employeeId(model.getEmployeeId())
+                .email(model.getEmail())
+                .name(model.getName())
+                .phoneNum(model.getPhoneNum())
+                .regNumberFor(model.getRegNumberFor())
+                .regNumberLat(model.getRegNumberLat())
+                .deleteFlag(model.getDeleteFlag())
+                .authType(model.getAuthType())
+                .regDate(model.getRegDate())
+                .modDate(model.getModDate())
+                .userInfoId(model.getUserInfoModel().getId())
+                .roleId(model.getRole().getId())
                 .build();
     }
 
 
     public UserInfoDto entityToDtoUserInfo(UserInfoModel model) {
         return UserInfoDto.builder()
+                .id(model.getId())
                 .address(model.getAddress())
                 .photo(model.getPhoto())
                 .hobby(model.getHobby())
@@ -90,12 +99,16 @@ public class UserEntityDtoMapper {
 
 
     public EducationDto entityToDtoUserEdu(UserEducationModel edu) {
+
         return EducationDto.builder()
+                .id(edu.getId())
                 .degree(edu.getDegree())
                 .institutionName(edu.getInstitutionName())
                 .major(edu.getMajor())
                 .regDate(edu.getRegDate())
                 .modDate(edu.getModDate())
+                .userId(edu.getUserTopModel() != null ? edu.getUserTopModel().getId() : null)
+                .adminId(edu.getAdminTopModel() != null ? edu.getAdminTopModel().getId() : null)
                 .build();
     }
 

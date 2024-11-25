@@ -16,11 +16,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 public class EducationDto {
+    private Long id;
     private String degree;
     private String major;
     private String institutionName;
-    private UserTopModel userTopModel;
-    private AdminTopModel adminTopModel;
+    //private UserTopModel userTopModel;
+    //private AdminTopModel adminTopModel;
+    private Long userId;
+    private Long adminId;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     private LocalDateTime regDate;

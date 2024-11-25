@@ -31,6 +31,7 @@ public enum ExceptionStatus {
     ALREADY_LOGGED_IN(HttpStatus.CONFLICT, "User is already logged in",409),
     INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "Invalid username or password", 4011),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error",500),
+    DATA_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR,"Data not found in db",5001)
     ;
 
     private final HttpStatus httpStatus;

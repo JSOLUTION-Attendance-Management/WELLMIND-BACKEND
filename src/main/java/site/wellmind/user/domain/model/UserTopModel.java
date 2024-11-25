@@ -66,34 +66,33 @@ public class UserTopModel extends BaseModel {
     // ====================== user ========================
 
     @OneToMany(mappedBy = "userTopModel",cascade = CascadeType.ALL,orphanRemoval = true,fetch = FetchType.EAGER)
-    @JsonManagedReference // 순환 참조 방지
     private List<UserEducationModel> userEduIds;
 
     @OneToOne(fetch = FetchType.EAGER)
-    @JsonManagedReference // 순환 참조 방지
     @JoinColumn(name = "USERINFO_IDX",referencedColumnName = "USERINFO_IDX")
     private UserInfoModel userInfoModel;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JsonManagedReference // 순환 참조 방지
     @JoinColumn(name = "ROLE_IDX", nullable = false)
     private AccountRoleModel role;
 
     // ====================== transfer ========================
     @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
-    @JsonManagedReference // 순환 참조 방지
     private List<TransferModel> transferIds;
 
     // ====================== attend ========================
     @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore // 직렬화에서 제외
     private List<AttendQrModel> qrTokenIds;
 
     @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore // 직렬화에서 제외
     private List<AttendRecordModel> recordIds;
 
     // ====================== log ========================
 
     @OneToMany(mappedBy = "userId",cascade = CascadeType.MERGE,orphanRemoval = false)
+    @JsonIgnore // 직렬화에서 제외
     private List<LogArchiveLoginModel> loginLogIds;
 
 

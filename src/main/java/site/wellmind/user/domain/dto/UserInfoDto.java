@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserInfoDto {
+    private Long id;
     private AddressVO address;
     private String hobby;
     private String significant;
