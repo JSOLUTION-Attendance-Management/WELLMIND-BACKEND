@@ -66,7 +66,7 @@ public class TransferServiceImpl implements TransferService {
 //                    .offset(pageable.getOffset())
 //                    .limit(pageable.getPageSize())
 //                    .fetch();
-//
+
 //            JPAQuery<Long> countQuery = queryFactory
 //                    .select(qTransfer.count())
 //                    .from(qTransfer)
@@ -75,7 +75,7 @@ public class TransferServiceImpl implements TransferService {
 //                    .leftJoin(qTransfer.department, qDepartmentModel)
 //                    .where(whereClause);
 
-            return PageableExecutionUtils.getPage(user, pageable, countQuery::fetchOne);
+            //return PageableExecutionUtils.getPage(user, pageable, countQuery::fetchOne);
             //return null;
         }
         return null;
