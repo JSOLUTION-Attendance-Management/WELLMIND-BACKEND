@@ -102,6 +102,8 @@ jobs:
         MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
         MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
         JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        ENCRYPTION_SECRET_KEY: ${{ secrets.ENCRYPTION_SECRET_KEY }}
+        INIT_VECTOR: ${{ secrets.INIT_VECTOR }}
 
     # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
     - name: Setup Gradle
