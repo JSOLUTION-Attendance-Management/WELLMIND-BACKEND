@@ -16,7 +16,7 @@ import site.wellmind.user.domain.model.UserTopModel;
 @Builder
 @Setter
 @Getter
-@ToString(exclude = {"id"})
+@ToString(exclude = {"id","department","position","userId","adminId"})
 public class TransferModel extends BaseModel {
     @Id
     @Column(name = "TRANSFER_IDX",nullable = false)

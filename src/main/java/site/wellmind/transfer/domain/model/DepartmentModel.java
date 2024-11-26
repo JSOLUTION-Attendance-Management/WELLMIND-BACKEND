@@ -15,7 +15,7 @@ import java.util.List;
 @Setter
 @Getter
 @Table(name = "jsol_department")
-@ToString(exclude = {"id"})
+@ToString(exclude = {"id","subDepartIds","parentDepartId"})
 public class DepartmentModel extends BaseModel {
 
     @Id

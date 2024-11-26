@@ -19,7 +19,7 @@ public class TransferDto {
     private Long id;
     private String transferReason;
     private TransferType transferType;
-    private String superiorName;
+    private String managerName;
     private String previousPosition;
     private String newPosition;
 

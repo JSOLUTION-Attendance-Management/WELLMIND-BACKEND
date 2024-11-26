@@ -16,16 +16,22 @@ import site.wellmind.transfer.domain.dto.TransferDto;
 import site.wellmind.transfer.domain.model.QDepartmentModel;
 import site.wellmind.transfer.domain.model.QPositionModel;
 import site.wellmind.transfer.domain.model.QTransferModel;
+import site.wellmind.transfer.domain.model.TransferModel;
+import site.wellmind.transfer.repository.TransferRepository;
 import site.wellmind.transfer.service.TransferService;
 import site.wellmind.user.domain.dto.AccountDto;
+import site.wellmind.user.domain.model.AdminTopModel;
 import site.wellmind.user.domain.model.QAdminTopModel;
 import site.wellmind.user.domain.model.QUserTopModel;
+import site.wellmind.user.domain.model.UserTopModel;
+import site.wellmind.user.repository.AdminTopRepository;
 import site.wellmind.user.repository.UserEducationRepository;
 import site.wellmind.user.repository.UserInfoRepository;
 import site.wellmind.user.repository.UserTopRepository;
 import site.wellmind.user.service.AccountService;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Transfer Service Implementation
@@ -43,6 +49,9 @@ import java.util.List;
 @Slf4j(topic = "TransferServiceImpl")
 public class TransferServiceImpl implements TransferService {
 
+    private final TransferRepository transferRepository;
+    private final AdminTopRepository adminTopRepository;
+    private final UserTopRepository userTopRepository;
     private final QUserTopModel qUserTopModel = QUserTopModel.userTopModel;
     private final QAdminTopModel qAdminTopModel = QAdminTopModel.adminTopModel;
     private final QTransferModel qTransfer = QTransferModel.transferModel;
@@ -50,62 +59,74 @@ public class TransferServiceImpl implements TransferService {
 
     @Override
     public Page<TransferDto> findByEmployeeId(Pageable pageable, AccountDto accountDto) {
-        // 조회 조건 설정 (Admin과 User에 따른 조건 분기)
-        BooleanExpression condition = accountDto.isAdmin()
-                ? qTransfer.adminId.id.eq(accountDto.getAccountId())
-                : qTransfer.userId.id.eq(accountDto.getAccountId());
+        List<TransferModel> transfers = transferRepository.findTransfersByAccountId(accountDto.getAccountId(), accountDto.isAdmin());
+        String newPosition=transfers.get(0).getDepartment().getName()+"/"+transfers.get(0).getPosition().getName();
+        String previousPosition=transfers.get(1).getDepartment().getName()+"/"+transfers.get(1).getPosition().getName();
 
-        // TransferDto 리스트 생성
-        List<TransferDto> transfers = queryFactory
-                .select(Projections.bean(
-                        TransferDto.class,
-                        qTransfer.id,
-                        qTransfer.transferReason,
-                        qTransfer.transferType,
-                        qTransfer.department.name.concat(" / ").concat(qTransfer.position.name).as("newPosition"),
-                        ExpressionUtils.as(
-                                JPAExpressions
-                                        .select(qTransfer.department.name.concat("/").concat(qTransfer.position.name))
-                                        .from(qTransfer)
-                                        .where(qTransfer.userId.id.eq(accountDto.getAccountId())) // 조건 추가
-                                        .orderBy(qTransfer.modDate.desc()) // 최신 데이터 정렬
-                                        .limit(1), // 반드시 단일 값 반환
-                                "previousPosition"
-                        )
-                        ,
-                        qTransfer.regDate,
-                        qTransfer.modDate,
-                        ExpressionUtils.as(
-                                JPAExpressions
-                                        .select(qUserTopModel.name)
-                                        .from(qUserTopModel)
-                                        .where(qTransfer.managerEmployeeId.isNotNull()
-                                                .and(qUserTopModel.employeeId.eq(qTransfer.managerEmployeeId))),
-                                "managerName"
-                        )
-                ))
-                .from(qTransfer)
-                .leftJoin(qUserTopModel).on(qTransfer.managerEmployeeId.eq(qUserTopModel.employeeId)) // Manager가 UserTop일 경우
-                .leftJoin(qAdminTopModel).on(qTransfer.managerEmployeeId.eq(qAdminTopModel.employeeId)) // Manager가 AdminTop일 경우
-                .where(condition)
-                .orderBy(qTransfer.regDate.desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
+        List<TransferDto> transferDtos = transfers.stream().map(transfer -> {
+            String managerName;
+            Optional<AdminTopModel> admin=adminTopRepository.findByEmployeeId(transfer.getManagerEmployeeId());
+            if(admin.isPresent()){
+                managerName=admin.get().getName();
+            }else{
+                Optional<UserTopModel> user=userTopRepository.findByEmployeeId(transfer.getManagerEmployeeId());
+                managerName=user.get().getName();
+            }
 
+            // TransferDto 생성
+            return TransferDto.builder()
+                    .id(transfer.getId())
+                    .transferReason(transfer.getTransferReason())
+                    .transferType(transfer.getTransferType())
+                    .managerName(managerName)
+                    .newPosition(newPosition)
+                    .previousPosition(previousPosition)
+                    .regDate(transfer.getRegDate())
+                    .modDate(transfer.getModDate())
+                    .build();
+        }).toList();
         // 데이터 개수 계산
-        JPAQuery<Long> countQuery = queryFactory
-                .select(qTransfer.count())
-                .from(qTransfer)
-                .where(condition);
+        long count = transfers.size();
 
+        log.info("transfers: {}",transfers);
         // Page 반환
-        return PageableExecutionUtils.getPage(transfers, pageable, countQuery::fetchOne);
+        return PageableExecutionUtils.getPage(transferDtos, pageable, () -> count);
     }
 
 
     @Override
     public Page<TransferDto> findByAll(String departName, String positionName, String name, Pageable pageable, AccountDto accountDto) {
-        return null;
+        List<TransferModel> transfers = transferRepository.findTransfersByAccountId(accountDto.getAccountId(), accountDto.isAdmin());
+        String newPosition=transfers.get(0).getDepartment().getName()+"/"+transfers.get(0).getPosition().getName();
+        String previousPosition=transfers.get(1).getDepartment().getName()+"/"+transfers.get(1).getPosition().getName();
+
+        List<TransferDto> transferDtos = transfers.stream().map(transfer -> {
+            String managerName;
+            Optional<AdminTopModel> admin=adminTopRepository.findByEmployeeId(transfer.getManagerEmployeeId());
+            if(admin.isPresent()){
+                managerName=admin.get().getName();
+            }else{
+                Optional<UserTopModel> user=userTopRepository.findByEmployeeId(transfer.getManagerEmployeeId());
+                managerName=user.get().getName();
+            }
+
+            // TransferDto 생성
+            return TransferDto.builder()
+                    .id(transfer.getId())
+                    .transferReason(transfer.getTransferReason())
+                    .transferType(transfer.getTransferType())
+                    .managerName(managerName)
+                    .newPosition(newPosition)
+                    .previousPosition(previousPosition)
+                    .regDate(transfer.getRegDate())
+                    .modDate(transfer.getModDate())
+                    .build();
+        }).toList();
+        // 데이터 개수 계산
+        long count = transfers.size();
+
+        log.info("transfers: {}",transfers);
+        // Page 반환
+        return PageableExecutionUtils.getPage(transferDtos, pageable, () -> count);
     }
 }
