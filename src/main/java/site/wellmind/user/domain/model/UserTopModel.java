@@ -80,9 +80,6 @@ public class UserTopModel extends BaseModel {
     @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<TransferModel> transferEmployeeIds;
 
-    @OneToMany(mappedBy = "managerId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<TransferModel> transferManagerIds;
-
     // ====================== attend ========================
     @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore // 직렬화에서 제외

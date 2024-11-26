@@ -6,4 +6,5 @@ import site.wellmind.transfer.domain.model.TransferModel;
 
 @Repository
 public interface TransferRepository extends JpaRepository<TransferModel,Long> {
+
 }
