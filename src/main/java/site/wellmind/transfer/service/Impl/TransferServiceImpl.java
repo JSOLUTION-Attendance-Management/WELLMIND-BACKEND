@@ -9,9 +9,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 import site.wellmind.transfer.domain.dto.TransferDto;
+import site.wellmind.transfer.domain.model.QDepartmentModel;
+import site.wellmind.transfer.domain.model.QPositionModel;
 import site.wellmind.transfer.domain.model.QTransferModel;
 import site.wellmind.transfer.service.TransferService;
 import site.wellmind.user.domain.dto.AccountDto;
+import site.wellmind.user.domain.model.QUserTopModel;
 import site.wellmind.user.repository.UserEducationRepository;
 import site.wellmind.user.repository.UserInfoRepository;
 import site.wellmind.user.repository.UserTopRepository;
@@ -36,27 +39,44 @@ import java.util.List;
 public class TransferServiceImpl implements TransferService {
 
     // QUERY DSL 사용해서 찾기
-    private final QTransferModel qTransferModel=QTransferModel.transferModel;
+    private final QUserTopModel qUserTop=QUserTopModel.userTopModel;
+    private final QTransferModel qTransfer=QTransferModel.transferModel;
+    private final QDepartmentModel qDepartmentModel=QDepartmentModel.departmentModel;
+    private final QPositionModel qPosition=QPositionModel.positionModel;
     private final JPAQueryFactory queryFactory;
     @Override
     public Page<TransferDto> findByEmployeeId(Pageable pageable, AccountDto accountDto) {
         if(accountDto.isAdmin()){
 
-//            List<TransferDto> transferDtos=queryFactory.select(
-//                    TransferDto.builder()
-//                            .id().build()
-//            ).from(qTransferModel)
-//                    .join();
+//            List<TransferDto> transfers = queryFactory
+//                    .select(TransferDto.builder()
+//                            .id(qTransfer.id)
+//                            .transferReason(qTransfer.transferReason)
+//                            .transferType(qTransfer.transferType)
+//                            .regDate(qTransfer.regDate)
+//                            .modDate(qTransfer.modDate)
+//                            .previousPosition(qTransfer.department.name+" / "+qTransfer.position.name)
+//                            .newPosition(qTransfer.department.name+" / "+qTransfer.position.name)
+//                            .build())
+//                    .from(qTransfer)
+//                    .join(qTransfer.userId, qUserTop).on(qUserTop.id.eq(accountDto.getAccountId()))
+//                    .join(qTransfer.department, qDepartmentModel)
+//                    .join(qTransfer.position, qPosition)
+//                    .orderBy(qTransfer.regDate.desc()) // 정렬 조건 추가
+//                    .offset(pageable.getOffset())
+//                    .limit(pageable.getPageSize())
+//                    .fetch();
+//
 //            JPAQuery<Long> countQuery = queryFactory
-//                    .select(qTransferModel.count())
-//                    .from(qTransferModel)
+//                    .select(qTransfer.count())
+//                    .from(qTransfer)
 //                    .leftJoin(qUserTop.transferEmployeeIds, qTransfer)
 //                    .leftJoin(qTransfer.position, qPosition)
-//                    .leftJoin(qTransfer.department, qDepartment)
+//                    .leftJoin(qTransfer.department, qDepartmentModel)
 //                    .where(whereClause);
 
-            //return PageableExecutionUtils.getPage(user, pageable, countQuery::fetchOne);
-            return null;
+            return PageableExecutionUtils.getPage(user, pageable, countQuery::fetchOne);
+            //return null;
         }
         return null;
     }
