@@ -64,10 +64,10 @@ public class QrServiceImpl implements QrService {
     }
 
     @Override
-    public byte[] generateQrCodeImage(String content, int width, int height) throws GlobalException {
+    public byte[] generateQrCodeImage(String content, int widthHeight) throws GlobalException {
         try {
             QRCodeWriter qrCodeWriter = new QRCodeWriter();
-            BitMatrix bitMatrix = qrCodeWriter.encode(content, BarcodeFormat.QR_CODE, width, height);
+            BitMatrix bitMatrix = qrCodeWriter.encode(content, BarcodeFormat.QR_CODE, widthHeight, widthHeight);
 
             ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
             MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
@@ -79,7 +79,7 @@ public class QrServiceImpl implements QrService {
 
     @Override
     @Transactional
-    public QrCodeResponseDto createAndSaveQrCode(AccountDto accountDto, int width, int height, LocalDateTime timeNow) throws GlobalException {
+    public QrCodeResponseDto createAndSaveQrCode(AccountDto accountDto, int widthHeight, LocalDateTime timeNow) throws GlobalException {
         String employeeId = accountDto.getEmployeeId();
 
         attendQrRepository.updatePreviousQrCodes(employeeId);
@@ -88,7 +88,7 @@ public class QrServiceImpl implements QrService {
         LocalDateTime expire = timeNow.plusMinutes(5); // 5분 후 만료
 
         String qrContent = generateQrContent(accountDto, employeeId, expire);
-        byte[] qrCodeImage = generateQrCodeImage(qrContent, width, height);
+        byte[] qrCodeImage = generateQrCodeImage(qrContent, widthHeight);
         String qrCodeBase64 = Base64.getEncoder().encodeToString(qrCodeImage);
 
         AttendQrModel newQrCode = AttendQrModel.builder()
