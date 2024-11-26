@@ -1,6 +1,8 @@
 package site.wellmind.user.mapper;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import site.wellmind.security.util.EncryptionUtil;
 import site.wellmind.transfer.domain.model.TransferModel;
 import site.wellmind.user.domain.dto.*;
 import site.wellmind.user.domain.model.*;
@@ -9,12 +11,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class UserEntityDtoMapper {
+    private final EncryptionUtil encryptionUtil;
 
     public UserAllDto entityToDtoUserAll(UserTopModel model) {
         UserInfoModel userInfoModel = model.getUserInfoModel();
         List<UserEducationModel> userEducations = model.getUserEduIds();
-        TransferModel transferModel = model.getTransferIds().get(0);
+        TransferModel transferModel = model.getTransferEmployeeIds().get(0);
         String departName = transferModel.getDepartment().getName();
         String positionName = transferModel.getPosition().getName();
 
@@ -55,8 +59,6 @@ public class UserEntityDtoMapper {
                 .email(model.getEmail())
                 .name(model.getName())
                 .phoneNum(model.getPhoneNum())
-                .regNumberFor(model.getRegNumberFor())
-                .regNumberLat(model.getRegNumberLat())
                 .deleteFlag(model.getDeleteFlag())
                 .authType(model.getAuthType())
                 .regDate(model.getRegDate())
@@ -73,8 +75,8 @@ public class UserEntityDtoMapper {
                 .email(model.getEmail())
                 .name(model.getName())
                 .phoneNum(model.getPhoneNum())
-                .regNumberFor(model.getRegNumberFor())
-                .regNumberLat(model.getRegNumberLat())
+                .regNumberFor(encryptionUtil.encrypt(model.getRegNumberFor()))
+                .regNumberLat(maskRegNumberLat(encryptionUtil.decrypt(model.getRegNumberLat())))
                 .deleteFlag(model.getDeleteFlag())
                 .authType(model.getAuthType())
                 .regDate(model.getRegDate())
@@ -114,7 +116,7 @@ public class UserEntityDtoMapper {
 
     public ProfileDto entityToDtoUserProfile(UserTopModel user) {
         UserInfoModel userInfoModel = user.getUserInfoModel();
-        TransferModel transferModel = user.getTransferIds().get(0);
+        TransferModel transferModel = user.getTransferEmployeeIds().get(0);
 
         return ProfileDto.builder()
                 .email(user.getEmail())
@@ -152,8 +154,8 @@ public class UserEntityDtoMapper {
 
         return UserDetailDto.builder()
                 .employeeId(user.getEmployeeId())
-                .regNumberFor(user.getRegNumberFor())
-                .regNumberLat(user.getRegNumberLat())
+                .regNumberFor(encryptionUtil.encrypt(user.getRegNumberFor()))
+                .regNumberLat(maskRegNumberLat(encryptionUtil.decrypt(user.getRegNumberLat())))
                 .deleteFlag(user.getDeleteFlag())
                 .userInfo(entityToDtoUserInfo(userInfoModel))
                 .education(userEducations.stream()
@@ -168,8 +170,8 @@ public class UserEntityDtoMapper {
 
         return UserDetailDto.builder()
                 .employeeId(admin.getEmployeeId())
-                .regNumberFor(admin.getRegNumberFor())
-                .regNumberLat(admin.getRegNumberLat())
+                .regNumberFor(encryptionUtil.encrypt(admin.getRegNumberFor()))
+                .regNumberLat(maskRegNumberLat(encryptionUtil.decrypt(admin.getRegNumberLat())))
                 .deleteFlag(admin.getDeleteFlag())
                 .userInfo(entityToDtoUserInfo(userInfoModel))
                 .education(userEducations.stream()
@@ -178,4 +180,11 @@ public class UserEntityDtoMapper {
                 .build();
     }
 
+    private String maskRegNumberLat(String regNumberLat) {
+        if (regNumberLat == null || regNumberLat.length() < 7) {
+            throw new IllegalArgumentException("Invalid regNumberLat: must be a 7-character string");
+        }
+        // 앞 자리 하나와 나머지 자리수를 계산하여 *로 채움
+        return regNumberLat.charAt(0) + "*".repeat(6);
+    }
 }

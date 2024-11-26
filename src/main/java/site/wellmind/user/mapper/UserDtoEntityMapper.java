@@ -2,6 +2,7 @@ package site.wellmind.user.mapper;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import site.wellmind.security.util.EncryptionUtil;
 import site.wellmind.transfer.domain.model.TransferModel;
 import site.wellmind.user.domain.dto.*;
 import site.wellmind.user.domain.model.*;
@@ -19,7 +20,7 @@ public class UserDtoEntityMapper {
     private final UserEducationRepository userEducationRepository;
     private final UserTopRepository userTopRepository;
     private final AdminTopRepository adminTopRepository;
-
+    private final EncryptionUtil encryptionUtil;
     public UserTopModel dtoToEntityUserAll(UserAllDto dto, UserInfoModel userInfoModel, AccountRoleModel accountRoleModel) {
         return UserTopModel.builder()
                 .employeeId(dto.getUserTopDto().getEmployeeId())
@@ -27,8 +28,8 @@ public class UserDtoEntityMapper {
                 .name(dto.getUserTopDto().getName())
                 .phoneNum(dto.getUserTopDto().getPhoneNum())
                 .authType("N")
-                .regNumberFor(dto.getUserTopDto().getRegNumberFor())
-                .regNumberLat(dto.getUserTopDto().getRegNumberLat())
+                .regNumberFor(encryptionUtil.encrypt(dto.getUserTopDto().getRegNumberFor()))
+                .regNumberLat(encryptionUtil.encrypt(dto.getUserTopDto().getRegNumberLat()))
                 .deleteFlag(false)
                 .userInfoModel(userInfoModel)
                 .role(accountRoleModel)
@@ -45,8 +46,8 @@ public class UserDtoEntityMapper {
                 .email(dto.getEmail())
                 .name(dto.getName())
                 .phoneNum(dto.getPhoneNum())
-                .regNumberFor(dto.getRegNumberFor())
-                .regNumberLat(dto.getRegNumberLat())
+                .regNumberFor(encryptionUtil.encrypt(dto.getRegNumberFor()))
+                .regNumberLat(encryptionUtil.encrypt(dto.getRegNumberLat()))
                 .deleteFlag(dto.isDeleteFlag())
                 .authType(dto.getAuthType())
                 .role(accountRoleModel.orElse(null))
@@ -64,8 +65,8 @@ public class UserDtoEntityMapper {
                 .email(dto.getEmail())
                 .name(dto.getName())
                 .phoneNum(dto.getPhoneNum())
-                .regNumberFor(dto.getRegNumberFor())
-                .regNumberLat(dto.getRegNumberLat())
+                .regNumberFor(encryptionUtil.encrypt(dto.getRegNumberFor()))
+                .regNumberLat(encryptionUtil.encrypt(dto.getRegNumberLat()))
                 .deleteFlag(dto.isDeleteFlag())
                 .authType(dto.getAuthType())
                 .role(accountRoleModel.orElse(null))

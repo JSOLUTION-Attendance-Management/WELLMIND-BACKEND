@@ -167,73 +167,6 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
-//    private void saveDeleteLog(UserTopModel user, String reason, DeleteStatus deleteType, AdminTopModel admin) {
-//        try {
-//            LogArchiveDeleteModel masterLog = saveMasterDeleteLog(reason, deleteType, admin);
-//
-//            ObjectMapper objectMapper = new ObjectMapper();
-//            objectMapper.registerModule(new JavaTimeModule());
-//
-//            saveDeleteDetailLog(masterLog, "jsol_usertop", user.getEmployeeId(), objectMapper.writeValueAsString(entityToDtoUserTop(user)));
-//
-//            if (user.getUserInfoModel() != null) {
-//                saveDeleteDetailLog(masterLog, "jsol_userinfo", user.getEmployeeId(), objectMapper.writeValueAsString(entityToDtoUserInfo(user.getUserInfoModel())));
-//            }
-//
-//            if (user.getUserEduIds() != null) {
-//                String educationDetails = objectMapper.writeValueAsString(user.getUserEduIds().stream()
-//                        .map(this::entityToDtoUserEdu)
-//                        .collect(Collectors.toList()));
-//                saveDeleteDetailLog(masterLog, "jsol_user_education", user.getEmployeeId(), educationDetails);
-//            }
-//
-//        } catch (JsonProcessingException e) {
-//            throw new RuntimeException("Error saving delete log", e);
-//        }
-//    }
-
-//    private void saveDeleteLog(AdminTopModel user, String reason, DeleteStatus deleteType, AdminTopModel admin) {
-//        try {
-//            LogArchiveDeleteModel masterLog = saveMasterDeleteLog(reason, deleteType, admin);
-//
-//            ObjectMapper objectMapper = new ObjectMapper();
-//            objectMapper.registerModule(new JavaTimeModule());
-//
-//            saveDeleteDetailLog(masterLog, "jsol_usertop", user.getEmployeeId(), objectMapper.writeValueAsString(entityToDtoUserTop(user)));
-//
-//            if (user.getUserInfoModel() != null) {
-//                saveDeleteDetailLog(masterLog, "jsol_userinfo", user.getEmployeeId(), objectMapper.writeValueAsString(entityToDtoUserInfo(user.getUserInfoModel())));
-//            }
-//
-//            if (user.getUserEduIds() != null) {
-//                String educationDetails = objectMapper.writeValueAsString(user.getUserEduIds().stream()
-//                        .map(this::entityToDtoUserEdu)
-//                        .collect(Collectors.toList()));
-//                saveDeleteDetailLog(masterLog, "jsol_user_education", user.getEmployeeId(), educationDetails);
-//            }
-//
-//        } catch (JsonProcessingException e) {
-//            throw new RuntimeException("Error saving delete log", e);
-//        }
-//    }
-//    private LogArchiveDeleteModel saveMasterDeleteLog(String reason, DeleteStatus deleteType, AdminTopModel admin) {
-//        LogArchiveDeleteModel masterLog = LogArchiveDeleteModel.builder()
-//                .deleteReason(reason)
-//                .deleteType(deleteType)
-//                .deleterId(admin)
-//                .build();
-//        return logArchiveDeleteRepository.save(masterLog);
-//    }
-//
-//    private void saveDeleteDetailLog(LogArchiveDeleteModel masterLog, String tableName, String employeeId, String deletedValue) {
-//        LogArchiveDeleteDetailModel detailLog = LogArchiveDeleteDetailModel.builder()
-//                .masterDeleteLogId(masterLog)
-//                .tableName(tableName)
-//                .deletedEmployeeId(employeeId)
-//                .deletedValue(deletedValue)
-//                .build();
-//        logArchiveDeleteDetailRepository.save(detailLog);
-//    }
 
     @Override
     public Object findById(String employeeId, AccountDto accountDto) {
@@ -380,7 +313,7 @@ public class AccountServiceImpl implements AccountService {
         JPAQuery<Long> countQuery = queryFactory
                 .select(qUserTop.count())
                 .from(qUserTop)
-                .leftJoin(qUserTop.transferIds, qTransfer)
+                .leftJoin(qUserTop.transferEmployeeIds, qTransfer)
                 .leftJoin(qTransfer.position, qPosition)
                 .leftJoin(qTransfer.department, qDepartment)
                 .where(whereClause);
