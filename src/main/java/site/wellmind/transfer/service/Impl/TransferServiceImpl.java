@@ -55,8 +55,6 @@ public class TransferServiceImpl implements TransferService {
     private final TransferRepository transferRepository;
     private final AdminTopRepository adminTopRepository;
     private final UserTopRepository userTopRepository;
-    private final QUserTopModel qUserTopModel = QUserTopModel.userTopModel;
-    private final QAdminTopModel qAdminTopModel = QAdminTopModel.adminTopModel;
     private final QTransferModel qTransfer = QTransferModel.transferModel;
     private final JPAQueryFactory queryFactory;
 
@@ -81,7 +79,7 @@ public class TransferServiceImpl implements TransferService {
                     .transferReason(transfer.getTransferReason())
                     .transferType(transfer.getTransferType())
                     .managerName(managerName)
-                    .newPosition(transfer.getDepartment().getName()+" / "+transfer.getPosition().getName())
+                    .newPosition(transfer.getDepartment().getName() + " / " + transfer.getPosition().getName())
                     .regDate(transfer.getRegDate())
                     .modDate(transfer.getModDate())
                     .build();

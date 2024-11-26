@@ -330,6 +330,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @Transactional
     public ProfileDto findProfileById(Long currentAccountId, boolean isAdmin) {
         if (!isAdmin) {
             UserTopModel userTopModel = userTopRepository.findById(currentAccountId)
@@ -345,6 +346,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @Transactional
     public UserDetailDto findDetailById(Long currentAccountId, boolean isAdmin) {
         if (!isAdmin) {
             UserTopModel userTopModel = userTopRepository.findById(currentAccountId)

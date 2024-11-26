@@ -23,8 +23,7 @@ import java.util.List;
 @Setter
 @Getter
 @Table(name = "jsol_usertop")
-@ToString(exclude = {"id", "userEduIds", "userInfoModel", "role", "transferEmployeeIds","transferManagerIds", "qrTokenIds", "recordIds",
-        "loginLogIds"})
+@ToString(exclude = {"id", "userSignificantModel", "userEduIds", "userInfoModel", "role", "transferEmployeeIds", "qrTokenIds", "recordIds", "loginLogIds"})
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class UserTopModel extends BaseModel {
 
@@ -68,9 +67,13 @@ public class UserTopModel extends BaseModel {
     @OneToMany(mappedBy = "userTopModel", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<UserEducationModel> userEduIds;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
     @JoinColumn(name = "USERINFO_IDX", referencedColumnName = "USERINFO_IDX")
     private UserInfoModel userInfoModel;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
+    @JoinColumn(name="USER_SIGN_IDX")
+    private UserSignificantModel userSignificantModel;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ROLE_IDX", nullable = false)
