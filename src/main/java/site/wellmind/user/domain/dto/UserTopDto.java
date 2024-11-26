@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import site.wellmind.common.domain.vo.AdminRole;
+import site.wellmind.user.domain.model.AccountRoleModel;
+import site.wellmind.user.domain.model.UserInfoModel;
 
 import java.time.LocalDateTime;
 
@@ -32,6 +34,12 @@ public class UserTopDto {
     private String regNumberLat;
     private boolean deleteFlag;
     private String authType;
+    private String authAdminLevelCodeId;
+
+    //private AccountRoleModel role;
+    private Long roleId;
+    private Long userInfoId;
+
 
     @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     private LocalDateTime regDate;

@@ -86,26 +86,33 @@ public class AdminTopModel extends BaseModel {
 
     // ====================== transfer ========================
     @OneToMany(mappedBy = "adminId", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
+    @JsonIgnore // 직렬화에서 제외
     private List<TransferModel> transferIds;
 
     // ====================== attend ========================
     @OneToMany(mappedBy = "adminId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore // 직렬화에서 제외
     private List<AttendQrModel> qrTokenIds;
 
     @OneToMany(mappedBy = "adminId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore // 직렬화에서 제외
     private List<AttendRecordModel> recordIds;
 
     // ====================== log ========================
     @OneToMany(mappedBy = "viewerId", cascade = CascadeType.MERGE, orphanRemoval = false)
+    @JsonIgnore // 직렬화에서 제외
     private List<LogArchiveViewModel> viewLogIds;
 
     @OneToMany(mappedBy = "deleterId", cascade = CascadeType.MERGE, orphanRemoval = false)
+    @JsonIgnore // 직렬화에서 제외
     private List<LogArchiveDeleteModel> deleteLogIds;
 
     @OneToMany(mappedBy = "adminId", cascade = CascadeType.MERGE, orphanRemoval = false)
+    @JsonIgnore // 직렬화에서 제외
     private List<LogArchiveLoginModel> loginLogIds;
 
     @OneToMany(mappedBy = "updaterId", cascade = CascadeType.MERGE, orphanRemoval = false)
+    @JsonIgnore // 직렬화에서 제외
     private List<LogArchiveUpdateModel> updateLogIds;
 
     @OneToMany(mappedBy = "reporterId",cascade = CascadeType.MERGE,orphanRemoval = false)

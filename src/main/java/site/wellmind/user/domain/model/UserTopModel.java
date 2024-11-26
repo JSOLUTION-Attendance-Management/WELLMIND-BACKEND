@@ -23,20 +23,20 @@ import java.util.List;
 @Setter
 @Getter
 @Table(name = "jsol_usertop")
-@ToString(exclude = {"id", "userEduIds", "userInfoModel", "role", "transferIds", "qrTokenIds", "recordIds",
+@ToString(exclude = {"id", "userEduIds", "userInfoModel", "role", "transferEmployeeIds","transferManagerIds", "qrTokenIds", "recordIds",
         "loginLogIds"})
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class UserTopModel extends BaseModel {
 
     @Id
-    @Column(name = "USER_IDX",nullable = false)
+    @Column(name = "USER_IDX", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "USER_EMPLOYEE_ID",unique = true,nullable = false)
+    @Column(name = "USER_EMPLOYEE_ID", unique = true, nullable = false)
     private String employeeId;
 
-    @Column(name = "USER_EMAIL",unique = false,nullable = false)
+    @Column(name = "USER_EMAIL", unique = false, nullable = false)
     private String email;
 
     @Column(name = "USER_PASSWORD", unique = true)
@@ -46,54 +46,56 @@ public class UserTopModel extends BaseModel {
     @Column(name = "USER_NAME")
     private String name;
 
-    @Column(name="REG_NUMBER_FOR",nullable = false)
+    @Column(name = "REG_NUMBER_FOR", nullable = false)
     private String regNumberFor;
-    @Column(name = "REG_NUMBER_LAT",nullable = false)
+    @Column(name = "REG_NUMBER_LAT", nullable = false)
     private String regNumberLat;
 
-    @Column(name="USER_PHONE_NUM",length = 50)
+    @Column(name = "USER_PHONE_NUM", length = 50)
     private String phoneNum;
 
     @Builder.Default
-    @Column(name="AUTH_TYPE",length = 1)
-    @Pattern(regexp = "[NM]",message = "authType must be 'N' or 'M'")
-    private String authType="N";
+    @Column(name = "AUTH_TYPE", length = 1)
+    @Pattern(regexp = "[NM]", message = "authType must be 'N' or 'M'")
+    private String authType = "N";
 
     @Builder.Default
     @Column(name = "DELETE_FLAG")
-    private Boolean deleteFlag= false;
+    private Boolean deleteFlag = false;
 
     // ====================== user ========================
 
-    @OneToMany(mappedBy = "userTopModel",cascade = CascadeType.ALL,orphanRemoval = true,fetch = FetchType.EAGER)
-    @JsonManagedReference // 순환 참조 방지
+    @OneToMany(mappedBy = "userTopModel", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<UserEducationModel> userEduIds;
 
     @OneToOne(fetch = FetchType.EAGER)
-    @JsonManagedReference // 순환 참조 방지
-    @JoinColumn(name = "USERINFO_IDX",referencedColumnName = "USERINFO_IDX")
+    @JoinColumn(name = "USERINFO_IDX", referencedColumnName = "USERINFO_IDX")
     private UserInfoModel userInfoModel;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JsonManagedReference // 순환 참조 방지
     @JoinColumn(name = "ROLE_IDX", nullable = false)
     private AccountRoleModel role;
 
     // ====================== transfer ========================
-    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
-    @JsonManagedReference // 순환 참조 방지
-    private List<TransferModel> transferIds;
+    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<TransferModel> transferEmployeeIds;
+
+    @OneToMany(mappedBy = "managerId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<TransferModel> transferManagerIds;
 
     // ====================== attend ========================
     @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore // 직렬화에서 제외
     private List<AttendQrModel> qrTokenIds;
 
     @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore // 직렬화에서 제외
     private List<AttendRecordModel> recordIds;
 
     // ====================== log ========================
 
-    @OneToMany(mappedBy = "userId",cascade = CascadeType.MERGE,orphanRemoval = false)
+    @OneToMany(mappedBy = "userId", cascade = CascadeType.MERGE, orphanRemoval = false)
+    @JsonIgnore // 직렬화에서 제외
     private List<LogArchiveLoginModel> loginLogIds;
 
 
