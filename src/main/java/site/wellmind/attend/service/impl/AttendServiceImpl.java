@@ -41,7 +41,6 @@ import java.util.stream.Collectors;
 @Slf4j(topic = "AttendServiceImpl")
 public class AttendServiceImpl implements AttendService {
 
-    private final AttendRecordRepository attendRecordRepository;
     private final UserTopRepository userTopRepository;
     private final AdminTopRepository adminTopRepository;
     private final JPAQueryFactory queryFactory;
