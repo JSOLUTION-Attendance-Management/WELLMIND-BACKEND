@@ -6,9 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import site.wellmind.attend.domain.vo.AttendStatus;
-
-import java.time.LocalDateTime;
 
 /**
  * RecentAttendDto
