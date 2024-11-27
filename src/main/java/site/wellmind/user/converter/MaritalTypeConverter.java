@@ -2,6 +2,7 @@ package site.wellmind.user.converter;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
+import lombok.Getter;
 import site.wellmind.transfer.domain.vo.TransferType;
 import site.wellmind.user.domain.vo.MaritalType;
 

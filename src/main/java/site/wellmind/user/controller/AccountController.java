@@ -15,6 +15,7 @@ import site.wellmind.common.exception.GlobalException;
 import site.wellmind.common.service.MailService;
 import site.wellmind.security.provider.JwtTokenProvider;
 import site.wellmind.user.domain.dto.AccountDto;
+import site.wellmind.user.domain.dto.ProfileDto;
 import site.wellmind.user.domain.dto.UserAllDto;
 import site.wellmind.user.domain.dto.UserLogRequestDto;
 import site.wellmind.user.service.AccountService;
@@ -64,8 +65,29 @@ public class AccountController {
                             .message(e.getMessage()).build());
         }
     }
+    @PostMapping("/register/profile")
+    public ResponseEntity<Messenger> registerProfile(@RequestBody ProfileDto dto,HttpServletRequest request ) throws MessagingException {
+        AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
+        if(!accountDto.isAdmin()){
+            return ResponseEntity.status(ExceptionStatus.NO_PERMISSION.getHttpStatus())
+                    .body(Messenger.builder()
+                            .message("Only Admin can register profile")
+                            .build());
+        }
+        try{
+            accountService.registerProfile(dto,accountDto);
+            return ResponseEntity.ok(Messenger.builder()
+                    .message(SuccessStatus.OK.getMessage()).build());
+        }catch (Exception e){
+            return ResponseEntity.status(ExceptionStatus.INTERNAL_SERVER_ERROR.getHttpStatus())
+                    .body(Messenger.builder()
+                            .message("Error in register Profile info: "+e)
+                            .build());
+        }
+    }
 
-    @GetMapping("/exist-by-employeeId")
+
+        @GetMapping("/exist-by-employeeId")
     public ResponseEntity<Messenger> existByEmployeeId(HttpServletRequest request) {
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
 

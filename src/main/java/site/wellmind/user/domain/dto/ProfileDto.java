@@ -24,6 +24,7 @@ public class ProfileDto {
     private String name;
     private String phoneNum;
     private String authType;
+    private String employeeId;
 
     private String photo;
     private AddressVO address;

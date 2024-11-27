@@ -7,8 +7,8 @@ import site.wellmind.user.domain.model.AdminTopModel;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Setter
-@Getter
+@Data
+@Builder
 @Table(name="jsol_logarchive_save")
 @ToString(exclude = {"id"})
 public class LogArchiveSaveModel {

@@ -15,7 +15,11 @@ public enum TransferType {
     DISPATCH("외부 파견"),
     LEAVE("휴직"),
     RETURN("복직"),
-    REHIRE("퇴직 후 재입사");
+    REHIRE("퇴직 후 재입사"),
+    TERMINATION("퇴직"),
+    LAYOFF("정리 해고"),
+    INTERNSHIP("인턴 등록"),
+    NEW_HIRE("신규 입사");
 
     private final String korean;
 

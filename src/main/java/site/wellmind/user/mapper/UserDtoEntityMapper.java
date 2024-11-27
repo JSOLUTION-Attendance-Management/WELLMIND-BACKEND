@@ -4,8 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import site.wellmind.security.util.EncryptionUtil;
 import site.wellmind.transfer.domain.model.TransferModel;
+import site.wellmind.user.converter.MaritalTypeConverter;
 import site.wellmind.user.domain.dto.*;
 import site.wellmind.user.domain.model.*;
+import site.wellmind.user.domain.vo.JobType;
+import site.wellmind.user.domain.vo.MaritalType;
 import site.wellmind.user.repository.*;
 
 import java.util.List;
@@ -21,6 +24,7 @@ public class UserDtoEntityMapper {
     private final UserTopRepository userTopRepository;
     private final AdminTopRepository adminTopRepository;
     private final EncryptionUtil encryptionUtil;
+
     public UserTopModel dtoToEntityUserAll(UserAllDto dto, UserInfoModel userInfoModel, AccountRoleModel accountRoleModel) {
         return UserTopModel.builder()
                 .employeeId(dto.getUserTopDto().getEmployeeId())
@@ -88,6 +92,17 @@ public class UserDtoEntityMapper {
 
     }
 
+    public UserSignificantModel dtoToEntitySignificant(UserSignificantDto dto){
+        return UserSignificantModel.builder()
+                .id(dto.getId())
+                .maritalStatus(MaritalType.fromKorean(dto.getMaritalStatus()))
+                .smoker(dto.getSmoker())
+                .sleepHours(dto.getSleepHours())
+                .skipBreakfast(dto.getSkipBreakfast())
+                .chronicDiseases(dto.getChronicDiseases())
+                .jobCategory(JobType.fromKorean(dto.getJobCategory()))
+                .build();
+    }
     public UserEducationModel dtoToEntityUserEdu(EducationDto dto) {
         Optional<UserTopModel> user = userTopRepository.findById(dto.getId());
         Optional<AdminTopModel> admin = adminTopRepository.findById(dto.getId());

@@ -27,6 +27,7 @@ public class UserDetailDto {
     //UserInfoModel
     private UserInfoDto userInfo;
 
+    private UserSignificantDto userSignificant;
     //UserEducationModel
     private List<EducationDto> education;
 }
