@@ -6,7 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -14,21 +14,22 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
 import site.wellmind.common.service.UtilService;
 import site.wellmind.log.domain.model.LogArchiveUpdateModel;
 import site.wellmind.log.domain.vo.DeleteStatus;
 import site.wellmind.log.event.UserDeletedEvent;
-import site.wellmind.log.repository.LogArchiveDeleteDetailRepository;
-import site.wellmind.log.repository.LogArchiveDeleteRepository;
+import site.wellmind.log.event.UserSavedEvent;
 import site.wellmind.log.repository.LogArchiveUpdateRepository;
 import site.wellmind.security.util.EncryptionUtil;
-import site.wellmind.transfer.domain.model.QDepartmentModel;
-import site.wellmind.transfer.domain.model.QPositionModel;
-import site.wellmind.transfer.domain.model.QTransferModel;
+import site.wellmind.transfer.domain.model.*;
+import site.wellmind.transfer.domain.vo.TransferType;
+import site.wellmind.transfer.repository.TransferRepository;
 import site.wellmind.user.domain.dto.*;
 import site.wellmind.user.domain.model.*;
+import site.wellmind.user.domain.vo.AddressVO;
 import site.wellmind.user.mapper.UserDtoEntityMapper;
 import site.wellmind.user.mapper.UserEntityDtoMapper;
 import site.wellmind.user.repository.*;
@@ -61,9 +62,9 @@ public class AccountServiceImpl implements AccountService {
     private final UserEducationRepository userEducationRepository;
     private final AccountRoleRepository accountRoleRepository;
     private final AdminTopRepository adminTopRepository;
+    private final TransferRepository transferRepository;
+
     private final LogArchiveUpdateRepository logArchiveUpdateRepository;
-    private final LogArchiveDeleteRepository logArchiveDeleteRepository;
-    private final LogArchiveDeleteDetailRepository logArchiveDeleteDetailRepository;
 
     private final UtilService utilService;
     private final EncryptionUtil encryptionUtil;
@@ -115,6 +116,84 @@ public class AccountServiceImpl implements AccountService {
 
     }
 
+    @Async
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void registerProfile(ProfileDto dto, AccountDto accountDto) {
+        Optional<AdminTopModel> admin = adminTopRepository.findById(accountDto.getAccountId());
+        DepartmentModel departmentModel=queryFactory.selectFrom(qDepartment)
+                .where(qDepartment.name.eq(dto.getDepartName()))
+                .fetchOne();
+        PositionModel positionModel=queryFactory.selectFrom(qPosition)
+                .where(qPosition.name.eq(dto.getPositionName()))
+                .fetchOne();
+
+        if (admin.isEmpty()) {
+            throw new GlobalException(ExceptionStatus.ADMIN_NOT_FOUND);
+        }
+        if (departmentModel == null) {
+            throw new GlobalException(ExceptionStatus.INTERNAL_SERVER_ERROR,"Deparment not found");
+        }
+        if (positionModel == null) {
+            throw new GlobalException(ExceptionStatus.INTERNAL_SERVER_ERROR,"Position not found");
+        }
+
+        try {
+            eventPublisher.publishEvent(new UserSavedEvent(this,dto.getEmployeeId(),admin.get()));
+            UserInfoModel userInfoModel = userInfoRepository.save(UserInfoModel.builder()
+                    .photo(dto.getPhoto())
+                    .address(dto.getAddress()).build());
+
+            if (dto.getAuthType().equals("N")) {
+
+                UserTopModel userTopModel = userTopRepository.save(UserTopModel.builder()
+                        .email(dto.getEmail())
+                        .name(dto.getName())
+                        .phoneNum(dto.getPhoneNum())
+                        .authType("N")
+                        .employeeId(dto.getEmployeeId())
+                        .userInfoModel(userInfoModel)
+                        .role(accountRoleRepository.findById(1L).get())
+                        .build());
+
+                log.info("userTopModel: {}",userTopModel);
+                transferRepository.save(TransferModel.builder()
+                        .transferReason("채용")
+                        .transferType(TransferType.NEW_HIRE)
+                        .adminId(null)
+                        .userId(userTopModel)
+                        .department(departmentModel)
+                        .position(positionModel)
+                        .build());
+
+            } else if (dto.getAuthType().equals("M")) {
+                AdminTopModel adminTopModel = adminTopRepository.save(AdminTopModel.builder()
+                        .email(dto.getEmail())
+                        .name(dto.getName())
+                        .phoneNum(dto.getPhoneNum())
+                        .authType("M")
+                        .employeeId(dto.getEmployeeId())
+                        .userInfoModel(userInfoModel)
+                        .role(accountRoleRepository.findById(1L).get())
+                        .build());
+
+                transferRepository.save(TransferModel.builder()
+                        .transferReason("채용")
+                        .transferType(TransferType.NEW_HIRE)
+                        .adminId(adminTopModel)
+                        .userId(null)
+                        .department(departmentModel)
+                        .position(positionModel)
+                        .build());
+
+            } else {
+                throw new GlobalException(ExceptionStatus.UNAUTHORIZED, "Invalid User Type : " + dto.getAuthType());
+            }
+        } catch (Exception e) {
+            throw new GlobalException(ExceptionStatus.INTERNAL_SERVER_ERROR, "Failed to save user profile data : " + dto.getEmployeeId());
+        }
+    }
+
     @Override
     public List<UserAllDto> saveAll(List<UserAllDto> entities) {
         return null;
@@ -139,7 +218,7 @@ public class AccountServiceImpl implements AccountService {
                 eventPublisher.publishEvent(new UserDeletedEvent(this, user, userLogRequestDto.getReason(), DeleteStatus.CLEAR, admin.get()));
                 userTopRepository.delete(user);
                 userInfoRepository.delete(user.getUserInfoModel());
-                List<UserEducationModel> userEducationModels=user.getUserEduIds();
+                List<UserEducationModel> userEducationModels = user.getUserEduIds();
                 userEducationRepository.deleteAll(userEducationModels);
             }
         } else {  //삭제하려는 대상이 관리자일 경우
@@ -149,7 +228,7 @@ public class AccountServiceImpl implements AccountService {
                 if (!adminUser.getDeleteFlag()) { //논리 삭제의 경우
                     adminUser.setDeleteFlag(true);
                     adminTopRepository.save(adminUser);
-                   // saveDeleteLog(adminTopModel.get(), userLogRequestDto.getDeletedReason(), DeleteStatus.CACHE, admin.get());
+                    // saveDeleteLog(adminTopModel.get(), userLogRequestDto.getDeletedReason(), DeleteStatus.CACHE, admin.get());
                     eventPublisher.publishEvent(new UserDeletedEvent(this, adminUser, userLogRequestDto.getReason(), DeleteStatus.CACHE, admin.get()));
 
                 } else {  //완전 삭제인 경우
@@ -158,7 +237,7 @@ public class AccountServiceImpl implements AccountService {
 
                     adminTopRepository.delete(adminUser);
                     userInfoRepository.delete(adminUser.getUserInfoModel());
-                    List<UserEducationModel> userEducationModels=adminUser.getUserEduIds();
+                    List<UserEducationModel> userEducationModels = adminUser.getUserEduIds();
                     userEducationRepository.deleteAll(userEducationModels);
                 }
             } else {
@@ -169,6 +248,7 @@ public class AccountServiceImpl implements AccountService {
 
 
     @Override
+    @Transactional
     public Object findById(String employeeId, AccountDto accountDto) {
         Long currentAccountId = accountDto.getAccountId();
 
@@ -330,6 +410,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @Transactional
     public ProfileDto findProfileById(Long currentAccountId, boolean isAdmin) {
         if (!isAdmin) {
             UserTopModel userTopModel = userTopRepository.findById(currentAccountId)
@@ -345,6 +426,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @Transactional
     public UserDetailDto findDetailById(Long currentAccountId, boolean isAdmin) {
         if (!isAdmin) {
             UserTopModel userTopModel = userTopRepository.findById(currentAccountId)
@@ -357,6 +439,7 @@ public class AccountServiceImpl implements AccountService {
 
         return userEntityDtoMapper.entityToDtoUserDetail(adminTopModel);
     }
+
 
     @Override
     @Transactional

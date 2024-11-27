@@ -39,5 +39,7 @@ public interface AccountService extends CommandService<UserAllDto>, QueryService
     ProfileDto findProfileById(Long currentAccountId, boolean isAdmin);
 
     UserDetailDto findDetailById(Long currentAccountId, boolean isAdmin);
+
+    void registerProfile(ProfileDto dto,AccountDto accountDto);
 }
 

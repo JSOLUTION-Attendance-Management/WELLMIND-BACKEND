@@ -24,7 +24,7 @@ import java.util.List;
 @Setter
 @Getter
 @Table(name = "jsol_admintop")
-@ToString(exclude = {"id", "userEduIds", "userInfoModel", "role","transferIds",
+@ToString(exclude = {"id","userSignificantModel", "userEduIds", "userInfoModel", "role","transferIds",
         "viewLogIds", "updateLogIds", "loginLogIds", "deleteLogIds", "reportIds"})
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class AdminTopModel extends BaseModel {
@@ -80,9 +80,13 @@ public class AdminTopModel extends BaseModel {
     @JsonManagedReference // 순환 참조 방지
     private List<UserEducationModel> userEduIds;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
     @JoinColumn(name = "USERINFO_IDX", referencedColumnName = "USERINFO_IDX")
     private UserInfoModel userInfoModel;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
+    @JoinColumn(name="USER_SIGN_IDX")
+    private UserSignificantModel userSignificantModel;
 
     // ====================== transfer ========================
     @OneToMany(mappedBy = "adminId", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)

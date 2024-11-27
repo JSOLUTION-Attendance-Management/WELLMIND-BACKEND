@@ -6,6 +6,8 @@ import site.wellmind.security.util.EncryptionUtil;
 import site.wellmind.transfer.domain.model.TransferModel;
 import site.wellmind.user.domain.dto.*;
 import site.wellmind.user.domain.model.*;
+import site.wellmind.user.domain.vo.JobType;
+import site.wellmind.user.domain.vo.MaritalType;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,38 +18,30 @@ public class UserEntityDtoMapper {
     private final EncryptionUtil encryptionUtil;
 
     public UserAllDto entityToDtoUserAll(UserTopModel model) {
-        UserInfoModel userInfoModel = model.getUserInfoModel();
-        List<UserEducationModel> userEducations = model.getUserEduIds();
         TransferModel transferModel = model.getTransferEmployeeIds().get(0);
-        String departName = transferModel.getDepartment().getName();
-        String positionName = transferModel.getPosition().getName();
 
         return UserAllDto.builder()
                 .userTopDto(entityToDtoUserTop(model))
-                .userInfo(entityToDtoUserInfo(userInfoModel))
-                .education(userEducations.stream()
+                .userInfo(entityToDtoUserInfo(model.getUserInfoModel()))
+                .education(model.getUserEduIds().stream()
                         .map(this::entityToDtoUserEdu)
                         .collect(Collectors.toList()))
-                .departName(departName)
-                .positionName(positionName)
+                .departName(transferModel.getDepartment().getName())
+                .positionName(transferModel.getPosition().getName())
                 .build();
     }
 
     public UserAllDto entityToDtoUserAll(AdminTopModel model) {
-        UserInfoModel userInfoModel = model.getUserInfoModel();
-        List<UserEducationModel> userEducations = model.getUserEduIds();
         TransferModel transferModel = model.getTransferIds().get(0);
-        String departName = transferModel.getDepartment().getName();
-        String positionName = transferModel.getPosition().getName();
 
         return UserAllDto.builder()
                 .userTopDto(entityToDtoUserTop(model))
-                .userInfo(entityToDtoUserInfo(userInfoModel))
-                .education(userEducations.stream()
+                .userInfo(entityToDtoUserInfo(model.getUserInfoModel()))
+                .education(model.getUserEduIds().stream()
                         .map(this::entityToDtoUserEdu)
                         .collect(Collectors.toList()))
-                .departName(departName)
-                .positionName(positionName)
+                .departName(transferModel.getDepartment().getName())
+                .positionName(transferModel.getPosition().getName())
                 .build();
     }
 
@@ -75,8 +69,8 @@ public class UserEntityDtoMapper {
                 .email(model.getEmail())
                 .name(model.getName())
                 .phoneNum(model.getPhoneNum())
-                .regNumberFor(encryptionUtil.encrypt(model.getRegNumberFor()))
-                .regNumberLat(maskRegNumberLat(encryptionUtil.decrypt(model.getRegNumberLat())))
+                //.regNumberFor(encryptionUtil.encrypt(model.getRegNumberFor()))
+                //.regNumberLat(maskRegNumberLat(encryptionUtil.decrypt(model.getRegNumberLat())))
                 .deleteFlag(model.getDeleteFlag())
                 .authType(model.getAuthType())
                 .regDate(model.getRegDate())
@@ -96,6 +90,18 @@ public class UserEntityDtoMapper {
                 .isLong(model.isLong())
                 .significant(model.getSignificant())
                 .hireDate(model.getHireDate())
+                .build();
+    }
+
+    public UserSignificantDto entityToDtoUserSignificant(UserSignificantModel model){
+        return UserSignificantDto.builder()
+                .id(model.getId())
+                .maritalStatus(model.getMaritalStatus().getKorean())
+                .smoker(model.getSmoker())
+                .sleepHours(model.getSleepHours())
+                .skipBreakfast(model.getSkipBreakfast())
+                .chronicDiseases(model.getChronicDiseases())
+                .jobCategory(model.getJobCategory().getKorean())
                 .build();
     }
 
@@ -149,16 +155,15 @@ public class UserEntityDtoMapper {
     }
 
     public UserDetailDto entityToDtoUserDetail(UserTopModel user) {
-        UserInfoModel userInfoModel = user.getUserInfoModel();
-        List<UserEducationModel> userEducations = user.getUserEduIds();
 
         return UserDetailDto.builder()
                 .employeeId(user.getEmployeeId())
-                .regNumberFor(encryptionUtil.encrypt(user.getRegNumberFor()))
-                .regNumberLat(maskRegNumberLat(encryptionUtil.decrypt(user.getRegNumberLat())))
+                //.regNumberFor(encryptionUtil.encrypt(user.getRegNumberFor()))
+                //.regNumberLat(maskRegNumberLat(encryptionUtil.decrypt(user.getRegNumberLat())))
                 .deleteFlag(user.getDeleteFlag())
-                .userInfo(entityToDtoUserInfo(userInfoModel))
-                .education(userEducations.stream()
+                .userInfo(entityToDtoUserInfo(user.getUserInfoModel()))
+                .userSignificant(entityToDtoUserSignificant(user.getUserSignificantModel()))
+                .education(user.getUserEduIds().stream()
                         .map(this::entityToDtoUserEdu)
                         .collect(Collectors.toList()))
                 .build();
@@ -174,6 +179,7 @@ public class UserEntityDtoMapper {
                 .regNumberLat(maskRegNumberLat(encryptionUtil.decrypt(admin.getRegNumberLat())))
                 .deleteFlag(admin.getDeleteFlag())
                 .userInfo(entityToDtoUserInfo(userInfoModel))
+                .userSignificant(entityToDtoUserSignificant(admin.getUserSignificantModel()))
                 .education(userEducations.stream()
                         .map(this::entityToDtoUserEdu)
                         .collect(Collectors.toList()))
