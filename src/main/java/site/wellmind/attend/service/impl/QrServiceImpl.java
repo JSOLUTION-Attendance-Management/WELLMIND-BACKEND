@@ -11,6 +11,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.encrypt.Encryptors;
+import org.springframework.security.crypto.encrypt.TextEncryptor;
+import org.springframework.beans.factory.annotation.Value;
+import javax.annotation.PostConstruct;
 import site.wellmind.attend.domain.dto.QrCodeResponseDto;
 import site.wellmind.attend.domain.model.AttendQrModel;
 import site.wellmind.attend.repository.AttendQrRepository;
@@ -25,6 +29,7 @@ import site.wellmind.user.repository.UserTopRepository;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -52,15 +57,46 @@ public class QrServiceImpl implements QrService {
     private final UserTopRepository userTopRepository;
     private final AdminTopRepository adminTopRepository;
 
+    @Value("${encryption.secret-key}")
+    private String secretKey;
+
+    @Value("${encryption.init-vector}")
+    private String initVector;
+
+    private TextEncryptor encryptor;
+
+    public String decryptQrContent(String encryptedContent) { //Qr 읽을때 활용
+        return encryptor.decrypt(encryptedContent);
+    }
+
+    @PostConstruct
+    public void init() {
+        // 16자리로 맞추기 위해 필요한 경우 잘라내거나 패딩
+        String adjustedSecretKey = adjustToSixteenBytes(secretKey);
+        String adjustedInitVector = adjustToSixteenBytes(initVector);
+        this.encryptor = Encryptors.text(adjustedSecretKey, adjustedInitVector);
+    }
+
+    private String adjustToSixteenBytes(String input) {
+        byte[] bytes = input.getBytes(StandardCharsets.UTF_8);
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : bytes) {
+            hexString.append(String.format("%02x", b));
+        }
+        return hexString.substring(0, Math.min(hexString.length(), 32));
+    }
+
     @Override
     public String generateQrContent(AccountDto accountDto, String employeeId, LocalDateTime expireTime) {
         boolean isAdmin = accountDto.isAdmin();
         SecureRandom secureRandom = new SecureRandom();
-        byte[] randomBytes = new byte[16]; // 128비트 난수
+        byte[] randomBytes = new byte[16];
         secureRandom.nextBytes(randomBytes);
         String randomString = Base64.getEncoder().encodeToString(randomBytes);
+        String geoLocation = "null"; // 프론트에서 geolocation longitude, latitude 넘겨줌
 
-        return String.format("%s|%s|%s|%s", employeeId, isAdmin, expireTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), randomString);
+        String content = String.format("%s|%s|%s|%s|%s", employeeId, isAdmin, expireTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), randomString, geoLocation);
+        return encryptor.encrypt(content);
     }
 
     @Override
