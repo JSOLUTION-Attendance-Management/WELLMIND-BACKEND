@@ -39,7 +39,7 @@ public class UserTopDto {
     //private AccountRoleModel role;
     private Long roleId;
     private Long userInfoId;
-
+    private Long userSignificantId;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     private LocalDateTime regDate;

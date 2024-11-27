@@ -44,6 +44,7 @@ public class LogDeleteServiceImpl implements LogDeleteService {
     private final UserEducationRepository userEducationRepository;
     private final AdminTopRepository adminTopRepository;
     private final UserSignificantRepository userSignificantRepository;
+    private final AccountRoleRepository accountRoleRepository;
 
     private final ObjectMapper objectMapper;
     private final JPAQueryFactory queryFactory;
@@ -145,7 +146,9 @@ public class LogDeleteServiceImpl implements LogDeleteService {
     private void restoreUserTop(String jsonValue) {
         try {
             UserTopDto userTopDto = objectMapper.readValue(jsonValue, UserTopDto.class);
-            UserTopModel userTopModel = userDtoEntityMapper.dtoToEntityUserTop(userTopDto);
+            UserTopModel userTopModel = userDtoEntityMapper.dtoToEntityUserTop(userTopDto,accountRoleRepository.findById(userTopDto.getRoleId())
+                    ,userInfoRepository.findById(userTopDto.getUserInfoId())
+                    ,userSignificantRepository.findById(userTopDto.getUserSignificantId()));
             log.info("userTopModel : {}",userTopModel);
             userTopModel.setDeleteFlag(false);
             try{
@@ -160,7 +163,10 @@ public class LogDeleteServiceImpl implements LogDeleteService {
     private void restoreAdminTop(String jsonValue) {
         try {
             UserTopDto userTopDto = objectMapper.readValue(jsonValue, UserTopDto.class);
-            AdminTopModel adminTopModel = userDtoEntityMapper.dtoToEntityAdminTop(userTopDto);
+            AdminTopModel adminTopModel = userDtoEntityMapper.dtoToEntityAdminTop(userTopDto
+                    ,accountRoleRepository.findById(userTopDto.getRoleId())
+                    ,userInfoRepository.findById(userTopDto.getUserInfoId())
+            ,userSignificantRepository.findById(userTopDto.getUserSignificantId()));
             log.info("userTopModel : {}",adminTopModel);
             adminTopModel.setDeleteFlag(false);
             try{
@@ -212,7 +218,7 @@ public class LogDeleteServiceImpl implements LogDeleteService {
                 return;
             }
             List<UserEducationModel> educationModels = educationDtos.stream()
-                    .map(userDtoEntityMapper::dtoToEntityUserEdu)
+                    .map((EducationDto dto) -> userDtoEntityMapper.dtoToEntityUserEdu(dto,userTopRepository.findById(dto.getId()).get(),adminTopRepository.findById(dto.getId()).get()))
                     .toList();
             log.info("EducationDto : {}",educationDtos);
             log.info("educationModels : {}",educationModels);
