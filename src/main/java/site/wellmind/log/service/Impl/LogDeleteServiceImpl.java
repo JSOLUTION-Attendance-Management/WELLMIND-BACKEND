@@ -23,16 +23,10 @@ import site.wellmind.log.repository.LogArchiveDeleteDetailRepository;
 import site.wellmind.log.repository.LogArchiveDeleteRepository;
 import site.wellmind.log.service.LogDeleteService;
 import site.wellmind.user.domain.dto.*;
-import site.wellmind.user.domain.model.AdminTopModel;
-import site.wellmind.user.domain.model.UserEducationModel;
-import site.wellmind.user.domain.model.UserInfoModel;
-import site.wellmind.user.domain.model.UserTopModel;
+import site.wellmind.user.domain.model.*;
 import site.wellmind.user.mapper.UserDtoEntityMapper;
 import site.wellmind.user.mapper.UserEntityDtoMapper;
-import site.wellmind.user.repository.AdminTopRepository;
-import site.wellmind.user.repository.UserEducationRepository;
-import site.wellmind.user.repository.UserInfoRepository;
-import site.wellmind.user.repository.UserTopRepository;
+import site.wellmind.user.repository.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -49,6 +43,7 @@ public class LogDeleteServiceImpl implements LogDeleteService {
     private final UserInfoRepository userInfoRepository;
     private final UserEducationRepository userEducationRepository;
     private final AdminTopRepository adminTopRepository;
+    private final UserSignificantRepository userSignificantRepository;
 
     private final ObjectMapper objectMapper;
     private final JPAQueryFactory queryFactory;
@@ -135,6 +130,9 @@ public class LogDeleteServiceImpl implements LogDeleteService {
                 case "jsol_userinfo":
                     restoreUserInfo(detail.getDeletedValue());
                     break;
+                case "jsol_user_significant":
+                    restoreUserSignificant(detail.getDeletedValue());
+                    break;
                 case "jsol_user_education":
                     restoreUserEducation(detail.getDeletedValue());
                     break;
@@ -190,6 +188,21 @@ public class LogDeleteServiceImpl implements LogDeleteService {
             throw new GlobalException(ExceptionStatus.INTERNAL_SERVER_ERROR, "error in restoreUserTop" + e.getMessage());
         }
     }
+    private void restoreUserSignificant(String jsonValue) {
+        try {
+            UserSignificantDto userSignificantDto = objectMapper.readValue(jsonValue, UserSignificantDto.class);
+            UserSignificantModel userSignificantModel = userDtoEntityMapper.dtoToEntitySignificant(userSignificantDto);
+            log.info("userSignificantModel : {}",userSignificantModel);
+            try{
+                userSignificantRepository.save(userSignificantModel);
+            }catch (Exception e){
+                log.info("userInfoModel error: ",e);
+            }
+
+        } catch (JsonProcessingException e) {
+            throw new GlobalException(ExceptionStatus.INTERNAL_SERVER_ERROR, "error in restoreUserTop" + e.getMessage());
+        }
+    }
 
     private void restoreUserEducation(String jsonValue) {
         try {
@@ -229,6 +242,10 @@ public class LogDeleteServiceImpl implements LogDeleteService {
                 }
                 log.info("save userinfo: {}",userEntityDtoMapper.entityToDtoUserInfo(user.getUserInfoModel()));
 
+                if(user.getUserSignificantModel()!=null){
+                    saveDeleteDetailLog(masterLog, "jsol_user_significant", user.getEmployeeId(), objectMapper.writeValueAsString(userEntityDtoMapper.entityToDtoUserSignificant(user.getUserSignificantModel())));
+                }
+
                 if (user.getUserEduIds() != null) {
                     List<EducationDto> educationDtos = user.getUserEduIds().stream()
                             .map(userEntityDtoMapper::entityToDtoUserEdu)
@@ -240,6 +257,10 @@ public class LogDeleteServiceImpl implements LogDeleteService {
 
                 if (adminUser.getUserInfoModel() != null) {
                     saveDeleteDetailLog(masterLog, "jsol_userinfo", adminUser.getEmployeeId(), objectMapper.writeValueAsString(userEntityDtoMapper.entityToDtoUserInfo(adminUser.getUserInfoModel())));
+                }
+
+                if(adminUser.getUserSignificantModel()!=null){
+                    saveDeleteDetailLog(masterLog, "jsol_user_significant", adminUser.getEmployeeId(), objectMapper.writeValueAsString(userEntityDtoMapper.entityToDtoUserSignificant(adminUser.getUserSignificantModel())));
                 }
 
                 if (adminUser.getUserEduIds() != null) {

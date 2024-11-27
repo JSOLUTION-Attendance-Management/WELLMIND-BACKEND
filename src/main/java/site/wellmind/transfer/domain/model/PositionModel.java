@@ -13,7 +13,7 @@ import java.util.List;
 @Getter
 @Builder
 @Table(name = "jsol_position")
-@ToString(exclude = {"id"})
+@ToString(exclude = {"id","transferIds"})
 public class PositionModel extends BaseModel {
     @Id
     @Column(name = "POSITION_IDX",nullable = false)

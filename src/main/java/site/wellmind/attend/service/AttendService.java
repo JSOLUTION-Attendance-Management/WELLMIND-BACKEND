@@ -18,7 +18,7 @@ import java.util.Optional;
 
 /**
  * AttendService
- * <p>User Service Interface</p>
+ * <p>Attend Service Interface</p>
  *
  * @version 1.0
  * @see AttendDto

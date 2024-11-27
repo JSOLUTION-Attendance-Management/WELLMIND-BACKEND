@@ -2,7 +2,6 @@ package site.wellmind.user.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
@@ -12,8 +11,6 @@ import site.wellmind.common.domain.model.BaseModel;
 import site.wellmind.log.domain.model.*;
 import site.wellmind.transfer.domain.model.TransferModel;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -23,8 +20,7 @@ import java.util.List;
 @Setter
 @Getter
 @Table(name = "jsol_usertop")
-@ToString(exclude = {"id", "userEduIds", "userInfoModel", "role", "transferEmployeeIds","transferManagerIds", "qrTokenIds", "recordIds",
-        "loginLogIds"})
+@ToString(exclude = {"id", "userSignificantModel", "userEduIds", "userInfoModel", "role", "transferEmployeeIds", "qrTokenIds", "recordIds", "loginLogIds"})
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class UserTopModel extends BaseModel {
 
@@ -46,9 +42,9 @@ public class UserTopModel extends BaseModel {
     @Column(name = "USER_NAME")
     private String name;
 
-    @Column(name = "REG_NUMBER_FOR", nullable = false)
+    @Column(name = "REG_NUMBER_FOR")
     private String regNumberFor;
-    @Column(name = "REG_NUMBER_LAT", nullable = false)
+    @Column(name = "REG_NUMBER_LAT")
     private String regNumberLat;
 
     @Column(name = "USER_PHONE_NUM", length = 50)
@@ -68,20 +64,21 @@ public class UserTopModel extends BaseModel {
     @OneToMany(mappedBy = "userTopModel", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<UserEducationModel> userEduIds;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
     @JoinColumn(name = "USERINFO_IDX", referencedColumnName = "USERINFO_IDX")
     private UserInfoModel userInfoModel;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
+    @JoinColumn(name="USER_SIGN_IDX")
+    private UserSignificantModel userSignificantModel;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ROLE_IDX", nullable = false)
     private AccountRoleModel role;
 
     // ====================== transfer ========================
-    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<TransferModel> transferEmployeeIds;
-
-    @OneToMany(mappedBy = "managerId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<TransferModel> transferManagerIds;
 
     // ====================== attend ========================
     @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)

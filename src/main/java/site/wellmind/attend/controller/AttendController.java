@@ -8,10 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import site.wellmind.attend.domain.dto.BaseAttendDto;
 import site.wellmind.common.domain.dto.Messenger;
-import site.wellmind.common.domain.vo.SuccessStatus;
 import site.wellmind.common.domain.vo.ExceptionStatus;
+import site.wellmind.common.domain.vo.SuccessStatus;
 import site.wellmind.common.exception.GlobalException;
-import site.wellmind.attend.domain.dto.AttendDto;
 import site.wellmind.attend.domain.dto.RecentAttendDto;
 import site.wellmind.attend.service.AttendService;
 import site.wellmind.user.domain.dto.AccountDto;
@@ -48,7 +47,7 @@ public class AttendController {
         try {
             Page<BaseAttendDto> attendRecords = attendService.findBy(employeeId, accountDto, pageable, recentCount);
             return ResponseEntity.ok(Messenger.builder()
-                    .message("Attendance records retrieved successfully")
+                    .message("attend findBy : " + SuccessStatus.OK.getMessage())
                     .data(attendRecords)
                     .build());
         } catch (GlobalException e) {
@@ -68,7 +67,7 @@ public class AttendController {
         try {
             List<RecentAttendDto> recentAttendances = attendService.findRecentAttendances(accountDto, recentCount);
             return ResponseEntity.ok(Messenger.builder()
-                    .message("Recent attendance records retrieved successfully")
+                    .message("recent attend : " + SuccessStatus.OK.getMessage())
                     .data(recentAttendances)
                     .build());
         } catch (GlobalException e) {
