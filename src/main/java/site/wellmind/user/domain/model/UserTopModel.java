@@ -11,6 +11,7 @@ import site.wellmind.common.domain.model.BaseModel;
 import site.wellmind.log.domain.model.*;
 import site.wellmind.transfer.domain.model.TransferModel;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -38,6 +39,9 @@ public class UserTopModel extends BaseModel {
     @Column(name = "USER_PASSWORD", unique = true)
     @JsonIgnore
     private String password;
+
+    @Column(name = "PASSWORD_EXPIRY")
+    private LocalDateTime passwordExpiry;
 
     @Column(name = "USER_NAME")
     private String name;

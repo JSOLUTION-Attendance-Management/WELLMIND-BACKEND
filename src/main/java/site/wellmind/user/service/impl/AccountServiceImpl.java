@@ -6,6 +6,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
+import site.wellmind.common.service.MailService;
 import site.wellmind.common.service.UtilService;
 import site.wellmind.log.domain.model.LogArchiveUpdateModel;
 import site.wellmind.log.domain.vo.DeleteStatus;
@@ -68,6 +71,7 @@ public class AccountServiceImpl implements AccountService {
 
     private final UtilService utilService;
     private final EncryptionUtil encryptionUtil;
+    private final MailService mailService;
     private final PasswordEncoder passwordEncoder;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -166,6 +170,7 @@ public class AccountServiceImpl implements AccountService {
                         .position(positionModel)
                         .build());
 
+                mailService.sendAccountEmail(userTopModel.getEmail(), userTopModel.getEmployeeId(),false);
             } else if (dto.getAuthType().equals("M")) {
                 AdminTopModel adminTopModel = adminTopRepository.save(AdminTopModel.builder()
                         .email(dto.getEmail())
@@ -186,10 +191,20 @@ public class AccountServiceImpl implements AccountService {
                         .position(positionModel)
                         .build());
 
+                mailService.createAccountMail(adminTopModel.getEmail(), adminTopModel.getEmployeeId(),true);
+
             } else {
                 throw new GlobalException(ExceptionStatus.UNAUTHORIZED, "Invalid User Type : " + dto.getAuthType());
             }
-        } catch (Exception e) {
+        } catch (DataIntegrityViolationException e) {
+            log.error("Data integrity violation: {}", e.getMessage());
+            throw new GlobalException(ExceptionStatus.INTERNAL_SERVER_ERROR, "Failed to save UserTopModel or TransferModel due to data integrity violation");
+
+        } catch (EntityNotFoundException e) {
+            log.error("Entity not found: {}", e.getMessage());
+            throw new GlobalException(ExceptionStatus.INTERNAL_SERVER_ERROR, "Required entity not found during save operation");
+
+        }catch (Exception e) {
             throw new GlobalException(ExceptionStatus.INTERNAL_SERVER_ERROR, "Failed to save user profile data : " + dto.getEmployeeId());
         }
     }
