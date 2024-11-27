@@ -30,7 +30,7 @@ public class AttendQrModel extends BaseModel {
 
     @Builder.Default
     @Column(name = "QR_TOKEN_IS_LAST")
-    private Boolean qrTokenisLast=false;
+    private Boolean qrTokenisLast=true;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_IDX",nullable = true)
