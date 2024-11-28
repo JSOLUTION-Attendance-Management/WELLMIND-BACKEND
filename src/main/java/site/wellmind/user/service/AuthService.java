@@ -5,6 +5,8 @@ import org.springframework.http.ResponseEntity;
 import site.wellmind.common.domain.dto.Messenger;
 import site.wellmind.common.domain.dto.TokenValidationRequestDto;
 import site.wellmind.security.domain.dto.LoginDto;
+import site.wellmind.user.domain.dto.AccountDto;
+import site.wellmind.user.domain.dto.PasswordModifyRequestDto;
 import site.wellmind.user.domain.dto.PasswordSetupRequestDto;
 
 public interface AuthService {
@@ -15,4 +17,7 @@ public interface AuthService {
     ResponseEntity<Messenger> validatePasswordSetupToken(TokenValidationRequestDto request);
 
     ResponseEntity<Messenger> setupPassword(PasswordSetupRequestDto request);
+
+    ResponseEntity<Messenger> modifyByPassword(PasswordModifyRequestDto oldPassword, AccountDto newPassword);
+
 }

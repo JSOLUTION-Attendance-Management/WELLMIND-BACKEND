@@ -1,17 +1,13 @@
 package site.wellmind.user.service.impl;
 
-import jakarta.servlet.http.Cookie;
+import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import site.wellmind.common.domain.dto.Messenger;
 import site.wellmind.common.domain.dto.TokenValidationRequestDto;
 import site.wellmind.common.domain.vo.ExceptionStatus;
@@ -26,6 +22,8 @@ import site.wellmind.security.provider.JwtTokenProvider;
 import site.wellmind.security.domain.dto.LoginDto;
 import site.wellmind.security.provider.PasswordTokenProvider;
 import site.wellmind.security.repository.AccountTokenRepository;
+import site.wellmind.user.domain.dto.AccountDto;
+import site.wellmind.user.domain.dto.PasswordModifyRequestDto;
 import site.wellmind.user.domain.dto.PasswordSetupRequestDto;
 import site.wellmind.user.domain.model.AdminTopModel;
 import site.wellmind.user.domain.model.UserTopModel;
@@ -34,7 +32,6 @@ import site.wellmind.user.repository.UserTopRepository;
 import site.wellmind.user.service.AuthService;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Optional;
 
 @Service
@@ -73,17 +70,18 @@ public class AuthServiceImpl implements AuthService {
 
         String accessToken = null;
         String refreshToken = null;
-
         if (user.isEmpty() && admin.isEmpty()) {
             throw new GlobalException(ExceptionStatus.USER_NOT_FOUND);
         } else if (user.isPresent()) {
 
-            if(user.get().getPasswordExpiry()!=null && user.get().getPasswordExpiry().isBefore(LocalDateTime.now())){
+            //임시 발급 비밀번호가 만료되었을 때
+            if(user.get().getPasswordExpiry()!=null && user.get().getPasswordExpiry().isAfter(LocalDateTime.now())){
                 userTopRepository.updatePasswordExpiry(user.get().getEmployeeId());
             }
             if(!passwordEncoder.matches(password,user.get().getPassword())){
                 throw new GlobalException(ExceptionStatus.INVALID_PASSWORD);
             }
+
             PrincipalUserDetails userDetails = new PrincipalUserDetails(user.get());
             accessToken = jwtTokenProvider.generateToken(userDetails, false);
             refreshToken = jwtTokenProvider.generateToken(userDetails, true);
@@ -96,6 +94,7 @@ public class AuthServiceImpl implements AuthService {
             if(!passwordEncoder.matches(password,admin.get().getPassword())){
                 throw new GlobalException(ExceptionStatus.INVALID_PASSWORD);
             }
+
             PrincipalAdminDetails adminDetails = new PrincipalAdminDetails(admin.get());
             accessToken = jwtTokenProvider.generateToken(adminDetails, false);
             refreshToken = jwtTokenProvider.generateToken(adminDetails, true);
@@ -245,6 +244,59 @@ public class AuthServiceImpl implements AuthService {
                             .build());
         }
     }
+    @Override
+    @Transactional
+    public ResponseEntity<Messenger> modifyByPassword(PasswordModifyRequestDto passwordDto, AccountDto accountDto) {
+        String oldPassword=passwordDto.getOldPassword();
+        String newPassword=passwordDto.getNewPassword();
+        String confirmPassword=passwordDto.getConfirmNewPassword();
+
+        if (!newPassword.equals(confirmPassword)) {
+            return ResponseEntity.status(ExceptionStatus.INVALID_INPUT.getHttpStatus())
+                    .body(Messenger.builder()
+                            .message("새 비밀번호와 비밀번호 확인 입력이 불일치합니다.")
+                            .build());
+        }
+
+
+        if(accountDto.isAdmin()){
+            Optional<AdminTopModel> admin=adminTopRepository.findById(accountDto.getAccountId());
+            log.info("admin : {}",admin);
+
+            if(admin.isEmpty()){
+                return ResponseEntity.status(ExceptionStatus.ADMIN_NOT_FOUND.getHttpStatus())
+                        .body(Messenger.builder()
+                                .message(ExceptionStatus.ACCOUNT_NOT_FOUND.getMessage()).build());
+            }
+            if(!passwordEncoder.matches(oldPassword,admin.get().getPassword())){
+                throw new GlobalException(ExceptionStatus.INVALID_PASSWORD);
+            }
+            adminTopRepository.updatePasswordByEmployeeId(admin.get().getEmployeeId(),passwordEncoder.encode(newPassword),null);
+
+        }else{
+            Optional<UserTopModel> user=userTopRepository.findById(accountDto.getAccountId());
+            if(user.isEmpty()){
+                return ResponseEntity.status(ExceptionStatus.USER_NOT_FOUND.getHttpStatus())
+                        .body(Messenger.builder()
+                                .message(ExceptionStatus.USER_NOT_FOUND.getMessage()).build());
+            }
+            if(!passwordEncoder.matches(oldPassword,user.get().getPassword())){
+                throw new GlobalException(ExceptionStatus.INVALID_PASSWORD);
+            }
+
+            userTopRepository.updatePasswordByEmployeeId(user.get().getEmployeeId(),passwordEncoder.encode(newPassword),null);
+        }
+
+        jwtTokenProvider.invalidateToken(accountDto.getEmployeeId());
+
+        HttpHeaders headers = clearTokenCookies();
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(Messenger.builder()
+                        .message("Modify Password Successful")
+                        .build());
+    }
 
     @Override
     @Transactional
@@ -370,6 +422,7 @@ public class AuthServiceImpl implements AuthService {
         String passwordPattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=]).{8,}$";
         return password.matches(passwordPattern);
     }
+
 
 
 }

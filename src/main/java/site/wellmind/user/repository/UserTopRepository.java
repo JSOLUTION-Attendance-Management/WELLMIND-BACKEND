@@ -28,6 +28,7 @@ public interface UserTopRepository extends JpaRepository<UserTopModel, Long> {
     int updatePasswordByEmployeeId(@Param("employeeId") String employeeId
             , @Param("password") String password
             , @Param("expiry") LocalDateTime expiry);
+
     @Modifying
     @Transactional
     @Query("UPDATE UserTopModel u SET  u.password = NULL, u.passwordExpiry = NULL WHERE u.employeeId = :employeeId")

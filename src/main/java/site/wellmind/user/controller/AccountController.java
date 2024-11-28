@@ -194,15 +194,6 @@ public class AccountController {
                 .build());
     }
 
-    @PutMapping("/modify-by-password")
-    public ResponseEntity<Messenger> modifyByPassword(@RequestParam("oldPassword") String oldPassword,
-                                                      @RequestParam("newPassword") String newPassword) {
-        return ResponseEntity.ok(Messenger.builder()
-                .message("user modifyByPassword : " + SuccessStatus.OK.name())
-                .state(accountService.modifyByPassword(oldPassword, newPassword))
-                .build());
-    }
-
     // 여러 개 데이터를 input 값으로 받고 modify
     @PutMapping("/modify-by-id")
     public ResponseEntity<Messenger> modifyById(@RequestBody UserAllDto dto, HttpServletRequest request) {

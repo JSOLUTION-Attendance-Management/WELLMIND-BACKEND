@@ -524,13 +524,6 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     @Transactional
-    public Boolean modifyByPassword(String oldPassword, String newPassword) {
-        //if(passwordEncoder.matches(oldPassword,))
-        return null;
-    }
-
-    @Override
-    @Transactional
     public ProfileDto findProfileById(Long currentAccountId, boolean isAdmin) {
         if (!isAdmin) {
             UserTopModel userTopModel = userTopRepository.findById(currentAccountId)
