@@ -25,7 +25,6 @@ public class ProfileDto {
     private String name;
     private String phoneNum;
     private String authType;
-    private String employeeId;
     private boolean deleteFlag;
 
     private String photo;

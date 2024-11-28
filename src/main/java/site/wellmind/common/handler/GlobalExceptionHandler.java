@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import site.wellmind.common.domain.dto.Messenger;
 import site.wellmind.common.domain.vo.ExceptionStatus;
+import site.wellmind.common.exception.GlobalException;
 
 import java.nio.file.AccessDeniedException;
 
@@ -19,9 +20,9 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Messenger> handleGeneralException(String message){
-        return ResponseEntity.status(ExceptionStatus.INTERNAL_SERVER_ERROR.getHttpStatus())
+    public ResponseEntity<Messenger> handleGeneralException(GlobalException ex){
+        return ResponseEntity.status(ex.getStatus().getHttpStatus())
                 .body(Messenger.builder()
-                        .message(message).build());
+                        .message(ex.getMessage()).build());
     }
 }
