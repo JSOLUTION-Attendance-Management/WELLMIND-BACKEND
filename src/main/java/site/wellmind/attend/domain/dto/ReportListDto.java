@@ -7,8 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * ViewReportDto
- * <p>View Report Data Transfer Object</p>
+ * ReportListDto
+ * <p>Report List Data Transfer Object</p>
  * @since 2024-11-28
  * @version 1.0
  * @author Jihyeon Park(jihyeon2525)
@@ -17,25 +17,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ReportDto {
+public class ReportListDto {
     private Long reportId;
-
+    private String reportedEmployeeName;
+    private String reportType;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private String registeredDate;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private String modifiedDate;
-
-    private String aiComment;
-
-    private String managerComment;
-
-    private String reportType;
-
-    private Long reportedId;
-
-    private String reportedEmployeeName;
-
-    private boolean isSent;
-
 }
