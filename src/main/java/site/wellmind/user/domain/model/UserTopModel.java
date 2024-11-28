@@ -36,7 +36,7 @@ public class UserTopModel extends BaseModel {
     @Column(name = "USER_EMAIL", unique = false, nullable = false)
     private String email;
 
-    @Column(name = "USER_PASSWORD", unique = true)
+    @Column(name = "USER_PASSWORD", unique = false)
     @JsonIgnore
     private String password;
 

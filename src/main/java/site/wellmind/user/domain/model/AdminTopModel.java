@@ -43,7 +43,7 @@ public class AdminTopModel extends BaseModel {
     @Column(name = "PASSWORD_EXPIRY")
     private LocalDateTime passwordExpiry;
 
-    @Column(name = "ADMIN_PASSWORD", unique = true)
+    @Column(name = "ADMIN_PASSWORD", unique = false)
     @JsonIgnore
     private String password;
 

@@ -9,6 +9,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,10 @@ import site.wellmind.user.mapper.UserEntityDtoMapper;
 import site.wellmind.user.repository.*;
 import site.wellmind.user.service.AccountService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Collections;
+import java.util.stream.Stream;
+import java.util.Comparator;
 
 import java.util.List;
 import java.util.Optional;
@@ -455,15 +460,16 @@ public class AccountServiceImpl implements AccountService {
         List<ProfileDto> userProfiles = queryFactory
                 .select(Projections.constructor(
                         ProfileDto.class,
-                        qUserTop.id,
-                        qUserTop.employeeId,
-                        qUserTop.name,
-                        qUserTop.email,
-                        qUserTop.userInfoModel.photo,
-                        qUserTop.userInfoModel.address,
-                        qPosition.name.as("positionName"),
+                        qUserTop.id.as("id"),
+                        qUserTop.email.as("email"),
+                        qUserTop.name.as("name"),
+                        qUserTop.phoneNum.as("phoneNum"),
+                        qUserTop.authType.as("authType"),
+                        qUserTop.deleteFlag.as("deleteFlag"),
+                        qUserTop.userInfoModel.photo.as("photo"),
+                        qUserTop.userInfoModel.address.as("address"),
                         qDepartment.name.as("departName"),
-                        qUserTop.regDate
+                        qPosition.name.as("positionName")
                 ))
                 .from(qUserTop)
                 .leftJoin(qUserTop.transferEmployeeIds, qTransfer)
@@ -475,16 +481,45 @@ public class AccountServiceImpl implements AccountService {
                 .orderBy(qUserTop.id.desc())
                 .fetch();
 
-        // Count query for pagination
-        JPAQuery<Long> countQuery = queryFactory
-                .select(qUserTop.count())
-                .from(qUserTop)
-                .leftJoin(qUserTop.transferEmployeeIds, qTransfer)
+        List<ProfileDto> adminProfiles = queryFactory
+                .select(Projections.constructor(
+                        ProfileDto.class,
+                        qAdminTop.id.as("id"),
+                        qAdminTop.email.as("email"),
+                        qAdminTop.name.as("name"),
+                        qAdminTop.phoneNum.as("phoneNum"),
+                        qAdminTop.authType.as("authType"),
+                        qAdminTop.deleteFlag.as("deleteFlag"),
+                        qAdminTop.userInfoModel.photo.as("photo"),
+                        qAdminTop.userInfoModel.address.as("address"),
+                        qDepartment.name.as("departName"),
+                        qPosition.name.as("positionName")
+                ))
+                .from(qAdminTop)
+                .leftJoin(qAdminTop.transferIds, qTransfer)
                 .leftJoin(qTransfer.position, qPosition)
                 .leftJoin(qTransfer.department, qDepartment)
-                .where(whereClause);
+                .where(whereClause)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .orderBy(qAdminTop.id.desc())
+                .fetch();
 
-        return PageableExecutionUtils.getPage(userProfiles, pageable, countQuery::fetchOne);
+        List<ProfileDto> allProfiles = Stream.concat(userProfiles.stream(), adminProfiles.stream())
+                .sorted(Comparator.comparing(ProfileDto::getId).reversed()) // 정렬 기준: ID 역순
+                .collect(Collectors.toList());
+        // 전체 데이터 수
+        int totalSize = allProfiles.size();
+        // 페이징 처리
+        int start = (int) pageable.getOffset();
+
+        if (start >= totalSize) { // 시작 인덱스가 전체 크기보다 크면 빈 리스트 반환
+            return new PageImpl<>(Collections.emptyList(), pageable, totalSize);
+        }
+
+        int end = Math.min((start + pageable.getPageSize()), totalSize);
+        List<ProfileDto> paginatedProfiles = allProfiles.subList(start, end);
+        return new PageImpl<>(paginatedProfiles, pageable, totalSize);
     }
 
     @Override

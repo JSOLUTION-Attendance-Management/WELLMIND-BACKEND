@@ -14,6 +14,7 @@ import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
 import site.wellmind.common.service.MailService;
 import site.wellmind.security.provider.JwtTokenProvider;
+import site.wellmind.security.util.EncryptionUtil;
 import site.wellmind.user.domain.dto.*;
 import site.wellmind.user.service.AccountService;
 
@@ -37,6 +38,7 @@ public class AccountController {
     private final AccountService accountService;
     private final MailService mailService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final EncryptionUtil encryptionUtil;
 
     @PostMapping("/register")
     public ResponseEntity<Messenger> register(@RequestBody UserAllDto dto) throws MessagingException {
@@ -83,8 +85,17 @@ public class AccountController {
         }
     }
 
+    @PostMapping("/register/regNumber")
+    public ResponseEntity<Messenger> registerRegNum(@RequestBody RegNumberDto dto){
+        log.info("encrypt for :{}",encryptionUtil.encrypt(dto.getRegNumFor()));
+        log.info("encrypt lat :{}",encryptionUtil.encrypt(dto.getRegNumLat()));
+
+        return ResponseEntity.ok(Messenger.builder().build());
+    }
+
     @PostMapping("/register/detail")
     public ResponseEntity<Messenger> registerDetail(@RequestBody UserDetailDto dto, HttpServletRequest request) throws MessagingException {
+
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
 
         try{

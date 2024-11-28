@@ -174,7 +174,7 @@ public class UserEntityDtoMapper {
         List<UserEducationModel> userEducations = admin.getUserEduIds();
 
         return UserDetailDto.builder()
-                .regNumberFor(encryptionUtil.encrypt(admin.getRegNumberFor()))
+                .regNumberFor(encryptionUtil.decrypt(admin.getRegNumberFor()))
                 .regNumberLat(maskRegNumberLat(encryptionUtil.decrypt(admin.getRegNumberLat())))
                 .userInfo(entityToDtoUserInfo(userInfoModel))
                 .userSignificant(entityToDtoUserSignificant(admin.getUserSignificantModel()))
