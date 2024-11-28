@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 public enum ExceptionStatus {
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "Bad Request",4001),
     INVALID_INPUT(HttpStatus.BAD_REQUEST, "Invalid Input",4002),
+    INVALID_PASSWORD(HttpStatus.BAD_REQUEST,"비밀번호를 잘못 입력하셨는다.",4003),
     EXPIRED(HttpStatus.GONE,"Resource Expired",4101),
 
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "Unauthorized",401),

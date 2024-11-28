@@ -32,7 +32,7 @@ public interface AccountService extends CommandService<UserAllDto>, QueryService
 
     Optional<AdminTopModel> findAdminByEmployeeId(String employeeId);
 
-    Page<UserAllDto> findBy(String departName, String positionName, String name, Pageable pageable);
+    Page<ProfileDto> findBy(String departName, String positionName, String name, Pageable pageable);
 
     Boolean modifyByPassword(String oldPassword, String newPassword);
 

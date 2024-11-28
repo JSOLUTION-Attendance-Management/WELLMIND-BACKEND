@@ -168,7 +168,7 @@ public class AccountController {
     }
 
     @GetMapping("/find-by")
-    public ResponseEntity<Page<UserAllDto>> findBy(@RequestParam(value = "departName", required = false) String departName,
+    public ResponseEntity<Page<ProfileDto>> findBy(@RequestParam(value = "departName", required = false) String departName,
                                                    @RequestParam(value = "positionName", required = false) String positionName,
                                                    @RequestParam(value = "name", required = false) String name,
                                                    Pageable pageable) {

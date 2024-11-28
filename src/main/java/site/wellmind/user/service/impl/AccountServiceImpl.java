@@ -4,10 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -435,7 +437,7 @@ public class AccountServiceImpl implements AccountService {
 
 
     @Override
-    public Page<UserAllDto> findBy(String departName, String positionName, String name, Pageable pageable) {
+    public Page<ProfileDto> findBy(String departName, String positionName, String name, Pageable pageable) {
         BooleanBuilder whereClause = new BooleanBuilder();
         // 조건 추가 시 null 체크를 포함하여 안전하게 설정
         if (positionName != null) {
@@ -450,19 +452,28 @@ public class AccountServiceImpl implements AccountService {
             whereClause.and(qUserTop.name.containsIgnoreCase(name));
         }
 
-//        var user = queryFactory
-//                .selectFrom(qUserTop)
-//                .leftJoin(qUserTop.transferIds, qTransfer)
-//                .leftJoin(qTransfer.position, qPosition)
-//                .leftJoin(qTransfer.department, qDepartment)
-//                .where(whereClause)
-//                .offset(pageable.getOffset())
-//                .limit(pageable.getPageSize())
-//                .orderBy(qUserTop.id.desc())
-//                .fetch()
-//                .stream()
-//                .map(this::entityToDtoUserAll)
-//                .toList();
+        List<ProfileDto> userProfiles = queryFactory
+                .select(Projections.constructor(
+                        ProfileDto.class,
+                        qUserTop.id,
+                        qUserTop.employeeId,
+                        qUserTop.name,
+                        qUserTop.email,
+                        qUserTop.userInfoModel.photo,
+                        qUserTop.userInfoModel.address,
+                        qPosition.name.as("positionName"),
+                        qDepartment.name.as("departName"),
+                        qUserTop.regDate
+                ))
+                .from(qUserTop)
+                .leftJoin(qUserTop.transferEmployeeIds, qTransfer)
+                .leftJoin(qTransfer.position, qPosition)
+                .leftJoin(qTransfer.department, qDepartment)
+                .where(whereClause)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .orderBy(qUserTop.id.desc())
+                .fetch();
 
         // Count query for pagination
         JPAQuery<Long> countQuery = queryFactory
@@ -473,8 +484,7 @@ public class AccountServiceImpl implements AccountService {
                 .leftJoin(qTransfer.department, qDepartment)
                 .where(whereClause);
 
-        //return PageableExecutionUtils.getPage(user, pageable, countQuery::fetchOne);
-        return null;
+        return PageableExecutionUtils.getPage(userProfiles, pageable, countQuery::fetchOne);
     }
 
     @Override
