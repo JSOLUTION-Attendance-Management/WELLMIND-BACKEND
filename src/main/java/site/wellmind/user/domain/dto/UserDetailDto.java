@@ -19,14 +19,13 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserDetailDto {
+    //UserTopModel
     private String employeeId;
     private String regNumberFor;
     private String regNumberLat;
-    private boolean deleteFlag;
-
     //UserInfoModel
     private UserInfoDto userInfo;
-
+    //UserSignificantModel
     private UserSignificantDto userSignificant;
     //UserEducationModel
     private List<EducationDto> education;

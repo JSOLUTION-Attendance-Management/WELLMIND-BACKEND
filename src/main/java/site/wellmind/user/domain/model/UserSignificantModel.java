@@ -47,6 +47,4 @@ public class UserSignificantModel {
     @Convert(converter = MaritalTypeConverter.class)
     private JobType jobCategory;     // 7. 직군 구분 (현장직, 사무직)
 
-
-
 }

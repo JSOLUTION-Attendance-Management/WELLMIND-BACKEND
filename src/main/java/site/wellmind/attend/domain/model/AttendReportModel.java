@@ -10,6 +10,7 @@ import site.wellmind.user.domain.model.UserTopModel;
 
 import java.util.List;
 
+@Builder
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -37,10 +38,17 @@ public class AttendReportModel extends BaseModel {
     private List<ReportStatus> userType;
 
     @Column(name = "REPORTED_IDX",nullable = false)
-    private String reportedEmployeeId;
+    private Long reportedEmployeeId;
+
+    @Column(name = "REPORTED_IS_ADMIN")
+    private Boolean isAdmin;
+
+    @Builder.Default
+    @Column(name = "IS_SENT")
+    private Boolean isSent = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "REPORTER_IDX", referencedColumnName = "ADMIN_EMPLOYEE_ID")
-    private AdminTopModel reporterId;  //조회한 사람
+    @JoinColumn(name = "REPORTER_IDX", referencedColumnName = "ADMIN_IDX")
+    private AdminTopModel reporterId;
 
 }

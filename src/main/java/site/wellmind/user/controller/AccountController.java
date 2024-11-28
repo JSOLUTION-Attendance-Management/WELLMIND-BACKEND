@@ -14,10 +14,7 @@ import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
 import site.wellmind.common.service.MailService;
 import site.wellmind.security.provider.JwtTokenProvider;
-import site.wellmind.user.domain.dto.AccountDto;
-import site.wellmind.user.domain.dto.ProfileDto;
-import site.wellmind.user.domain.dto.UserAllDto;
-import site.wellmind.user.domain.dto.UserLogRequestDto;
+import site.wellmind.user.domain.dto.*;
 import site.wellmind.user.service.AccountService;
 
 /**
@@ -66,7 +63,7 @@ public class AccountController {
         }
     }
     @PostMapping("/register/profile")
-    public ResponseEntity<Messenger> registerProfile(@RequestBody ProfileDto dto,HttpServletRequest request ) throws MessagingException {
+    public ResponseEntity<Messenger> registerProfile(@RequestBody RegProfileDto dto,HttpServletRequest request ) {
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
         if(!accountDto.isAdmin()){
             return ResponseEntity.status(ExceptionStatus.NO_PERMISSION.getHttpStatus())
@@ -86,8 +83,24 @@ public class AccountController {
         }
     }
 
+    @PostMapping("/register/detail")
+    public ResponseEntity<Messenger> registerDetail(@RequestBody UserDetailDto dto, HttpServletRequest request) throws MessagingException {
+        AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
 
-        @GetMapping("/exist-by-employeeId")
+        try{
+            accountService.registerDetail(dto,accountDto);
+            return ResponseEntity.ok(Messenger.builder()
+                    .message(SuccessStatus.OK.getMessage()).build());
+        }catch (Exception e){
+            return ResponseEntity.status(ExceptionStatus.INTERNAL_SERVER_ERROR.getHttpStatus())
+                    .body(Messenger.builder()
+                            .message("Error in register Detail info: "+e)
+                            .build());
+        }
+    }
+
+
+    @GetMapping("/exist-by-employeeId")
     public ResponseEntity<Messenger> existByEmployeeId(HttpServletRequest request) {
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
 
@@ -95,15 +108,6 @@ public class AccountController {
                 .builder()
                 .message("user existByEmployeeId 조회 결과")
                 .state(accountService.existByEmployeeId(accountDto))
-                .build());
-    }
-
-    @GetMapping("/find-all")
-    public ResponseEntity<Messenger> findAll() {
-        return ResponseEntity.ok(Messenger
-                .builder()
-                .message("user findAll : " + SuccessStatus.OK.getMessage())
-                .data(accountService.findAll())
                 .build());
     }
 

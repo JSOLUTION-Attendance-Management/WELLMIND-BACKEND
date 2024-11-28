@@ -33,6 +33,7 @@ import site.wellmind.user.repository.AdminTopRepository;
 import site.wellmind.user.repository.UserTopRepository;
 import site.wellmind.user.service.AuthService;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -53,6 +54,9 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public ResponseEntity<Messenger> localLogin(LoginDto dto) {
+
+        String encoder=passwordEncoder.encode(dto.getPassword());
+
         String employeeId = dto.getEmployeeId();
         String password = dto.getPassword();
         Optional<AccountTokenModel> accountTokenModel = accountTokenRepository.findByEmployeeIdAndTokenStatus(employeeId, TokenStatus.VALID);
@@ -69,17 +73,27 @@ public class AuthServiceImpl implements AuthService {
         if (user.isEmpty() && admin.isEmpty()) {
             throw new GlobalException(ExceptionStatus.USER_NOT_FOUND, ExceptionStatus.USER_NOT_FOUND.getMessage());
         } else if (user.isPresent()) {
-//            if(!passwordEncoder.matches(password,user.get().getPassword())){
-//                throw new GlobalException(ExceptionStatus.INVALID_CREDENTIALS,ExceptionStatus.INVALID_CREDENTIALS.getMessage());
-//            }
+            log.info("encoder : {}",encoder);
+            log.info("encoder : {}",passwordEncoder.matches(password,encoder));
+            log.info("matches : {}",passwordEncoder.matches(password,"$2a$10$kL7WJtTulKogDQuHJhSK/.cqNmo/TUUqY0ZuzpKnKNdB5RCC1Hj2O"));
+
+            if(user.get().getPasswordExpiry()!=null && user.get().getPasswordExpiry().isBefore(LocalDateTime.now())){
+                userTopRepository.updatePasswordExpiry(user.get().getEmployeeId());
+            }
+            if(!passwordEncoder.matches(password,user.get().getPassword())){
+                throw new GlobalException(ExceptionStatus.INVALID_CREDENTIALS,ExceptionStatus.INVALID_CREDENTIALS.getMessage());
+            }
             PrincipalUserDetails userDetails = new PrincipalUserDetails(user.get());
             accessToken = jwtTokenProvider.generateToken(userDetails, false);
             refreshToken = jwtTokenProvider.generateToken(userDetails, true);
 
         } else {
-//            if(!passwordEncoder.matches(password,admin.get().getPassword())){
-//                throw new GlobalException(ExceptionStatus.INVALID_CREDENTIALS,ExceptionStatus.INVALID_CREDENTIALS.getMessage());
-//            }
+            if(admin.get().getPasswordExpiry()!=null && admin.get().getPasswordExpiry().isBefore(LocalDateTime.now())){
+                adminTopRepository.updatePasswordExpiry(admin.get().getEmployeeId());
+            }
+            if(!passwordEncoder.matches(password,admin.get().getPassword())){
+                throw new GlobalException(ExceptionStatus.INVALID_CREDENTIALS,ExceptionStatus.INVALID_CREDENTIALS.getMessage());
+            }
             PrincipalAdminDetails adminDetails = new PrincipalAdminDetails(admin.get());
             accessToken = jwtTokenProvider.generateToken(adminDetails, false);
             refreshToken = jwtTokenProvider.generateToken(adminDetails, true);
