@@ -59,6 +59,10 @@ public class AuthServiceImpl implements AuthService {
 
         String employeeId = dto.getEmployeeId();
         String password = dto.getPassword();
+
+        log.info("encoder : {}",encoder);
+        log.info("encoder : {}",passwordEncoder.matches(password,encoder));
+
         Optional<AccountTokenModel> accountTokenModel = accountTokenRepository.findByEmployeeIdAndTokenStatus(employeeId, TokenStatus.VALID);
         if (!accountTokenModel.isEmpty()) {
             throw new GlobalException(ExceptionStatus.ALREADY_LOGGED_IN, ExceptionStatus.ALREADY_LOGGED_IN.getMessage());
@@ -71,28 +75,26 @@ public class AuthServiceImpl implements AuthService {
         String refreshToken = null;
 
         if (user.isEmpty() && admin.isEmpty()) {
-            throw new GlobalException(ExceptionStatus.USER_NOT_FOUND, ExceptionStatus.USER_NOT_FOUND.getMessage());
+            throw new GlobalException(ExceptionStatus.USER_NOT_FOUND);
         } else if (user.isPresent()) {
-            log.info("encoder : {}",encoder);
-            log.info("encoder : {}",passwordEncoder.matches(password,encoder));
-            log.info("matches : {}",passwordEncoder.matches(password,"$2a$10$kL7WJtTulKogDQuHJhSK/.cqNmo/TUUqY0ZuzpKnKNdB5RCC1Hj2O"));
 
             if(user.get().getPasswordExpiry()!=null && user.get().getPasswordExpiry().isBefore(LocalDateTime.now())){
                 userTopRepository.updatePasswordExpiry(user.get().getEmployeeId());
             }
             if(!passwordEncoder.matches(password,user.get().getPassword())){
-                throw new GlobalException(ExceptionStatus.INVALID_CREDENTIALS,ExceptionStatus.INVALID_CREDENTIALS.getMessage());
+                throw new GlobalException(ExceptionStatus.INVALID_PASSWORD);
             }
             PrincipalUserDetails userDetails = new PrincipalUserDetails(user.get());
             accessToken = jwtTokenProvider.generateToken(userDetails, false);
             refreshToken = jwtTokenProvider.generateToken(userDetails, true);
 
         } else {
+
             if(admin.get().getPasswordExpiry()!=null && admin.get().getPasswordExpiry().isBefore(LocalDateTime.now())){
                 adminTopRepository.updatePasswordExpiry(admin.get().getEmployeeId());
             }
             if(!passwordEncoder.matches(password,admin.get().getPassword())){
-                throw new GlobalException(ExceptionStatus.INVALID_CREDENTIALS,ExceptionStatus.INVALID_CREDENTIALS.getMessage());
+                throw new GlobalException(ExceptionStatus.INVALID_PASSWORD);
             }
             PrincipalAdminDetails adminDetails = new PrincipalAdminDetails(admin.get());
             accessToken = jwtTokenProvider.generateToken(adminDetails, false);

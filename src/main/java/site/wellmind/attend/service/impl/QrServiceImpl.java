@@ -87,15 +87,14 @@ public class QrServiceImpl implements QrService {
     }
 
     @Override
-    public String generateQrContent(AccountDto accountDto, String employeeId, LocalDateTime expireTime) {
+    public String generateQrContent(AccountDto accountDto, String employeeId, LocalDateTime expireTime, String longitude, String latitude) {
         boolean isAdmin = accountDto.isAdmin();
         SecureRandom secureRandom = new SecureRandom();
         byte[] randomBytes = new byte[16];
         secureRandom.nextBytes(randomBytes);
         String randomString = Base64.getEncoder().encodeToString(randomBytes);
-        String geoLocation = "null"; // 프론트에서 geolocation longitude, latitude 넘겨줌
 
-        String content = String.format("%s|%s|%s|%s|%s", employeeId, isAdmin, expireTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), randomString, geoLocation);
+        String content = String.format("%s|%s|%s|%s|%s|%s", employeeId, isAdmin, expireTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), randomString, longitude, latitude);
         return encryptor.encrypt(content);
     }
 
@@ -115,7 +114,7 @@ public class QrServiceImpl implements QrService {
 
     @Override
     @Transactional
-    public QrCodeResponseDto createAndSaveQrCode(AccountDto accountDto, int widthHeight, LocalDateTime timeNow) throws GlobalException {
+    public QrCodeResponseDto createAndSaveQrCode(AccountDto accountDto, int widthHeight, LocalDateTime timeNow, String longitude, String latitude) throws GlobalException {
         String employeeId = accountDto.getEmployeeId();
 
         attendQrRepository.updatePreviousQrCodes(employeeId);
@@ -123,7 +122,8 @@ public class QrServiceImpl implements QrService {
 
         LocalDateTime expire = timeNow.plusMinutes(5); // 5분 후 만료
 
-        String qrContent = generateQrContent(accountDto, employeeId, expire);
+        String qrContent = generateQrContent(accountDto, employeeId, expire, longitude, latitude);
+        log.info(decryptQrContent(qrContent));
         byte[] qrCodeImage = generateQrCodeImage(qrContent, widthHeight);
         String qrCodeBase64 = Base64.getEncoder().encodeToString(qrCodeImage);
 
