@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 public class UserDtoEntityMapper {
     private final AccountRoleRepository accountRoleRepository;
     private final UserInfoRepository userInfoRepository;
+    private final UserSignificantRepository userSignificantRepository;
     private final UserEducationRepository userEducationRepository;
     private final UserTopRepository userTopRepository;
     private final AdminTopRepository adminTopRepository;
@@ -40,10 +41,10 @@ public class UserDtoEntityMapper {
                 .build();
     }
 
-    public UserTopModel dtoToEntityUserTop(UserTopDto dto) {
-        Optional<AccountRoleModel> accountRoleModel = accountRoleRepository.findById(dto.getRoleId());
-        Optional<UserInfoModel> userInfoModel = userInfoRepository.findById(dto.getUserInfoId());
-
+    public UserTopModel dtoToEntityUserTop(UserTopDto dto,Optional<AccountRoleModel> accountRoleModel,Optional<UserInfoModel> userInfoModel,Optional<UserSignificantModel> userSignificantModel) {
+        //Optional<AccountRoleModel> accountRoleModel = accountRoleRepository.findById(dto.getRoleId());
+        //Optional<UserInfoModel> userInfoModel = userInfoRepository.findById(dto.getUserInfoId());
+        //Optional<UserSignificantModel> userSignificantModel=userSignificantRepository.findById(dto.getUserSignificantId());
         return UserTopModel.builder()
                 .id(dto.getId())
                 .employeeId(dto.getEmployeeId())
@@ -56,12 +57,14 @@ public class UserDtoEntityMapper {
                 .authType(dto.getAuthType())
                 .role(accountRoleModel.orElse(null))
                 .userInfoModel(userInfoModel.orElse(null))
+                .userSignificantModel(userSignificantModel.orElse(null))
                 .build();
     }
 
-    public AdminTopModel dtoToEntityAdminTop(UserTopDto dto) {
-        Optional<AccountRoleModel> accountRoleModel = accountRoleRepository.findById(dto.getRoleId());
-        Optional<UserInfoModel> userInfoModel = userInfoRepository.findById(dto.getUserInfoId());
+    public AdminTopModel dtoToEntityAdminTop(UserTopDto dto,Optional<AccountRoleModel> accountRoleModel,Optional<UserInfoModel> userInfoModel,Optional<UserSignificantModel> userSignificantModel) {
+//        Optional<AccountRoleModel> accountRoleModel = accountRoleRepository.findById(dto.getRoleId());
+//        Optional<UserInfoModel> userInfoModel = userInfoRepository.findById(dto.getUserInfoId());
+//        Optional<UserSignificantModel> userSignificantModel=userSignificantRepository.findById(dto.getUserSignificantId());
 
         return AdminTopModel.builder()
                 .id(dto.getId())
@@ -76,6 +79,7 @@ public class UserDtoEntityMapper {
                 .role(accountRoleModel.orElse(null))
                 .authAdminLevelCodeId(dto.getAuthAdminLevelCodeId())
                 .userInfoModel(userInfoModel.orElse(null))
+                .userSignificantModel(userSignificantModel.orElse(null))
                 .build();
     }
 
@@ -94,7 +98,6 @@ public class UserDtoEntityMapper {
 
     public UserSignificantModel dtoToEntitySignificant(UserSignificantDto dto){
         return UserSignificantModel.builder()
-                .id(dto.getId())
                 .maritalStatus(MaritalType.fromKorean(dto.getMaritalStatus()))
                 .smoker(dto.getSmoker())
                 .sleepHours(dto.getSleepHours())
@@ -103,17 +106,17 @@ public class UserDtoEntityMapper {
                 .jobCategory(JobType.fromKorean(dto.getJobCategory()))
                 .build();
     }
-    public UserEducationModel dtoToEntityUserEdu(EducationDto dto) {
-        Optional<UserTopModel> user = userTopRepository.findById(dto.getId());
-        Optional<AdminTopModel> admin = adminTopRepository.findById(dto.getId());
+    public UserEducationModel dtoToEntityUserEdu(EducationDto dto,UserTopModel user,AdminTopModel admin) {
+//        Optional<UserTopModel> user = userTopRepository.findById(dto.getId());
+//        Optional<AdminTopModel> admin = adminTopRepository.findById(dto.getId());
 
         return UserEducationModel.builder()
                 .id(dto.getId())
                 .degree(dto.getDegree())
                 .major(dto.getMajor())
                 .institutionName(dto.getInstitutionName())
-                .userTopModel(user.orElse(null))
-                .adminTopModel(admin.orElse(null))
+                .userTopModel(user)
+                .adminTopModel(admin)
                 .build();
     }
 

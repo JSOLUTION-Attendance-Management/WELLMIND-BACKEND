@@ -40,6 +40,9 @@ public class AdminTopModel extends BaseModel {
     //@Column(name = "ADMIN_EMAIL",unique = true,nullable = false)
     private String email;
 
+    @Column(name = "PASSWORD_EXPIRY")
+    private LocalDateTime passwordExpiry;
+
     @Column(name = "ADMIN_PASSWORD", unique = true)
     @JsonIgnore
     private String password;
