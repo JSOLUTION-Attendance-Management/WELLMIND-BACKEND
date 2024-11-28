@@ -24,7 +24,7 @@ import java.util.List;
 @Setter
 @Getter
 @Table(name = "jsol_admintop")
-@ToString(exclude = {"id","userSignificantModel", "userEduIds", "userInfoModel", "role","transferIds",
+@ToString(exclude = {"id","userSignificantModel", "userEduIds", "userInfoModel", "role","transferIds","qrTokenIds","recordIds",
         "viewLogIds", "updateLogIds", "loginLogIds", "deleteLogIds", "reportIds"})
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class AdminTopModel extends BaseModel {
@@ -43,7 +43,7 @@ public class AdminTopModel extends BaseModel {
     @Column(name = "PASSWORD_EXPIRY")
     private LocalDateTime passwordExpiry;
 
-    @Column(name = "ADMIN_PASSWORD", unique = true)
+    @Column(name = "ADMIN_PASSWORD", unique = false)
     @JsonIgnore
     private String password;
 

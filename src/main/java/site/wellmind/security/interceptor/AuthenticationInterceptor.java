@@ -16,6 +16,8 @@ import site.wellmind.common.exception.GlobalException;
 import site.wellmind.security.provider.JwtTokenProvider;
 import site.wellmind.user.domain.dto.AccountDto;
 
+import java.util.stream.Collectors;
+
 /**
  * AuthenticationInterceptor
  * <p>Checks user authentication and authorization with access and refresh tokens.</p>

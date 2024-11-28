@@ -256,16 +256,11 @@ public class JwtTokenProvider {
     }
     @Transactional
     public Boolean invalidateToken(String employeeId){
-        Optional<AccountTokenModel> savedToken=accountTokenRepository.findByEmployeeIdAndTokenStatus(employeeId,TokenStatus.VALID);
-
-        if(savedToken.isPresent()){
-            AccountTokenModel token=savedToken.get();
-            token.setTokenStatus(TokenStatus.INVALID);
-            accountTokenRepository.save(token);
-            return true;
-        }else{
+        int updatedRows = accountTokenRepository.updateTokenStatusByEmployeeId(employeeId, TokenStatus.INVALID);
+        if (updatedRows == 0) {
             throw new GlobalException(ExceptionStatus.NO_VALID_TOKEN,ExceptionStatus.NO_VALID_TOKEN.getMessage());
         }
+        return true;
     }
 
     // 매일 새벽 3시에 실행 (cron 표현식: "초 분 시 일 월 요일")
