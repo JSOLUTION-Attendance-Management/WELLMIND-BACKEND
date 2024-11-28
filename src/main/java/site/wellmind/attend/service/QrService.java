@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
  */
 
 public interface QrService {
-    String generateQrContent(AccountDto accountDto, String employeeId, LocalDateTime expireTime);
+    String generateQrContent(AccountDto accountDto, String employeeId, LocalDateTime expireTime, String longitude, String latitude) throws GlobalException;
     byte[] generateQrCodeImage(String content, int widthHeight) throws GlobalException;
-    QrCodeResponseDto createAndSaveQrCode(AccountDto accountDto, int widthHeight, LocalDateTime timeNow) throws GlobalException;
+    QrCodeResponseDto createAndSaveQrCode(AccountDto accountDto, int widthHeight, LocalDateTime timeNow, String longitude, String latitude) throws GlobalException;
 }
