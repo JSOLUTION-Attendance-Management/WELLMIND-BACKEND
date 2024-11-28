@@ -4,6 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import site.wellmind.common.domain.vo.ExceptionStatus;
+import site.wellmind.common.exception.GlobalException;
+
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.annotation.PostConstruct;
 import javax.crypto.Cipher;
@@ -39,18 +44,21 @@ public class EncryptionUtil {
             byte[] encrypted = cipher.doFinal(data.getBytes());
             return Base64.getEncoder().encodeToString(encrypted);
         } catch (Exception e) {
-            throw new RuntimeException("Error encrypting data", e);
+            throw new GlobalException(ExceptionStatus.INTERNAL_SERVER_ERROR,"Error encrypting data");
         }
     }
 
     public String decrypt(String encryptedData) {
+        if(encryptedData==null){
+            return "";
+        }
         try {
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, ivParameterSpec);
             byte[] decoded = Base64.getDecoder().decode(encryptedData);
             return new String(cipher.doFinal(decoded));
         } catch (Exception e) {
-            throw new RuntimeException("Error decrypting data", e);
+            throw new GlobalException(ExceptionStatus.INTERNAL_SERVER_ERROR,"Error decrypting data");
         }
     }
 }

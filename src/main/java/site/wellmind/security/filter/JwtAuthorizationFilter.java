@@ -50,7 +50,8 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             "/swagger-ui/index.html"
     );
     private static final List<String> AUTH_BLACKLIST=Arrays.asList(
-            "/api/public/logout"
+            "/api/public/logout/**",
+            "/api/public/modify-by-password/**"
     );
 
 

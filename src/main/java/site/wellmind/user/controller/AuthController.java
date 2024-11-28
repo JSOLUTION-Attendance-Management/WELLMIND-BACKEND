@@ -11,10 +11,13 @@ import org.springframework.web.bind.annotation.*;
 import site.wellmind.common.domain.dto.Messenger;
 import site.wellmind.common.domain.dto.TokenValidationRequestDto;
 import site.wellmind.common.domain.vo.ExceptionStatus;
+import site.wellmind.common.domain.vo.SuccessStatus;
 import site.wellmind.common.service.MailService;
 import site.wellmind.security.domain.vo.VerificationStatus;
 import site.wellmind.security.service.EmailVerificationService;
 import site.wellmind.security.domain.dto.LoginDto;
+import site.wellmind.user.domain.dto.AccountDto;
+import site.wellmind.user.domain.dto.PasswordModifyRequestDto;
 import site.wellmind.user.domain.dto.PasswordSetupRequestDto;
 import site.wellmind.user.domain.dto.PasswordSetupTestDto;
 import site.wellmind.user.service.AuthService;
@@ -110,6 +113,13 @@ public class AuthController {
     @PostMapping("/password/setup")
     public ResponseEntity<Messenger> setupPassword(@RequestBody PasswordSetupRequestDto request){
         return authService.setupPassword(request);
+    }
+
+    @PutMapping("/modify-by-password")
+    public ResponseEntity<Messenger> modifyByPassword(@RequestBody PasswordModifyRequestDto dto,HttpServletRequest request) {
+        AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
+
+        return authService.modifyByPassword(dto,accountDto);
     }
 
 }

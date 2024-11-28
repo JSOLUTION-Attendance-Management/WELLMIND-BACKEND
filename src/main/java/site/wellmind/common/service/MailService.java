@@ -103,7 +103,7 @@ public class MailService {
 
         PasswordGenerator generator = new PasswordGenerator();
         String tempPassword = generator.generatePassword(12);
-        LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(5);
+        LocalDateTime expiryTime = LocalDateTime.now().plusMonths(1);
 
         int rowsAffected = 0;
         try {
