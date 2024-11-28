@@ -100,7 +100,7 @@ public class AccountController {
     }
 
 
-        @GetMapping("/exist-by-employeeId")
+    @GetMapping("/exist-by-employeeId")
     public ResponseEntity<Messenger> existByEmployeeId(HttpServletRequest request) {
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
 
@@ -108,15 +108,6 @@ public class AccountController {
                 .builder()
                 .message("user existByEmployeeId 조회 결과")
                 .state(accountService.existByEmployeeId(accountDto))
-                .build());
-    }
-
-    @GetMapping("/find-all")
-    public ResponseEntity<Messenger> findAll() {
-        return ResponseEntity.ok(Messenger
-                .builder()
-                .message("user findAll : " + SuccessStatus.OK.getMessage())
-                .data(accountService.findAll())
                 .build());
     }
 

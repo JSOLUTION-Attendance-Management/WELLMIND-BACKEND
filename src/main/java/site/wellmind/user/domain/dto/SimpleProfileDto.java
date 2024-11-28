@@ -1,17 +1,15 @@
 package site.wellmind.user.domain.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import site.wellmind.user.domain.vo.AddressVO;
 
-import java.time.LocalDateTime;
 /**
- * ProfileDto
- * <p>Profile Data Transfer Object</p>
- * @since 2024-11-21
+ * SimpleProfileDto
+ * <p>Simple Profile Data Transfer Object</p>
+ * @since 2024-11-28
  * @version 1.0
  * @author Yuri Seok(tjrdbfl)
  */
@@ -19,8 +17,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProfileDto {
-    private Long id;
+public class SimpleProfileDto {
     private String email;
     private String name;
     private String phoneNum;
