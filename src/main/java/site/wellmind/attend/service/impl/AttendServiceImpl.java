@@ -49,10 +49,11 @@ public class AttendServiceImpl implements AttendService {
     @Override
     public Page<BaseAttendDto> findBy(String employeeId, AccountDto accountDto, Pageable pageable, Integer recentCount) {
         BooleanBuilder whereClause = new BooleanBuilder();
+        String currentEmployeeId = accountDto.getEmployeeId();
         Long currentAccountId = accountDto.getAccountId();
         List<BaseAttendDto> attendDtos;
 
-        if (employeeId != null && !employeeId.equals(currentAccountId)) {
+        if (employeeId != null) {
             if (!accountDto.isAdmin()) {
                 throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
             }
