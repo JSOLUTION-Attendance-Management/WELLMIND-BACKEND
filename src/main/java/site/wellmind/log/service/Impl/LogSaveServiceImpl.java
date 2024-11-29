@@ -8,8 +8,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import site.wellmind.log.domain.dto.LogSaveDto;
 import site.wellmind.log.domain.model.LogArchiveSaveModel;
-import site.wellmind.log.domain.vo.DeleteStatus;
-import site.wellmind.log.event.UserDeletedEvent;
 import site.wellmind.log.event.UserSavedEvent;
 import site.wellmind.log.repository.LogArchiveSaveRepository;
 import site.wellmind.log.service.LogSaveService;
@@ -34,8 +32,9 @@ public class LogSaveServiceImpl implements LogSaveService {
     }
 
     @Override
-    public void deleteById(Object ob, AccountDto dto) {
+    public boolean deleteById(Object ob, AccountDto dto) {
 
+        return false;
     }
 
     @Override

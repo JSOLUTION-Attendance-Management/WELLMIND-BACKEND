@@ -28,7 +28,6 @@ import site.wellmind.user.mapper.UserDtoEntityMapper;
 import site.wellmind.user.mapper.UserEntityDtoMapper;
 import site.wellmind.user.repository.*;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -65,8 +64,9 @@ public class LogDeleteServiceImpl implements LogDeleteService {
     }
 
     @Override
-    public void deleteById(Object ob, AccountDto dto) {
+    public boolean deleteById(Object ob, AccountDto dto) {
 
+        return false;
     }
 
     @Override

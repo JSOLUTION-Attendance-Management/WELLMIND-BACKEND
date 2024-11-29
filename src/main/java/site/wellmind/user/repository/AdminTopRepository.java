@@ -24,4 +24,8 @@ public interface AdminTopRepository extends JpaRepository<AdminTopModel,Long> {
     @Transactional
     @Query("UPDATE AdminTopModel a SET a.password = NULL, a.passwordExpiry = NULL WHERE a.employeeId = :employeeId")
     int updatePasswordExpiry(@Param("employeeId") String employeeId);
+
+    @Query("SELECT a.employeeId FROM AdminTopModel a WHERE a.phoneNum = :phoneNum")
+    Optional<String> findEmployeeIdByPhoneNum(@Param("phoneNum") String phoneNum);
+
 }

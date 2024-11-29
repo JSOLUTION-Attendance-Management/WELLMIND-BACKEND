@@ -16,10 +16,7 @@ import site.wellmind.common.service.MailService;
 import site.wellmind.security.domain.vo.VerificationStatus;
 import site.wellmind.security.service.EmailVerificationService;
 import site.wellmind.security.domain.dto.LoginDto;
-import site.wellmind.user.domain.dto.AccountDto;
-import site.wellmind.user.domain.dto.PasswordModifyRequestDto;
-import site.wellmind.user.domain.dto.PasswordSetupRequestDto;
-import site.wellmind.user.domain.dto.PasswordSetupTestDto;
+import site.wellmind.user.domain.dto.*;
 import site.wellmind.user.service.AuthService;
 
 /**
@@ -122,6 +119,14 @@ public class AuthController {
         return authService.modifyByPassword(dto,accountDto);
     }
 
+    @PostMapping("/authenticate/code")
+    public ResponseEntity<Messenger> getUserAuthenticateCode(@RequestBody UserVerifyCodeRequestDto userVerifyCodeRequestDto){
+        return authService.startVerification(userVerifyCodeRequestDto);
+    }
+    @PostMapping("/authenticate/check")
+    public ResponseEntity<Messenger> verigyUserAuthenticateCode(@RequestBody UserVerifyCheckRequestDto userVerifyCheckRequestDto){
+        return authService.checkVerification(userVerifyCheckRequestDto);
+    }
 }
 
 

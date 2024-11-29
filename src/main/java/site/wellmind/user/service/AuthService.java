@@ -5,9 +5,7 @@ import org.springframework.http.ResponseEntity;
 import site.wellmind.common.domain.dto.Messenger;
 import site.wellmind.common.domain.dto.TokenValidationRequestDto;
 import site.wellmind.security.domain.dto.LoginDto;
-import site.wellmind.user.domain.dto.AccountDto;
-import site.wellmind.user.domain.dto.PasswordModifyRequestDto;
-import site.wellmind.user.domain.dto.PasswordSetupRequestDto;
+import site.wellmind.user.domain.dto.*;
 
 public interface AuthService {
     ResponseEntity<?> localLogin(LoginDto dto);
@@ -20,4 +18,7 @@ public interface AuthService {
 
     ResponseEntity<Messenger> modifyByPassword(PasswordModifyRequestDto oldPassword, AccountDto newPassword);
 
+    ResponseEntity<Messenger> startVerification(UserVerifyCodeRequestDto requestDto);
+
+    ResponseEntity<Messenger> checkVerification(UserVerifyCheckRequestDto userVerifyCheckRequestDto);
 }
