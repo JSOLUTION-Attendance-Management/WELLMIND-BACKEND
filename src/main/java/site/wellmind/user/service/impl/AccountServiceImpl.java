@@ -5,12 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +33,6 @@ import site.wellmind.transfer.domain.vo.TransferType;
 import site.wellmind.transfer.repository.TransferRepository;
 import site.wellmind.user.domain.dto.*;
 import site.wellmind.user.domain.model.*;
-import site.wellmind.user.domain.vo.AddressVO;
 import site.wellmind.user.mapper.UserDtoEntityMapper;
 import site.wellmind.user.mapper.UserEntityDtoMapper;
 import site.wellmind.user.repository.*;
@@ -275,17 +272,37 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public RegNumberDto findRegNumberById(String employeeId) {
+        Optional<AdminTopModel> admin=findAdminByEmployeeId(employeeId);
+        if(admin.isPresent()){
+            return RegNumberDto.builder()
+                    .regNumFor(encryptionUtil.decrypt(admin.get().getRegNumberFor()))
+                    .regNumLat(userEntityDtoMapper.maskRegNumberLat(encryptionUtil.decrypt(admin.get().getRegNumberLat())))
+                    .build();
+        }
+        Optional<UserTopModel> user=findUserByEmployeeId(employeeId);
+        if(user.isPresent()){
+            return RegNumberDto.builder()
+                    .regNumFor(encryptionUtil.decrypt(user.get().getRegNumberFor()))
+                    .regNumLat(userEntityDtoMapper.maskRegNumberLat(encryptionUtil.decrypt(user.get().getRegNumberLat())))
+                    .build();
+        }
+        throw new GlobalException(ExceptionStatus.ACCOUNT_NOT_FOUND);
+    }
+
+    @Override
     public List<UserAllDto> saveAll(List<UserAllDto> entities) {
         return null;
     }
 
     @Async
     @Override
-    public void deleteById(Object ob, AccountDto accountDto) {
+    public boolean deleteById(Object ob, AccountDto accountDto) {
         UserLogRequestDto userLogRequestDto = (UserLogRequestDto) ob;
         Optional<AdminTopModel> admin = findAdminByEmployeeId(accountDto.getEmployeeId());
         Optional<UserTopModel> userTopModel = findUserByEmployeeId(userLogRequestDto.getEmployeeId());
-        if (userTopModel.isPresent()) {  //삭제하려는 대상이 사용자일 경우
+        if (admin.isPresent()) {
+
             UserTopModel user = userTopModel.get();
             if (!user.getDeleteFlag()) { //논리 삭제의 경우
                 user.setDeleteFlag(true);
@@ -326,6 +343,7 @@ public class AccountServiceImpl implements AccountService {
                 throw new GlobalException(ExceptionStatus.ACCOUNT_NOT_FOUND);
             }
         }
+        return false;
     }
 
 
@@ -341,18 +359,6 @@ public class AccountServiceImpl implements AccountService {
         } else { //관리자
 
             if (employeeId != null) {
-                Optional<UserTopModel> user = findUserByEmployeeId(employeeId);
-                log.info("user : {}", user);
-
-                if (!user.isEmpty()) {
-                    if (accountDto.getRole().equals("ROLE_ADMIN_UBL_55")) {
-                        return userEntityDtoMapper.entityToDtoUserProfile(user.get());
-                    } else if (accountDto.getRole().equals("ROLE_ADMIN_UBL_66")) {
-                        return userEntityDtoMapper.entityToDtoUserAll(user.get());
-                    } else {
-                        throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
-                    }
-                }
                 Optional<AdminTopModel> admin = findAdminByEmployeeId(employeeId);
                 log.info("admin : {}", admin);
 
@@ -365,6 +371,20 @@ public class AccountServiceImpl implements AccountService {
                         throw new GlobalException(ExceptionStatus.ADMIN_NOT_FOUND, ExceptionStatus.ADMIN_NOT_FOUND.getMessage());
                     }
                 }
+
+                Optional<UserTopModel> user = findUserByEmployeeId(employeeId);
+                log.info("user : {}", user);
+
+                if (!user.isEmpty()) {
+                    if (accountDto.getRole().equals("ROLE_ADMIN_UBL_55")) {
+                        return userEntityDtoMapper.entityToDtoUserProfile(user.get());
+                    } else if (accountDto.getRole().equals("ROLE_ADMIN_UBL_66")) {
+                        return userEntityDtoMapper.entityToDtoUserAll(user.get());
+                    } else {
+                        throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
+                    }
+                }
+
             }
 
             AdminTopModel admin = adminTopRepository.findById(currentAccountId)

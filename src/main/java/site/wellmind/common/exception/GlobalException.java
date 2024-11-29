@@ -1,6 +1,10 @@
 package site.wellmind.common.exception;
 
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import site.wellmind.common.domain.dto.Messenger;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 
 /**
@@ -25,7 +29,25 @@ public class GlobalException extends RuntimeException{
         super(message+ " : "+status.getMessage());
         this.status=status;
     }
+    @ExceptionHandler(GlobalException.class)
+    public ResponseEntity<Messenger> handleGlobalException(GlobalException ex) {
 
+        return ResponseEntity
+                .status(ex.getStatus().getHttpStatus())
+                .body(Messenger.builder()
+                        .message(ex.getMessage())
+                        .build());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Messenger> handleGeneralException(Exception ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Messenger.builder()
+                        .message("서버에서 처리 중 문제가 발생했습니다.")
+                        .build());
+    }
     public static GlobalException toGlobalException(Throwable e){
         return toGlobalException(e,ExceptionStatus.INTERNAL_SERVER_ERROR,"Global Handler Executed");
     }

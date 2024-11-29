@@ -1,16 +1,14 @@
 package site.wellmind.user.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import site.wellmind.common.service.CommandService;
 import site.wellmind.common.service.QueryService;
-import site.wellmind.transfer.domain.model.TransferModel;
 import site.wellmind.user.domain.dto.*;
 import site.wellmind.user.domain.model.*;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * AccountService
@@ -41,5 +39,7 @@ public interface AccountService extends CommandService<UserAllDto>, QueryService
     void registerProfile(RegProfileDto dto,AccountDto accountDto);
 
     void registerDetail(UserDetailDto dto, AccountDto accountDto);
+
+    RegNumberDto findRegNumberById(String employeeId);
 }
 

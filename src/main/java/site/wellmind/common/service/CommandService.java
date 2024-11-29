@@ -15,7 +15,7 @@ public interface CommandService<T> {
     Object save(T t);
     List<T> saveAll(List<T> entities);
 
-    void deleteById(Object ob,AccountDto dto);
+    boolean deleteById(Object ob, AccountDto dto);
 
     T modify(T t, AccountDto dto);
 }

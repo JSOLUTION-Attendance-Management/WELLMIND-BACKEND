@@ -40,8 +40,9 @@ public class LogViewServiceImpl implements LogViewService{
     }
 
     @Override
-    public void deleteById(Object ob, AccountDto dto) {
+    public boolean deleteById(Object ob, AccountDto dto) {
 
+        return false;
     }
 
     @Override

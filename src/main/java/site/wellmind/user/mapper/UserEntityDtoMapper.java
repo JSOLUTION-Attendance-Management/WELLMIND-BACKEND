@@ -184,7 +184,7 @@ public class UserEntityDtoMapper {
                 .build();
     }
 
-    private String maskRegNumberLat(String regNumberLat) {
+    public String maskRegNumberLat(String regNumberLat) {
         if (regNumberLat == null || regNumberLat.length() < 7) {
             throw new IllegalArgumentException("Invalid regNumberLat: must be a 7-character string");
         }

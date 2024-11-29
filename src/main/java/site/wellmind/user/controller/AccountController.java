@@ -147,7 +147,7 @@ public class AccountController {
     }
 
     @GetMapping("/find-by-id/profile")
-    public ResponseEntity<Messenger> profileFindById(HttpServletRequest request) {
+    public ResponseEntity<Messenger> findProfileById(HttpServletRequest request) {
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
         boolean isAdmin = accountDto.isAdmin();
         Long currentAccountId = accountDto.getAccountId();
@@ -161,9 +161,20 @@ public class AccountController {
                         .build()
         );
     }
+    @GetMapping("/find-by-id/regNumber")
+    public ResponseEntity<Messenger> findRegNumberById(@RequestParam(value = "employeeId") String employeeId, HttpServletRequest request){
+        AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
+        if(!accountDto.isAdmin()){
+            throw new GlobalException(ExceptionStatus.UNAUTHORIZED);
+        }
+
+
+        return ResponseEntity.ok(Messenger.builder()
+                .data(accountService.findRegNumberById(employeeId)).build());
+    }
 
     @GetMapping("/find-by-id/detail")
-    public ResponseEntity<Messenger> detailFindById(HttpServletRequest request) {
+    public ResponseEntity<Messenger> findDetailById(HttpServletRequest request) {
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
         boolean isAdmin = accountDto.isAdmin();
         Long currentAccountId = accountDto.getAccountId();
@@ -226,10 +237,7 @@ public class AccountController {
                             .build());
         }
 
-        accountService.deleteById(userLogRequestDto,accountDto);
-
         return ResponseEntity.ok(Messenger.builder()
-                .message("User deleted successfully.")
-                .state(true).build());
+                .state(accountService.deleteById(userLogRequestDto,accountDto)).build());
     }
 }
