@@ -37,4 +37,7 @@ public interface UserTopRepository extends JpaRepository<UserTopModel, Long> {
 
     @Query("SELECT u FROM UserTopModel u WHERE u.employeeId = :employeeId")
     Optional<UserTopModel> findByEmployeeId(String employeeId);
+
+    @Query("SELECT u.employeeId FROM UserTopModel u WHERE u.phoneNum = :phoneNum")
+    Optional<String> findEmployeeIdByPhoneNum(@Param("phoneNum") String phoneNum);
 }
