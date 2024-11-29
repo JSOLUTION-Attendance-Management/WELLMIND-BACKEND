@@ -66,8 +66,8 @@ public class ReportController {
         try {
             ReportDto reportDetail = reportService.viewDetail(employeeId, reportId, accountDto);
 
-            // 관리자가 아니고, 리포트의 reportedEmployeeId가 현재 사용자의 ID와 다르면 접근 거부
-            if (!accountDto.isAdmin() && !reportDetail.getReportedId().equals(accountDto.getAccountId())) {
+            // 관리자가 아니고, 리포트의 reportedId가 현재 사용자의 ID와 다르면 접근 거부
+            if (!accountDto.isAdmin() && (!reportDetail.getReportedId().equals(accountDto.getAccountId()) || reportDetail.isAdmin())) {
                 throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
             }
 

@@ -59,6 +59,18 @@ public class ReportServiceImpl implements ReportService {
         }
     }
 
+    private String getEmployeeId(AttendReportModel model) {
+        if (model.getIsAdmin()) {
+            return adminTopRepository.findById(model.getReportedId())
+                    .map(AdminTopModel::getEmployeeId)
+                    .orElse("Unknown");
+        } else {
+            return userTopRepository.findById(model.getReportedId())
+                    .map(UserTopModel::getEmployeeId)
+                    .orElse("Unknown");
+        }
+    }
+
     @Override
     public Page<ReportListDto> view(String employeeId, AccountDto accountDto, Pageable pageable) {
         BooleanBuilder whereClause = new BooleanBuilder();
@@ -76,7 +88,7 @@ public class ReportServiceImpl implements ReportService {
             } else {
                 throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
             }
-        } else if (employeeId == null){
+        } else if (employeeId == null) {
             // 일반 사용자는 본인의 리포트만 조회 가능
             whereClause.and(qAttendReport.reportedId.eq(currentAccountId)).and(qAttendReport.isAdmin.eq(false).and(qAttendReport.isSent.eq(true)));
         } else {
@@ -93,9 +105,11 @@ public class ReportServiceImpl implements ReportService {
 
         List<ReportListDto> reportListDtos = query.fetch().stream()
                 .map(model -> {
-                    String employeeName = getEmployeeName(model);
+                    String reportedEmployeeId = getEmployeeId(model);
+                    String reportedEmployeeName = getEmployeeName(model);
                     ReportListDto dto = entityToDtoReportListRecord(model);
-                    dto.setReportedEmployeeName(employeeName);
+                    dto.setReportedEmployeeName(reportedEmployeeName);
+                    dto.setReportedEmployeeId(reportedEmployeeId);
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -127,9 +141,11 @@ public class ReportServiceImpl implements ReportService {
             }
         }
 
-        String employeeName = getEmployeeName(reportModel);
+        String reportedEmployeeId = getEmployeeId(reportModel);
+        String reportedEmployeeName = getEmployeeName(reportModel);
         ReportDto reportDto = entityToDtoReportRecord(reportModel);
-        reportDto.setReportedEmployeeName(employeeName);
+        reportDto.setReportedEmployeeId(reportedEmployeeId);
+        reportDto.setReportedEmployeeName(reportedEmployeeName);
 
         return reportDto;
     }
