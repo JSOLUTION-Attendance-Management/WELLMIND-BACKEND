@@ -34,7 +34,11 @@ public class ReportDto {
 
     private Long reportedId;
 
+    private String reportedEmployeeId;
+
     private String reportedEmployeeName;
+
+    private boolean isAdmin;
 
     private boolean isSent;
 

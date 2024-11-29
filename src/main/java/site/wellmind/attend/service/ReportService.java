@@ -30,7 +30,7 @@ public interface ReportService {
                 .aiComment(model.getAiComment())
                 .managerComment(model.getManagerComment())
                 .reportType(model.getUserType())
-                .reportedId(model.getReportedId())
+                .isSent(model.getIsSent())
                 .build();
     }
 

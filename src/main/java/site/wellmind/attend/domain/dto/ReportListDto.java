@@ -19,8 +19,13 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ReportListDto {
     private Long reportId;
-    private String reportedEmployeeName;
+
     private String reportType;
+
+    private String reportedEmployeeId;
+
+    private String reportedEmployeeName;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private String registeredDate;
 }
