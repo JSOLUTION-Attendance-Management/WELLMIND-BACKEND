@@ -1,7 +1,5 @@
 package site.wellmind.user.service.impl;
 
-import com.twilio.rest.verify.v2.service.Verification;
-import com.twilio.rest.verify.v2.service.VerificationCheck;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -13,10 +11,10 @@ import site.wellmind.common.domain.dto.Messenger;
 import site.wellmind.common.domain.dto.TokenValidationRequestDto;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
+import site.wellmind.common.service.CoolSmsService;
 import site.wellmind.common.service.UtilService;
 import site.wellmind.log.domain.model.LogArchiveLoginModel;
 import site.wellmind.log.repository.LogArchiveLoginRepository;
-import site.wellmind.security.config.TwilioConfig;
 import site.wellmind.security.domain.model.*;
 import site.wellmind.security.domain.vo.RequestStatus;
 import site.wellmind.security.domain.vo.TokenStatus;
@@ -25,6 +23,7 @@ import site.wellmind.security.domain.dto.LoginDto;
 import site.wellmind.security.provider.PasswordTokenProvider;
 import site.wellmind.security.repository.AccountTokenRepository;
 import site.wellmind.security.repository.SmsVerificationRepository;
+import site.wellmind.security.util.EncryptionUtil;
 import site.wellmind.user.domain.dto.*;
 import site.wellmind.user.domain.model.AdminTopModel;
 import site.wellmind.user.domain.model.UserTopModel;
@@ -51,8 +50,11 @@ public class AuthServiceImpl implements AuthService {
     private final LogArchiveLoginRepository logArchiveLoginRepository;
     private final PasswordEncoder passwordEncoder;
     private final SmsVerificationRepository smsVerificationRepository;
+
     private final UtilService utilService;
-    private final TwilioConfig twilioConfig;
+    private final CoolSmsService coolSmsService;
+    private final EncryptionUtil encryptionUtil;
+    //private final TwilioConfig twilioConfig;
 
     @Override
     @Transactional
@@ -308,12 +310,9 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public ResponseEntity<Messenger> startVerification(UserVerifyCodeRequestDto phone) {
-        String e164FormatPhoneNumber = utilService.getE164FormatPhoneNumber(phone.getPhoneNum());
-        String employeeId = adminTopRepository.findEmployeeIdByPhoneNum(phone.getPhoneNum())
-                .or(() -> userTopRepository.findEmployeeIdByPhoneNum(phone.getPhoneNum()))
-                .orElseThrow(() -> new GlobalException(ExceptionStatus.ACCOUNT_NOT_FOUND));
+
         // 같은 유저가 다른 번호로 인증 번호를 요청했을 때 막기
-        SmsVerificationModel smsVerificationModel = smsVerificationRepository.findFirstByPhoneNumOrderByRegDateDesc(e164FormatPhoneNumber);
+        SmsVerificationModel smsVerificationModel = smsVerificationRepository.findFirstByPhoneNumOrderByRegDateDesc(phone.getPhoneNum());
         int requestCount = smsVerificationModel != null ? smsVerificationModel.getRequestCount() : 0;
         LocalDateTime lastRequestTime = smsVerificationModel != null ? smsVerificationModel.getLastRequestTime() : LocalDateTime.MIN;
         // 요청 제한 검증
@@ -325,71 +324,18 @@ public class AuthServiceImpl implements AuthService {
         }
 
         try {
-
-            if (smsVerificationModel != null) {
-                Verification existingVerification = Verification.fetcher(
-                        twilioConfig.getServiceSid(),
-                        smsVerificationModel.getVerifyKey()
-                ).fetch();
-
-                // 기존 요청이 'pending' 상태인 경우, 새 요청을 막음
-                if ("pending".equalsIgnoreCase(existingVerification.getStatus())) {
-                    smsVerificationModel.setVerification(RequestStatus.P);
-                    smsVerificationRepository.save(smsVerificationModel);
-                    log.info("Pending verification exists for phone number: {}", e164FormatPhoneNumber);
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body(Messenger.builder()
-                                    .message("이미 진행 중인 인증 요청이 있습니다. 잠시 후 다시 시도해주세요.")
-                                    .build());
-                }
-            }
-
             // 새로운 인증 요청 생성
-            Verification verification = Verification.creator(
-                    twilioConfig.getServiceSid(),
-                    e164FormatPhoneNumber,
-                    "sms"
-            ).create();
+            coolSmsService.sendSms(phone.getPhoneNum());
 
-            // 인증 상태 확인 및 데이터 저장
-            RequestStatus requestStatus = "approved".equalsIgnoreCase(verification.getStatus())
-                    ? RequestStatus.Y : RequestStatus.N;
-
-            if (smsVerificationModel == null) {
-                smsVerificationModel = SmsVerificationModel.builder()
-                        .phoneNum(e164FormatPhoneNumber)
-                        .verifyKey(verification.getSid())
-                        .employeeId(employeeId)
-                        .verification(requestStatus)
-                        .requestCount(1)
-                        .lastRequestTime(LocalDateTime.now())
-                        .build();
-            } else {
-                smsVerificationModel.setVerifyKey(verification.getSid());
-                smsVerificationModel.setVerification(requestStatus);
-                smsVerificationModel.setRequestCount(requestCount + 1);
-                smsVerificationModel.setLastRequestTime(LocalDateTime.now());
-            }
-
-            smsVerificationRepository.save(smsVerificationModel);
-            if (requestStatus == RequestStatus.Y) {
-                log.info("Verification successful: {}", verification);
-                return ResponseEntity.ok(Messenger.builder()
-                        .message("인증 번호 발송 성공")
-                        .build());
-            } else {
-                log.error("Verification failed: {}", verification.getStatus());
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Messenger.builder()
-                                .message("인증 번호 발송 실패: " + verification.getStatus())
-                                .build());
-            }
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("인증 번호 발송 성공")
+                    .build());
         } catch (Exception e) {
             log.info("Exception : {}", e);
             throw new GlobalException(ExceptionStatus.BAD_REQUEST, "인증 번호 요청 실패");
         }
-
     }
+
 
     private boolean isRequestLimitExceeded(int requestCount, LocalDateTime lastRequestTime, int dailyLimit, int intervalLimit, Duration intervalDuration) {
         if (requestCount >= dailyLimit && lastRequestTime.toLocalDate().equals(LocalDate.now())) {
@@ -401,27 +347,26 @@ public class AuthServiceImpl implements AuthService {
         return false;
     }
 
+
     @Override
     public ResponseEntity<Messenger> checkVerification(UserVerifyCheckRequestDto userVerifyCheckRequestDto) {
         try {
-            VerificationCheck verificationCheck = VerificationCheck.creator(
-                    twilioConfig.getServiceSid(),  // 서비스 SID
-                    userVerifyCheckRequestDto.getCode() // 사용자 입력 인증 코드
-            ).create();
-            log.info("verificationCheck : {}", verificationCheck);
 
-            if ("approved".equalsIgnoreCase(verificationCheck.getStatus())) {
-                log.info("Verification successful: {}", verificationCheck);
+            SmsVerificationModel smsVerificationModel = smsVerificationRepository.findFirstByPhoneNumOrderByRegDateDesc(userVerifyCheckRequestDto.getPhoneNum());
+
+            if(encryptionUtil.decrypt(smsVerificationModel.getVerifyKey()).equals(userVerifyCheckRequestDto.getCode())){
+                smsVerificationModel.setVerification(RequestStatus.Y);
+                smsVerificationRepository.save(smsVerificationModel);
                 return ResponseEntity.ok(Messenger.builder()
                         .message("인증 번호 검증 성공")
                         .build());
-            } else {
-                log.error("Verification failed: {}", verificationCheck.getStatus());
+            }else{
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(Messenger.builder()
-                                .message("잘못된 인증 코드입니다." + verificationCheck.getStatus())
+                                .message("잘못된 인증 코드입니다.")
                                 .build());
             }
+
         } catch (Exception e) {
             throw new GlobalException(ExceptionStatus.BAD_REQUEST, "인증 번호 검증 실패");
         }

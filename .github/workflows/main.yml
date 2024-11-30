@@ -94,12 +94,17 @@ jobs:
           encryption:
             secret-key: ${ENCRYPTION_SECRET_KEY}
             init-vector: ${INIT_VECTOR}
-          
+
           twilio:
             account-sid: ${TWILIO_ACCOUNT_SID}
             auth-token: ${TWILIO_AUTH_TOKEN}
             service-sid: ${TWILIO_SERVICE_SID}
-          
+
+          coolsms:
+            api:
+              key: ${COOLSMS_API_KEY}   
+              secret: ${COOLSMS_API_SECRET}
+              number: ${COOLSMS_API_PHONE}   
           EOF
       env:
         DB_URL: ${{ secrets.DB_URL }}

@@ -1,5 +1,6 @@
 package site.wellmind.user.controller;
 
+import net.nurigo.java_sdk.exceptions.CoolsmsException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.mail.MessagingException;
@@ -120,7 +121,7 @@ public class AuthController {
     }
 
     @PostMapping("/authenticate/code")
-    public ResponseEntity<Messenger> getUserAuthenticateCode(@RequestBody UserVerifyCodeRequestDto userVerifyCodeRequestDto){
+    public ResponseEntity<Messenger> getUserAuthenticateCode(@RequestBody UserVerifyCodeRequestDto userVerifyCodeRequestDto) throws CoolsmsException {
         return authService.startVerification(userVerifyCodeRequestDto);
     }
     @PostMapping("/authenticate/check")

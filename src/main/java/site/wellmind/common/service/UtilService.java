@@ -1,9 +1,9 @@
 package site.wellmind.common.service;
 
-import com.google.i18n.phonenumbers.NumberParseException;
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.Phonenumber;
-import com.twilio.rest.lookups.v1.PhoneNumber;
+//import com.google.i18n.phonenumbers.NumberParseException;
+//import com.google.i18n.phonenumbers.PhoneNumberUtil;
+//import com.google.i18n.phonenumbers.Phonenumber;
+//import com.twilio.rest.lookups.v1.PhoneNumber;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import lombok.RequiredArgsConstructor;
@@ -28,21 +28,29 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class UtilService {
-    public String getE164FormatPhoneNumber(String phoneNum){
-        if(phoneNum.isEmpty()){
-            throw new GlobalException(ExceptionStatus.INVALID_INPUT);
+//    public String getE164FormatPhoneNumber(String phoneNum){
+//        if(phoneNum.isEmpty()){
+//            throw new GlobalException(ExceptionStatus.INVALID_INPUT);
+//        }
+//        try{
+//            PhoneNumberUtil phoneNumberUtil=PhoneNumberUtil.getInstance();
+//            Phonenumber.PhoneNumber parsedPhoneNumber1 = phoneNumberUtil.parse(phoneNum, "KR");
+//            String result=phoneNumberUtil.format(parsedPhoneNumber1,PhoneNumberUtil.PhoneNumberFormat.E164);
+//
+//            log.info("getE164FormatPhoneNumber : {}",result);
+//            return result;
+//        }catch (NumberParseException e){
+//            throw new GlobalException(ExceptionStatus.INTERNAL_SERVER_ERROR,"Wrong in tranform phoneNum");
+//        }
+//    }
+    public String formatPhoneNumber(String phoneNumber) {
+        if (phoneNumber == null || phoneNumber.isEmpty()) {
+            throw new GlobalException(ExceptionStatus.BAD_REQUEST,"전화번호가 null이거나 빈 값입니다.");
         }
-        try{
-            PhoneNumberUtil phoneNumberUtil=PhoneNumberUtil.getInstance();
-            Phonenumber.PhoneNumber parsedPhoneNumber1 = phoneNumberUtil.parse(phoneNum, "KR");
-            String result=phoneNumberUtil.format(parsedPhoneNumber1,PhoneNumberUtil.PhoneNumberFormat.E164);
-
-            log.info("getE164FormatPhoneNumber : {}",result);
-            return result;
-        }catch (NumberParseException e){
-            throw new GlobalException(ExceptionStatus.INTERNAL_SERVER_ERROR,"Wrong in tranform phoneNum");
-        }
+        // 숫자만 추출
+        return phoneNumber.replaceAll("[^0-9]", "");
     }
+
     public String[] getNullPropertyNames(Object source){
         if (source == null) {
             throw new IllegalArgumentException("Source object must not be null");

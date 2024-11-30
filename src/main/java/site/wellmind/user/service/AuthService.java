@@ -1,6 +1,7 @@
 package site.wellmind.user.service;
 
 import jakarta.servlet.http.HttpServletRequest;
+import net.nurigo.java_sdk.exceptions.CoolsmsException;
 import org.springframework.http.ResponseEntity;
 import site.wellmind.common.domain.dto.Messenger;
 import site.wellmind.common.domain.dto.TokenValidationRequestDto;
@@ -18,7 +19,7 @@ public interface AuthService {
 
     ResponseEntity<Messenger> modifyByPassword(PasswordModifyRequestDto oldPassword, AccountDto newPassword);
 
-    ResponseEntity<Messenger> startVerification(UserVerifyCodeRequestDto requestDto);
+    ResponseEntity<Messenger> startVerification(UserVerifyCodeRequestDto requestDto) throws CoolsmsException;
 
     ResponseEntity<Messenger> checkVerification(UserVerifyCheckRequestDto userVerifyCheckRequestDto);
 }
