@@ -71,7 +71,7 @@ public class AuthController {
     }
 
     //이메일 인증 처리
-    @PostMapping("/verify-code")
+    @PostMapping("/email/verify-code")
     public ResponseEntity<Messenger> verifyCode(@RequestParam(name = "email") String email, @RequestParam(name = "verifyCode") String verifyCode) {
         VerificationStatus verified = emailVerificationService.verifyCode(email, verifyCode);
         return verified==VerificationStatus.SUCCESS ?
@@ -87,31 +87,31 @@ public class AuthController {
                         .build());
 
     }
-    @PostMapping("/password/test/setup")   //save 로직에 합쳐져야 함
-    public ResponseEntity<Messenger> testSetupPassword(@RequestBody PasswordSetupTestDto dto) throws MessagingException {
-        try {
-            mailService.sendPasswordSetupEmail(dto.getEmail(),dto.getEmployeeId());
-            return ResponseEntity.ok()
-                    .body(Messenger.builder()
-                            .message("send password set up success").build());
-        }catch (MessagingException e){
-            return ResponseEntity.status(ExceptionStatus.INTERNAL_SERVER_ERROR.getHttpStatus())
-                    .body(Messenger.builder()
-                            .message(e.getMessage()).build());
-        }
-    }
+//    @PostMapping("/password/test/setup")   //save 로직에 합쳐져야 함
+//    public ResponseEntity<Messenger> testSetupPassword(@RequestBody PasswordSetupTestDto dto) throws MessagingException {
+//        try {
+//            mailService.sendPasswordSetupEmail(dto.getEmail(),dto.getEmployeeId());
+//            return ResponseEntity.ok()
+//                    .body(Messenger.builder()
+//                            .message("send password set up success").build());
+//        }catch (MessagingException e){
+//            return ResponseEntity.status(ExceptionStatus.INTERNAL_SERVER_ERROR.getHttpStatus())
+//                    .body(Messenger.builder()
+//                            .message(e.getMessage()).build());
+//        }
+//    }
 
 
-    //비밀번호 생성 토큰 유효 검사
-    @PostMapping("/password/validate-token")
-    public ResponseEntity<Messenger> validatePasswordSetupToken(@RequestBody TokenValidationRequestDto request){
-        return authService.validatePasswordSetupToken(request);
-    }
-    //비밀번호 생성
-    @PostMapping("/password/setup")
-    public ResponseEntity<Messenger> setupPassword(@RequestBody PasswordSetupRequestDto request){
-        return authService.setupPassword(request);
-    }
+//    //비밀번호 생성 토큰 유효 검사
+//    @PostMapping("/password/validate-token")
+//    public ResponseEntity<Messenger> validatePasswordSetupToken(@RequestBody TokenValidationRequestDto request){
+//        return authService.validatePasswordSetupToken(request);
+//    }
+//    //비밀번호 생성
+//    @PostMapping("/password/setup")
+//    public ResponseEntity<Messenger> setupPassword(@RequestBody PasswordSetupRequestDto request){
+//        return authService.setupPassword(request);
+//    }
 
     @PutMapping("/modify-by-password")
     public ResponseEntity<Messenger> modifyByPassword(@RequestBody PasswordModifyRequestDto dto,HttpServletRequest request) {
@@ -120,11 +120,11 @@ public class AuthController {
         return authService.modifyByPassword(dto,accountDto);
     }
 
-    @PostMapping("/authenticate/code")
+    @PostMapping("/sms/verify-code")
     public ResponseEntity<Messenger> getUserAuthenticateCode(@RequestBody UserVerifyCodeRequestDto userVerifyCodeRequestDto) throws CoolsmsException {
         return authService.startVerification(userVerifyCodeRequestDto);
     }
-    @PostMapping("/authenticate/check")
+    @PostMapping("/sms/verify-check")
     public ResponseEntity<Messenger> verigyUserAuthenticateCode(@RequestBody UserVerifyCheckRequestDto userVerifyCheckRequestDto){
         return authService.checkVerification(userVerifyCheckRequestDto);
     }
