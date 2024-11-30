@@ -221,6 +221,7 @@ public class AccountServiceImpl implements AccountService {
                 userInfoModel = userInfoRepository.save(userDtoEntityMapper.dtoToEntityUserInfo(userDetailDto.getUserInfo()));
             }
 
+            log.info("account ID : {}",accountDto.getAccountId());
             log.info("userSignificantModel : {}",userDetailDto.getUserSignificant());
             // Step 2: UserSignificantModel 저장
             UserSignificantModel userSignificantModel = null;
@@ -266,6 +267,7 @@ public class AccountServiceImpl implements AccountService {
             throw new GlobalException(ExceptionStatus.INTERNAL_SERVER_ERROR, "Required entity not found during save operation"+e);
 
         } catch (Exception e) {
+            log.info("register detail : {}",e);
             throw new GlobalException(ExceptionStatus.INTERNAL_SERVER_ERROR, "Failed to save user detail data : " + userDetailDto.getEmployeeId());
         }
 
