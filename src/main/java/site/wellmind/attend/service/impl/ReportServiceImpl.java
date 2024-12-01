@@ -18,12 +18,16 @@ import site.wellmind.attend.repository.AttendReportRepository;
 import site.wellmind.attend.service.ReportService;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
+import site.wellmind.security.util.EncryptionUtil;
+import site.wellmind.transfer.domain.model.QTransferModel;
+import site.wellmind.transfer.domain.model.TransferModel;
 import site.wellmind.user.domain.dto.AccountDto;
 import site.wellmind.user.domain.model.AdminTopModel;
 import site.wellmind.user.domain.model.UserTopModel;
 import site.wellmind.user.repository.AdminTopRepository;
 import site.wellmind.user.repository.UserTopRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,6 +50,8 @@ public class ReportServiceImpl implements ReportService {
     private final AdminTopRepository adminTopRepository;
     private final UserTopRepository userTopRepository;
     private final AttendReportRepository attendReportRepository;
+    private final QTransferModel qTransfer = QTransferModel.transferModel;
+    private final EncryptionUtil encryptionUtil;
 
     private String getEmployeeName(AttendReportModel model) {
         if (model.getIsAdmin()) {
@@ -72,25 +78,43 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public Page<ReportListDto> view(String employeeId, AccountDto accountDto, Pageable pageable) {
+    public List<ReportListDto> viewCal(AccountDto accountDto) {
         BooleanBuilder whereClause = new BooleanBuilder();
         Long currentAccountId = accountDto.getAccountId();
-        String currentEmployeeId = accountDto.getEmployeeId();
         boolean isAdmin = accountDto.isAdmin();
 
         if (isAdmin) {
-            if (employeeId != null && employeeId.equals(currentEmployeeId)) {
-                //관리자가 본인 관할의 리포트를 모두 조회하는 경우
-                whereClause.and(qAttendReport.reporterId.id.eq(currentAccountId));
-            } else if (employeeId == null) {
-                // 관리자가 본인의 리포트를 조회하는 경우
-                whereClause.and(qAttendReport.reportedId.eq(currentAccountId)).and(qAttendReport.isAdmin.eq(true).and(qAttendReport.isSent.eq(true)));
-            } else {
-                throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
-            }
-        } else if (employeeId == null) {
-            // 일반 사용자는 본인의 리포트만 조회 가능
+            whereClause.and(qAttendReport.reportedId.eq(currentAccountId)).and(qAttendReport.isAdmin.eq(true).and(qAttendReport.isSent.eq(true)));
+        } else {
             whereClause.and(qAttendReport.reportedId.eq(currentAccountId)).and(qAttendReport.isAdmin.eq(false).and(qAttendReport.isSent.eq(true)));
+        }
+
+        List<AttendReportModel> reports = queryFactory
+                .selectFrom(qAttendReport)
+                .where(whereClause)
+                .orderBy(qAttendReport.regDate.desc())
+                .fetch();
+
+        return reports.stream()
+                .map(model -> {
+                    String reportedEmployeeId = getEmployeeId(model);
+                    String reportedEmployeeName = getEmployeeName(model);
+                    ReportListDto dto = entityToDtoReportListRecord(model);
+                    dto.setReportedEmployeeName(reportedEmployeeName);
+                    dto.setReportedEmployeeId(reportedEmployeeId);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<ReportListDto> viewAd(AccountDto accountDto, Pageable pageable) {
+        BooleanBuilder whereClause = new BooleanBuilder();
+        Long currentAccountId = accountDto.getAccountId();
+        boolean isAdmin = accountDto.isAdmin();
+
+        if (isAdmin) {
+            whereClause.and(qAttendReport.reporterId.id.eq(currentAccountId));
         } else {
             throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
         }
@@ -129,7 +153,7 @@ public class ReportServiceImpl implements ReportService {
 
         if (employeeId == null) {
             // 본인 report 조회 시
-            if (!reportModel.getReportedId().equals(accountDto.getAccountId()) || reportModel.getIsSent().equals(false)) {
+            if (!reportModel.getReportedId().equals(accountDto.getAccountId()) || !reportModel.getIsAdmin().equals(accountDto.isAdmin()) || reportModel.getIsSent().equals(false)) {
                 // 본인 report가 아니거나 전송되지 않은 report를 상세조회하려고 할 때
                 throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
             }
@@ -147,7 +171,95 @@ public class ReportServiceImpl implements ReportService {
         reportDto.setReportedEmployeeId(reportedEmployeeId);
         reportDto.setReportedEmployeeName(reportedEmployeeName);
 
+        // reportType 변환 및 "빈발형" 추가
+        String[] types = reportDto.getReportType().split(",");
+        List<String> convertedTypes = new ArrayList<>();
+        for (String type : types) {
+            switch (type) {
+                case "LA":
+                    convertedTypes.add("지각");
+                    break;
+                case "LL":
+                    convertedTypes.add("야근");
+                    break;
+                case "EL":
+                    convertedTypes.add("조퇴");
+                    break;
+                case "OT":
+                    convertedTypes.add("외출");
+                    break;
+                case "BT":
+                    convertedTypes.add("출장");
+                    break;
+            }
+        }
+        String convertedType = String.join(", ", convertedTypes) + " 빈발형";
+        reportDto.setReportType(convertedType);
+
+        if (reportModel.getIsAdmin()) {
+            AdminTopModel admin = adminTopRepository.findById(reportModel.getReportedId())
+                    .orElseThrow(() -> new GlobalException(ExceptionStatus.DATA_NOT_FOUND, ExceptionStatus.DATA_NOT_FOUND.getMessage()));
+            setAdditionalInfo(reportDto, admin);
+        } else {
+            UserTopModel user = userTopRepository.findById(reportModel.getReportedId())
+                    .orElseThrow(() -> new GlobalException(ExceptionStatus.DATA_NOT_FOUND, ExceptionStatus.DATA_NOT_FOUND.getMessage()));
+            setAdditionalInfo(reportDto, user);
+        }
+
         return reportDto;
+    }
+
+    private void setAdditionalInfo(ReportDto reportDto, AdminTopModel admin) {
+        TransferModel latestTransfer = getLatestTransfer(admin.getId(), true);
+        reportDto.setDepartmentAndPosition(latestTransfer.getDepartment().getName() + " " + latestTransfer.getPosition().getName());
+        reportDto.setHireDate(admin.getUserInfoModel().getHireDate());
+        reportDto.setReportedEmployeeIsLong(admin.getUserInfoModel().isLong());
+        reportDto.setEmail(admin.getEmail());
+        try {
+            String decryptedRegNumberFor = encryptionUtil.decrypt(admin.getRegNumberFor());
+            reportDto.setBirthDate(convertToBirthDate(decryptedRegNumberFor));
+        } catch (Exception e) {
+            log.error("Error decrypting regNumberFor: " + e.getMessage());
+            reportDto.setBirthDate(null);
+        }
+    }
+
+    private void setAdditionalInfo(ReportDto reportDto, UserTopModel user) {
+        TransferModel latestTransfer = getLatestTransfer(user.getId(), false);
+        reportDto.setDepartmentAndPosition(latestTransfer.getDepartment().getName() + " " + latestTransfer.getPosition().getName());
+        reportDto.setHireDate(user.getUserInfoModel().getHireDate());
+        reportDto.setReportedEmployeeIsLong(user.getUserInfoModel().isLong());
+        reportDto.setEmail(user.getEmail());
+        try {
+            String decryptedRegNumberFor = encryptionUtil.decrypt(user.getRegNumberFor());
+            reportDto.setBirthDate(convertToBirthDate(decryptedRegNumberFor));
+        } catch (Exception e) {
+            log.error("Error decrypting regNumberFor: " + e.getMessage());
+            reportDto.setBirthDate(null);
+        }
+    }
+
+    private TransferModel getLatestTransfer(Long id, boolean isAdmin) {
+        return queryFactory
+                .selectFrom(qTransfer)
+                .where(isAdmin ? qTransfer.adminId.id.eq(id) : qTransfer.userId.id.eq(id))
+                .orderBy(qTransfer.regDate.desc())
+                .fetchFirst();
+    }
+
+    private String convertToBirthDate(String regNumberFor) {
+        if (regNumberFor == null || regNumberFor.length() < 6) {
+            return null;
+        }
+
+        String birthYear = regNumberFor.substring(0, 2);
+        String birthMonth = regNumberFor.substring(2, 4);
+        String birthDay = regNumberFor.substring(4, 6);
+
+        int year = Integer.parseInt(birthYear);
+        int century = (year > 24) ? 1900 : 2000;
+
+        return String.format("%d-%s-%s", century + year, birthMonth, birthDay);
     }
 
     @Override
@@ -155,16 +267,14 @@ public class ReportServiceImpl implements ReportService {
         AttendReportModel reportModel = attendReportRepository.findById(reportId)
                 .orElseThrow(() -> new GlobalException(ExceptionStatus.DATA_NOT_FOUND, ExceptionStatus.DATA_NOT_FOUND.getMessage()));
 
-        // 관리자가 아닌 경우
+        // 관할 관리자가 아닌 경우
         if (!accountDto.isAdmin() || !reportModel.getReporterId().getId().equals(accountDto.getAccountId())) {
             throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
         }
 
-        // 코멘트 업데이트
         reportModel.setAiComment(updateReportDto.getAiComment());
         reportModel.setManagerComment(updateReportDto.getManagerComment());
 
-        // 리포트 저장
         attendReportRepository.save(reportModel);
     }
 

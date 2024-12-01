@@ -10,6 +10,7 @@ import site.wellmind.user.domain.dto.AccountDto;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * ReportService
@@ -30,6 +31,7 @@ public interface ReportService {
                 .aiComment(model.getAiComment())
                 .managerComment(model.getManagerComment())
                 .reportType(model.getUserType())
+                .isAdmin(model.getIsAdmin())
                 .isSent(model.getIsSent())
                 .build();
     }
@@ -44,7 +46,9 @@ public interface ReportService {
                 .build();
     }
 
-    Page<ReportListDto> view(String employeeId, AccountDto accountDto, Pageable pageable);
+    List<ReportListDto> viewCal(AccountDto accountDto);
+
+    Page<ReportListDto> viewAd(AccountDto accountDto, Pageable pageable);
 
     ReportDto viewDetail(String employeeId, Long reportId, AccountDto accountDto);
 

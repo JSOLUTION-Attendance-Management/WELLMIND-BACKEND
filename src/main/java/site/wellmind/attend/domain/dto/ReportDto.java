@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 /**
  * ViewReportDto
  * <p>View Report Data Transfer Object</p>
@@ -38,8 +40,17 @@ public class ReportDto {
 
     private String reportedEmployeeName;
 
+    private boolean reportedEmployeeIsLong;
+
     private boolean isAdmin;
 
     private boolean isSent;
+
+    private String departmentAndPosition;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd")
+    private LocalDateTime hireDate;
+    private String email;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd")
+    private String birthDate;
 
 }
