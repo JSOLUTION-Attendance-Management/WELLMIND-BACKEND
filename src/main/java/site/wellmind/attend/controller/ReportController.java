@@ -17,6 +17,8 @@ import site.wellmind.common.domain.vo.SuccessStatus;
 import site.wellmind.common.exception.GlobalException;
 import site.wellmind.user.domain.dto.AccountDto;
 
+import java.util.List;
+
 /**
  * Report Controller
  * <p>웰니스 리포트 관련 요청을 처리하는 컨트롤러</p>
@@ -34,17 +36,34 @@ import site.wellmind.user.domain.dto.AccountDto;
 public class ReportController {
     private final ReportService reportService;
 
+    @GetMapping("/cal")
+    public ResponseEntity<Messenger> viewCal(
+            HttpServletRequest request) {
+        AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
+        try {
+            List<ReportListDto> reportRecords = reportService.viewCal(accountDto);
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("report cal view : " + SuccessStatus.OK.getMessage())
+                    .data(reportRecords)
+                    .build());
+        } catch (GlobalException e) {
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message(e.getMessage())
+                            .build());
+        }
+    }
+
     @GetMapping("/list")
     public ResponseEntity<Messenger> viewList(
-            @RequestParam(value = "employeeId", required = false) String employeeId,
             Pageable pageable,
             HttpServletRequest request) {
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
         try {
-            if (!accountDto.isAdmin() && employeeId != null) {
+            if (!accountDto.isAdmin()) {
                 throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
             }
-            Page<ReportListDto> reportRecords = reportService.view(employeeId, accountDto, pageable);
+            Page<ReportListDto> reportRecords = reportService.viewAd(accountDto, pageable);
             return ResponseEntity.ok(Messenger.builder()
                     .message("report list view : " + SuccessStatus.OK.getMessage())
                     .data(reportRecords)
@@ -66,11 +85,6 @@ public class ReportController {
         try {
             ReportDto reportDetail = reportService.viewDetail(employeeId, reportId, accountDto);
 
-            // 관리자가 아니고, 리포트의 reportedId가 현재 사용자의 ID와 다르면 접근 거부
-            if (!accountDto.isAdmin() && (!reportDetail.getReportedId().equals(accountDto.getAccountId()) || reportDetail.isAdmin())) {
-                throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
-            }
-
             return ResponseEntity.ok(Messenger.builder()
                     .message("report detail view : " + SuccessStatus.OK.getMessage())
                     .data(reportDetail)
@@ -91,7 +105,7 @@ public class ReportController {
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
         try {
             if (!accountDto.isAdmin()) {
-                throw new GlobalException(ExceptionStatus.UNAUTHORIZED, "관리자만 리포트를 수정할 수 있습니다.");
+                throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
             }
             reportService.updateReport(reportId, updateReportDto, accountDto);
             return ResponseEntity.ok(Messenger.builder()
@@ -111,6 +125,9 @@ public class ReportController {
             HttpServletRequest request) {
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
         try {
+            if (!accountDto.isAdmin()) {
+                throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
+            }
             reportService.markReportAsSent(reportId, accountDto);
             return ResponseEntity.ok(Messenger.builder()
                     .message("Report mark as sent : " + SuccessStatus.OK.getMessage())
