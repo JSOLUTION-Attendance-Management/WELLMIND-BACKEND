@@ -46,6 +46,8 @@ public class ReportDto {
 
     private boolean isSent;
 
+    private String keywords;
+
     private String departmentAndPosition;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd")
     private LocalDateTime hireDate;
