@@ -42,6 +42,9 @@ public class AttendReportModel extends BaseModel {
     @Column(name = "IS_SENT")
     private Boolean isSent = false;
 
+    @Column(name = "KEYWORDS")
+    private String keywords;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REPORTER_IDX", referencedColumnName = "ADMIN_IDX")
     private AdminTopModel reporterId;
