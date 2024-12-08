@@ -434,17 +434,17 @@ public class AuthServiceImpl implements AuthService {
         ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", accessToken)
                 .path("/")
                 .maxAge(jwtTokenProvider.getAccessTokenExpired())
-//                    .httpOnly(true)
-//                    .secure(true)  // Enable for HTTPS
-//                    .sameSite("Lax")
+                    .httpOnly(true)
+                    .secure(false)  // Enable for HTTPS
+                    .sameSite("None")
                 .build();
 
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .path("/")
                 .maxAge(jwtTokenProvider.getRefreshTokenExpired())
-//                    .httpOnly(true)
-//                    .secure(true)  // Enable for HTTPS
-//                    .sameSite("Lax")
+                    .httpOnly(true)
+                    .secure(false)  // Enable for HTTPS
+                    .sameSite("None")
                 .build();
         HttpHeaders headers = new HttpHeaders();
 
@@ -460,8 +460,8 @@ public class AuthServiceImpl implements AuthService {
                 .path("/")
                 .maxAge(maxAge)
                 .httpOnly(true)
-                .secure(true)  // Enable for HTTPS in production
-                .sameSite("Lax")
+                .secure(false)  // Enable for HTTPS in production
+                .sameSite("None")
                 .build();
 
         HttpHeaders headers = new HttpHeaders();
@@ -473,17 +473,17 @@ public class AuthServiceImpl implements AuthService {
         ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", "")
                 .path("/")
                 .maxAge(0L)
-//                .httpOnly(true)
-//                .secure(true)
-//                .sameSite("Lax")
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("None")
                 .build();
 
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", "")
                 .path("/")
                 .maxAge(0L) // Set max age to 0 to delete the cookie
-//                .httpOnly(true)
-//                .secure(true)  // Enable for HTTPS in production
-//                .sameSite("Lax")
+                .httpOnly(true)
+                .secure(false)  // Enable for HTTPS in production
+                .sameSite("None")
                 .build();
 
         HttpHeaders headers = new HttpHeaders();
