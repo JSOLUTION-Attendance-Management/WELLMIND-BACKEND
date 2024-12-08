@@ -37,6 +37,8 @@ public class QrController {
 
     @PostMapping("/create")
     public ResponseEntity<Messenger> createQrCode(
+            @RequestParam() String longitude,
+            @RequestParam() String latitude,
             @RequestParam(defaultValue = "384") Integer widthHeight,
             HttpServletRequest request) {
         try {
@@ -47,7 +49,7 @@ public class QrController {
                 throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
             }
 
-            QrCodeResponseDto qrCodeResponse = qrService.createAndSaveQrCode(accountDto, widthHeight, timeNow);
+            QrCodeResponseDto qrCodeResponse = qrService.createAndSaveQrCode(accountDto, widthHeight, timeNow, longitude, latitude);
 
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
