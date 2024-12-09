@@ -436,7 +436,7 @@ public class AuthServiceImpl implements AuthService {
                 .maxAge(jwtTokenProvider.getAccessTokenExpired())
                     .httpOnly(true)
                     .secure(false)  // Enable for HTTPS
-                    .sameSite("Lax")
+                    .sameSite("None")
                 .build();
 
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
@@ -444,7 +444,7 @@ public class AuthServiceImpl implements AuthService {
                 .maxAge(jwtTokenProvider.getRefreshTokenExpired())
                     .httpOnly(true)
                     .secure(false)  // Enable for HTTPS
-                    .sameSite("Lax")
+                    .sameSite("None")
                 .build();
         HttpHeaders headers = new HttpHeaders();
 
