@@ -436,7 +436,7 @@ public class AuthServiceImpl implements AuthService {
                 .maxAge(jwtTokenProvider.getAccessTokenExpired())
                     .httpOnly(true)
                     .secure(false)  // Enable for HTTPS
-                    .sameSite("None")
+                    .sameSite("Lax")
                 .build();
 
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
@@ -444,7 +444,7 @@ public class AuthServiceImpl implements AuthService {
                 .maxAge(jwtTokenProvider.getRefreshTokenExpired())
                     .httpOnly(true)
                     .secure(false)  // Enable for HTTPS
-                    .sameSite("None")
+                    .sameSite("Lax")
                 .build();
         HttpHeaders headers = new HttpHeaders();
 
@@ -461,7 +461,7 @@ public class AuthServiceImpl implements AuthService {
                 .maxAge(maxAge)
                 .httpOnly(true)
                 .secure(false)  // Enable for HTTPS in production
-                .sameSite("None")
+                .sameSite("Lax")
                 .build();
 
         HttpHeaders headers = new HttpHeaders();
@@ -475,7 +475,7 @@ public class AuthServiceImpl implements AuthService {
                 .maxAge(0L)
                 .httpOnly(true)
                 .secure(false)
-                .sameSite("None")
+                .sameSite("Lax")
                 .build();
 
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", "")
@@ -483,7 +483,7 @@ public class AuthServiceImpl implements AuthService {
                 .maxAge(0L) // Set max age to 0 to delete the cookie
                 .httpOnly(true)
                 .secure(false)  // Enable for HTTPS in production
-                .sameSite("None")
+                .sameSite("Lax")
                 .build();
 
         HttpHeaders headers = new HttpHeaders();
