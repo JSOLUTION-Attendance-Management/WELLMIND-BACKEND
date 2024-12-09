@@ -111,7 +111,7 @@ public class AuthServiceImpl implements AuthService {
         try {
 
             HttpHeaders headers = createTokenCookies(accessToken, refreshToken);
-            headers.add("Location", "http://localhost:3000/login/callback");
+            headers.add("Location", "http://localhost:5731/login/callback");
 
             logArchiveLoginRepository.save(LogArchiveLoginModel.builder()
                     .userId(user.orElse(null))
@@ -121,6 +121,9 @@ public class AuthServiceImpl implements AuthService {
                     .headers(headers)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(Messenger.builder()
+                            .data(TestTokenDto.builder()
+                                    .accessToken(accessToken)
+                                    .refreshToken(refreshToken).build())
                             .message("Login Successful")
                             .build());
 
@@ -134,7 +137,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ResponseEntity<Messenger> refresh(HttpServletRequest request) {
+    public ResponseEntity<?> refresh(HttpServletRequest request) {
         try {
             String jwtToken = jwtTokenProvider.getCookieValue(request, "refreshToken");
             //유효성 검사
@@ -168,9 +171,9 @@ public class AuthServiceImpl implements AuthService {
 
             return ResponseEntity.ok()
                     .headers(headers)
-                    .body(Messenger.builder()
-                            .message("Access Token refreshed successfully")
-                            .build());
+                    .body(TestTokenDto.builder()
+                            .accessToken(accessToken).build()
+                    );
 
         } catch (GlobalException e) {
             return ResponseEntity.status(e.getStatus().getHttpStatus())
