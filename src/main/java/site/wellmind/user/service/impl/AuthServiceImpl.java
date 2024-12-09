@@ -461,7 +461,7 @@ public class AuthServiceImpl implements AuthService {
                 .maxAge(maxAge)
                 .httpOnly(true)
                 .secure(false)  // Enable for HTTPS in production
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         HttpHeaders headers = new HttpHeaders();
@@ -475,7 +475,7 @@ public class AuthServiceImpl implements AuthService {
                 .maxAge(0L)
                 .httpOnly(true)
                 .secure(false)
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", "")
@@ -483,7 +483,7 @@ public class AuthServiceImpl implements AuthService {
                 .maxAge(0L) // Set max age to 0 to delete the cookie
                 .httpOnly(true)
                 .secure(false)  // Enable for HTTPS in production
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         HttpHeaders headers = new HttpHeaders();
