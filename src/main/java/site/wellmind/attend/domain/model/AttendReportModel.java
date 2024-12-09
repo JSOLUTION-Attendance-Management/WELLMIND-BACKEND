@@ -3,13 +3,9 @@ package site.wellmind.attend.domain.model;
 import jakarta.persistence.*;
 import lombok.*;
 import site.wellmind.common.domain.model.BaseModel;
-import site.wellmind.attend.converter.ReportStatusConverter;
-import site.wellmind.attend.domain.vo.ReportStatus;
 import site.wellmind.user.domain.model.AdminTopModel;
-import site.wellmind.user.domain.model.UserTopModel;
 
-import java.util.List;
-
+@Builder
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -32,15 +28,25 @@ public class AttendReportModel extends BaseModel {
     @Column(name = "REPORT_SUMMARY")
     private String summary;
 
-    @Convert(converter = ReportStatusConverter.class)
+    //@Convert(converter = ReportStatusConverter.class)
     @Column(name = "REPORT_USER_TYPE")
-    private List<ReportStatus> userType;
+    private String userType;
 
     @Column(name = "REPORTED_IDX",nullable = false)
-    private String reportedEmployeeId;
+    private Long reportedId;
+
+    @Column(name = "REPORTED_IS_ADMIN")
+    private Boolean isAdmin;
+
+    @Builder.Default
+    @Column(name = "IS_SENT")
+    private Boolean isSent = false;
+
+    @Column(name = "KEYWORDS")
+    private String keywords;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "REPORTER_IDX", referencedColumnName = "ADMIN_EMPLOYEE_ID")
-    private AdminTopModel reporterId;  //조회한 사람
+    @JoinColumn(name = "REPORTER_IDX", referencedColumnName = "ADMIN_IDX")
+    private AdminTopModel reporterId;
 
 }
