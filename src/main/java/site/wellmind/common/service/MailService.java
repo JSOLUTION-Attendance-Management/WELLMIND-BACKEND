@@ -133,7 +133,7 @@ public class MailService {
         body += "<h2 style='color: #333;'>임시 비밀번호 발급</h2>";
         body += "<p style='font-size: 16px; color: #555;'>아래는 요청하신 임시 비밀번호 정보입니다.</p>";
         body += "<div style='text-align: left; margin: 20px auto; width: 90%; background-color: #f9f9f9; padding: 15px; border-radius: 5px; font-size: 15px; color: #555;'>";
-        body += "<p><strong>이메일:</strong> " + employeeId + "</p>";
+        body += "<p><strong>사번:</strong> " + employeeId + "</p>";
         body += "<p><strong>임시 비밀번호:</strong> <span style='color: #00AEEF; font-weight: bold;'>" + tempPassword + "</span></p>";
         body += "</div>";
         body += "<p style='font-size: 14px; color: #777;'>이 임시 비밀번호는 보안을 위해 5분 동안만 유효합니다. 이후에는 새로운 요청을 통해 비밀번호를 재발급받으세요.</p>";
