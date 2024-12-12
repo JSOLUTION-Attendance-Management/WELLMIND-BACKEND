@@ -123,7 +123,7 @@ public class QrServiceImpl implements QrService {
         LocalDateTime expire = timeNow.plusMinutes(5); // 5분 후 만료
 
         String qrContent = generateQrContent(accountDto, employeeId, expire, longitude, latitude);
-        log.info(decryptQrContent(qrContent));
+        //log.info(decryptQrContent(qrContent));
         byte[] qrCodeImage = generateQrCodeImage(qrContent, widthHeight);
         String qrCodeBase64 = Base64.getEncoder().encodeToString(qrCodeImage);
 
