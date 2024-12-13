@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import site.wellmind.attend.domain.dto.BaseAttendDto;
@@ -16,6 +17,8 @@ import site.wellmind.attend.service.AttendService;
 import site.wellmind.user.domain.dto.AccountDto;
 
 import jakarta.servlet.http.HttpServletRequest;
+
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -39,13 +42,14 @@ public class AttendController {
     @GetMapping("/find-by")
     public ResponseEntity<Messenger> findBy(
             @RequestParam(value = "employeeId", required = false) String employeeId,
-            @RequestParam(value = "recentCount", required = false) Integer recentCount,
+            @RequestParam(value = "startDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+            @RequestParam(value = "endDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
             Pageable pageable,
             HttpServletRequest request) {
         AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
 
         try {
-            Page<BaseAttendDto> attendRecords = attendService.findBy(employeeId, accountDto, pageable, recentCount);
+            Page<BaseAttendDto> attendRecords = attendService.findBy(employeeId, accountDto, pageable, startDate, endDate);
             return ResponseEntity.ok(Messenger.builder()
                     .message("attend findBy : " + SuccessStatus.OK.getMessage())
                     .data(attendRecords)
