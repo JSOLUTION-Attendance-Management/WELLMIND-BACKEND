@@ -22,6 +22,8 @@ import site.wellmind.user.domain.model.UserTopModel;
 import site.wellmind.user.repository.AdminTopRepository;
 import site.wellmind.user.repository.UserTopRepository;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -47,11 +49,19 @@ public class AttendServiceImpl implements AttendService {
     private final QAttendRecordModel qAttendRecord = QAttendRecordModel.attendRecordModel;
 
     @Override
-    public Page<BaseAttendDto> findBy(String employeeId, AccountDto accountDto, Pageable pageable, Integer recentCount) {
+    public Page<BaseAttendDto> findBy(String employeeId, AccountDto accountDto, Pageable pageable, LocalDate startDate, LocalDate endDate) {
         BooleanBuilder whereClause = new BooleanBuilder();
         String currentEmployeeId = accountDto.getEmployeeId();
         Long currentAccountId = accountDto.getAccountId();
         List<BaseAttendDto> attendDtos;
+
+        if (startDate != null) {
+            whereClause.and(qAttendRecord.regDate.goe(startDate.atStartOfDay()));
+        }
+
+        if (endDate != null) {
+            whereClause.and(qAttendRecord.regDate.loe(endDate.atTime(LocalTime.MAX)));
+        }
 
         if (employeeId != null) {
             if (!accountDto.isAdmin()) {
@@ -75,10 +85,6 @@ public class AttendServiceImpl implements AttendService {
                         .selectFrom(qAttendRecord)
                         .where(whereClause)
                         .orderBy(qAttendRecord.regDate.desc());
-
-                if (recentCount != null) {
-                    query.limit(recentCount);
-                }
 
                 query.offset(pageable.getOffset())
                         .limit(pageable.getPageSize());
@@ -110,10 +116,6 @@ public class AttendServiceImpl implements AttendService {
                 .selectFrom(qAttendRecord)
                 .where(whereClause)
                 .orderBy(qAttendRecord.regDate.desc());
-
-        if (recentCount != null) {
-            query.limit(recentCount);
-        }
 
         query.offset(pageable.getOffset())
                 .limit(pageable.getPageSize());

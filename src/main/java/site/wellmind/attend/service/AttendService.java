@@ -11,6 +11,7 @@ import site.wellmind.user.domain.dto.AccountDto;
 import site.wellmind.user.domain.model.AdminTopModel;
 import site.wellmind.user.domain.model.UserTopModel;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -51,7 +52,7 @@ public interface AttendService {
                 .build();
     }
 
-    Page<BaseAttendDto> findBy(String employeeId, AccountDto accountDto, Pageable pageable, Integer recentCount);
+    Page<BaseAttendDto> findBy(String employeeId, AccountDto accountDto, Pageable pageable, LocalDate startDate, LocalDate endDate);
 
     List<RecentAttendDto> findRecentAttendances(AccountDto accountDto, Integer recentCount);
 
