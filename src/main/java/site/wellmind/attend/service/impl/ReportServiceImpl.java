@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
+import site.wellmind.attend.domain.dto.RecentReportTypesDto;
 import site.wellmind.attend.domain.dto.ReportDto;
 import site.wellmind.attend.domain.dto.ReportListDto;
 import site.wellmind.attend.domain.dto.UpdateReportDto;
@@ -75,6 +76,29 @@ public class ReportServiceImpl implements ReportService {
                     .map(UserTopModel::getEmployeeId)
                     .orElse("Unknown");
         }
+    }
+
+    @Override
+    public List<RecentReportTypesDto> viewRecent(AccountDto accountDto, Integer recentCount) {
+        BooleanBuilder whereClause = new BooleanBuilder();
+        Long currentAccountId = accountDto.getAccountId();
+        boolean isAdmin = accountDto.isAdmin();
+
+        if (isAdmin) {
+            whereClause.and(qAttendReport.reportedId.eq(currentAccountId)).and(qAttendReport.isAdmin.eq(true).and(qAttendReport.isSent.eq(true)));
+        } else {
+            whereClause.and(qAttendReport.reportedId.eq(currentAccountId)).and(qAttendReport.isAdmin.eq(false).and(qAttendReport.isSent.eq(true)));
+        }
+
+        List<AttendReportModel> reports = queryFactory
+                .selectFrom(qAttendReport)
+                .where(whereClause)
+                .orderBy(qAttendReport.regDate.desc())
+                .fetch();
+
+        return reports.stream()
+                .map(this::entityToDtoRecentReportTypes)
+                .collect(Collectors.toList());
     }
 
     @Override

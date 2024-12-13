@@ -2,6 +2,7 @@ package site.wellmind.attend.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import site.wellmind.attend.domain.dto.RecentReportTypesDto;
 import site.wellmind.attend.domain.dto.ReportDto;
 import site.wellmind.attend.domain.dto.ReportListDto;
 import site.wellmind.attend.domain.dto.UpdateReportDto;
@@ -46,6 +47,20 @@ public interface ReportService {
                 .reportType(model.getUserType())
                 .build();
     }
+
+    default RecentReportTypesDto entityToDtoRecentReportTypes(AttendReportModel model) {
+        LocalDateTime regDate = model.getRegDate();
+        LocalDateTime modDate = model.getModDate();
+
+        return RecentReportTypesDto.builder()
+                .reportId(model.getId())
+                .registeredDate(regDate != null ? regDate.format(DateTimeFormatter.ISO_LOCAL_DATE) : null)
+                .modifiedDate(modDate != null ? modDate.format(DateTimeFormatter.ISO_LOCAL_DATE) : null)
+                .reportType(model.getUserType())
+                .build();
+    }
+
+    List<RecentReportTypesDto> viewRecent(AccountDto accountDto, Integer recentCount);
 
     List<ReportListDto> viewCal(AccountDto accountDto);
 
