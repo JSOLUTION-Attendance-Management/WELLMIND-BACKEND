@@ -84,7 +84,7 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("http://localhost:5173", "https://www.wellmind.site"));  //추후 변경 필요
+        config.setAllowedOriginPatterns(List.of("http://localhost:*", "https://www.wellmind.site"));  //추후 변경 필요
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

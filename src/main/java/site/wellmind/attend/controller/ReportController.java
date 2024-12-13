@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import site.wellmind.attend.domain.dto.RecentReportTypesDto;
 import site.wellmind.attend.domain.dto.ReportDto;
 import site.wellmind.attend.domain.dto.ReportListDto;
 import site.wellmind.attend.domain.dto.UpdateReportDto;
@@ -35,6 +36,25 @@ import java.util.List;
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class ReportController {
     private final ReportService reportService;
+
+    @GetMapping("/recent")
+    public ResponseEntity<Messenger> viewRecentTypes(
+            @RequestParam(value = "recentCount", required = false) Integer recentCount,
+            HttpServletRequest request) {
+        AccountDto accountDto = (AccountDto) request.getAttribute("accountDto");
+        try {
+            List<RecentReportTypesDto> reportRecords = reportService.viewRecent(accountDto, recentCount);
+            return ResponseEntity.ok(Messenger.builder()
+                    .message("recent report type view : " + SuccessStatus.OK.getMessage())
+                    .data(reportRecords)
+                    .build());
+        } catch (GlobalException e) {
+            return ResponseEntity.status(e.getStatus().getHttpStatus())
+                    .body(Messenger.builder()
+                            .message(e.getMessage())
+                            .build());
+        }
+    }
 
     @GetMapping("/cal")
     public ResponseEntity<Messenger> viewCal(
