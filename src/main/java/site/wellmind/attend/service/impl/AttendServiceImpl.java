@@ -1,11 +1,16 @@
 package site.wellmind.attend.service.impl;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Ops;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
@@ -23,7 +28,10 @@ import site.wellmind.user.repository.AdminTopRepository;
 import site.wellmind.user.repository.UserTopRepository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -53,7 +61,8 @@ public class AttendServiceImpl implements AttendService {
         BooleanBuilder whereClause = new BooleanBuilder();
         String currentEmployeeId = accountDto.getEmployeeId();
         Long currentAccountId = accountDto.getAccountId();
-        List<BaseAttendDto> attendDtos;
+
+        whereClause.and(qAttendRecord.attendStatus.notIn(AttendStatus.OT, AttendStatus.RT));
 
         if (startDate != null) {
             whereClause.and(qAttendRecord.regDate.goe(startDate.atStartOfDay()));
@@ -81,25 +90,61 @@ public class AttendServiceImpl implements AttendService {
             }
 
             if (accountDto.getRole().equals("ROLE_ADMIN_UBL_55")) {
-                JPAQuery<AttendRecordModel> query = queryFactory
-                        .selectFrom(qAttendRecord)
+                StringTemplate formattedDate = Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", qAttendRecord.regDate);
+
+                // 날짜별로 그룹화된 데이터 조회
+                JPAQuery<Tuple> dateQuery = queryFactory
+                        .select(formattedDate, qAttendRecord.count())
+                        .from(qAttendRecord)
                         .where(whereClause)
-                        .orderBy(qAttendRecord.regDate.desc());
+                        .groupBy(formattedDate)
+                        .orderBy(formattedDate.desc());
 
-                query.offset(pageable.getOffset())
-                        .limit(pageable.getPageSize());
+                List<Tuple> allDateGroups = dateQuery.fetch();
 
-                attendDtos = query.fetch().stream()
+                int pageSize = pageable.getPageSize();
+                int pageNumber = pageable.getPageNumber();
+
+                List<List<Tuple>> datePages = new ArrayList<>();
+                List<Tuple> currentPage = new ArrayList<>();
+
+                for (Tuple dateGroup : allDateGroups) {
+                    currentPage.add(dateGroup);
+                    if (currentPage.size() == pageSize) {
+                        datePages.add(currentPage);
+                        currentPage = new ArrayList<>();
+                    }
+                }
+
+                if (!currentPage.isEmpty()) {
+                    datePages.add(currentPage);
+                }
+
+                int totalPages = datePages.size();
+
+                if (pageNumber >= totalPages) {
+                    return new PageImpl<>(Collections.emptyList(), pageable, totalPages);
+                }
+
+                List<Tuple> selectedDateGroups = datePages.get(pageNumber);
+
+                List<String> selectedDates = selectedDateGroups.stream()
+                        .map(tuple -> tuple.get(0, String.class))
+                        .collect(Collectors.toList());
+
+                // 선택된 날짜들의 모든 데이터 조회
+                JPAQuery<AttendRecordModel> recordQuery = queryFactory
+                        .selectFrom(qAttendRecord)
+                        .where(whereClause.and(formattedDate.in(selectedDates)))
+                        .orderBy(qAttendRecord.regDate.desc(), qAttendRecord.id.desc());
+
+                List<AttendRecordModel> records = recordQuery.fetch();
+
+                List<BaseAttendDto> attendDtos = records.stream()
                         .map(this::entityToDtoSimpleAttendRecord)
                         .collect(Collectors.toList());
 
-                JPAQuery<Long> countQuery = queryFactory
-                        .select(qAttendRecord.count())
-                        .from(qAttendRecord)
-                        .where(whereClause);
-
-                return PageableExecutionUtils.getPage(attendDtos, pageable, countQuery::fetchOne);
-
+                return new PageImpl<>(attendDtos, pageable, totalPages * pageSize);
             } else if (!accountDto.getRole().equals("ROLE_ADMIN_UBL_66")) {
                 throw new GlobalException(ExceptionStatus.UNAUTHORIZED, ExceptionStatus.UNAUTHORIZED.getMessage());
             }
@@ -112,24 +157,62 @@ public class AttendServiceImpl implements AttendService {
             }
         }
 
-        JPAQuery<AttendRecordModel> query = queryFactory
-                .selectFrom(qAttendRecord)
+        // 날짜를 문자열로 변환하는 Expression
+        StringTemplate formattedDate = Expressions.stringTemplate("DATE_FORMAT({0}, '%Y-%m-%d')", qAttendRecord.regDate);
+
+        // 날짜별로 그룹화된 데이터 조회
+        JPAQuery<Tuple> dateQuery = queryFactory
+                .select(formattedDate, qAttendRecord.count())
+                .from(qAttendRecord)
                 .where(whereClause)
-                .orderBy(qAttendRecord.regDate.desc());
+                .groupBy(formattedDate)
+                .orderBy(formattedDate.desc());
 
-        query.offset(pageable.getOffset())
-                .limit(pageable.getPageSize());
+        List<Tuple> allDateGroups = dateQuery.fetch();
 
-        attendDtos = query.fetch().stream()
+        int pageSize = pageable.getPageSize();
+        int pageNumber = pageable.getPageNumber();
+
+        List<List<Tuple>> datePages = new ArrayList<>();
+        List<Tuple> currentPage = new ArrayList<>();
+
+        for (Tuple dateGroup : allDateGroups) {
+            currentPage.add(dateGroup);
+            if (currentPage.size() == pageSize) {
+                datePages.add(currentPage);
+                currentPage = new ArrayList<>();
+            }
+        }
+
+        if (!currentPage.isEmpty()) {
+            datePages.add(currentPage);
+        }
+
+        int totalPages = datePages.size();
+
+        if (pageNumber >= totalPages) {
+            return new PageImpl<>(Collections.emptyList(), pageable, totalPages);
+        }
+
+        List<Tuple> selectedDateGroups = datePages.get(pageNumber);
+
+        List<String> selectedDates = selectedDateGroups.stream()
+                .map(tuple -> tuple.get(0, String.class))
+                .collect(Collectors.toList());
+
+        // 선택된 날짜들의 모든 데이터 조회
+        JPAQuery<AttendRecordModel> recordQuery = queryFactory
+                .selectFrom(qAttendRecord)
+                .where(whereClause.and(formattedDate.in(selectedDates)))
+                .orderBy(qAttendRecord.regDate.desc(), qAttendRecord.id.desc());
+
+        List<AttendRecordModel> records = recordQuery.fetch();
+
+        List<BaseAttendDto> attendDtos = records.stream()
                 .map(this::entityToDtoAttendRecord)
                 .collect(Collectors.toList());
 
-        JPAQuery<Long> countQuery = queryFactory
-                .select(qAttendRecord.count())
-                .from(qAttendRecord)
-                .where(whereClause);
-
-        return PageableExecutionUtils.getPage(attendDtos, pageable, countQuery::fetchOne);
+        return new PageImpl<>(attendDtos, pageable, totalPages * pageSize);
     }
 
     @Override
