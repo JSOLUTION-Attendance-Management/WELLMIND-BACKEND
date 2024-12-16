@@ -15,7 +15,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import site.wellmind.security.filter.JwtAuthorizationFilter;
+import site.wellmind.security.filter.AuthenticationHeaderFilter;
 import site.wellmind.security.handler.CustomAccessDeniedHandler;
 import site.wellmind.security.handler.CustomAuthenticationEntryPoint;
 import site.wellmind.security.handler.CustomAuthenticationFailureHandler;
@@ -26,7 +26,7 @@ import site.wellmind.security.util.RoleManager;
 import java.util.List;
 
 /**
- * WebSecurityConfig
+ * SecurityConfig
  * <p>Spring Security의 모든 보안 설정을 구성</p>
  *
  * @author Yuri Seok(tjrdbfl)
@@ -39,7 +39,7 @@ import java.util.List;
 @EnableWebSecurity
 @RequiredArgsConstructor
 @EnableMethodSecurity(securedEnabled = true, prePostEnabled = true) // Replaces EnableGlobalMethodSecurity
-public class WebSecurityConfig {
+public class SecurityConfig {
     private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
     private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
     private final JwtTokenProvider jwtTokenProvider;
@@ -69,7 +69,7 @@ public class WebSecurityConfig {
                         .requestMatchers(AUTH_WHITELIST).permitAll()
                         .anyRequest().permitAll()
                 )
-                .addFilterBefore(new JwtAuthorizationFilter(jwtTokenProvider,roleManager), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new AuthenticationHeaderFilter(jwtTokenProvider,roleManager), UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling((exceptionHandling) ->
                         exceptionHandling
                                 .authenticationEntryPoint(customAuthenticationEntryPoint)
