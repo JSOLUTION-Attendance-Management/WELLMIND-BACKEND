@@ -13,8 +13,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import site.wellmind.common.domain.dto.Messenger;
-import site.wellmind.security.domain.model.PrincipalAdminDetails;
-import site.wellmind.security.domain.model.PrincipalUserDetails;
+import site.wellmind.security.domain.model.CustomAdminDetails;
+import site.wellmind.security.domain.model.CustomUserDetails;
 import site.wellmind.security.provider.JwtTokenProvider;
 
 import java.io.IOException;
@@ -25,8 +25,8 @@ import java.io.IOException;
  * @author Yuri Seok(tjrdbfl)
  * @version 1.0
  * @see JwtTokenProvider
- * @see PrincipalUserDetails
- * @see PrincipalAdminDetails
+ * @see CustomUserDetails
+ * @see CustomAdminDetails
  * @since 2024-11-09
  */
 @Slf4j
@@ -47,12 +47,12 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             String accessToken;
             String refreshToken;
 
-            if(authentication.getPrincipal() instanceof PrincipalUserDetails){
-                PrincipalUserDetails userDetails = (PrincipalUserDetails) authentication.getPrincipal();
+            if(authentication.getPrincipal() instanceof CustomUserDetails){
+                CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
                 accessToken = jwtTokenProvider.generateToken(userDetails, false);
                 refreshToken = jwtTokenProvider.generateToken(userDetails, true);
-            }else if(authentication.getPrincipal() instanceof PrincipalAdminDetails){
-                PrincipalAdminDetails adminDetails = (PrincipalAdminDetails) authentication.getPrincipal();
+            }else if(authentication.getPrincipal() instanceof CustomAdminDetails){
+                CustomAdminDetails adminDetails = (CustomAdminDetails) authentication.getPrincipal();
                 accessToken = jwtTokenProvider.generateToken(adminDetails, false);
                 refreshToken = jwtTokenProvider.generateToken(adminDetails, true);
             }else{

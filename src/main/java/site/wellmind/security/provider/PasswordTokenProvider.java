@@ -8,10 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import site.wellmind.security.domain.model.AccountTokenModel;
 import site.wellmind.security.domain.model.PasswordSetupTokenModel;
-import site.wellmind.security.domain.model.PrincipalAdminDetails;
-import site.wellmind.security.domain.model.PrincipalUserDetails;
 import site.wellmind.security.domain.vo.TokenStatus;
 import site.wellmind.security.repository.PasswordSetupTokenRepository;
 
@@ -22,7 +19,6 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * PasswordTokenProvider

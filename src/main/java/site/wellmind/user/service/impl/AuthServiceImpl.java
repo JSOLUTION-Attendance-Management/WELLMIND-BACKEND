@@ -90,7 +90,7 @@ public class AuthServiceImpl implements AuthService {
                 throw new GlobalException(ExceptionStatus.INVALID_PASSWORD);
             }
 
-            PrincipalUserDetails userDetails = new PrincipalUserDetails(user.get());
+            CustomUserDetails userDetails = new CustomUserDetails(user.get());
             accessToken = jwtTokenProvider.generateToken(userDetails, false);
             refreshToken = jwtTokenProvider.generateToken(userDetails, true);
 
@@ -103,7 +103,7 @@ public class AuthServiceImpl implements AuthService {
                 throw new GlobalException(ExceptionStatus.INVALID_PASSWORD);
             }
 
-            PrincipalAdminDetails adminDetails = new PrincipalAdminDetails(admin.get());
+            CustomAdminDetails adminDetails = new CustomAdminDetails(admin.get());
             accessToken = jwtTokenProvider.generateToken(adminDetails, false);
             refreshToken = jwtTokenProvider.generateToken(adminDetails, true);
         }
@@ -153,10 +153,10 @@ public class AuthServiceImpl implements AuthService {
             Object accountDetails = jwtTokenProvider.extractPrincipalDetails(jwtToken);
             //db에 token 존재 여부
             boolean isTokenExists;
-            if (accountDetails instanceof PrincipalUserDetails) {
-                isTokenExists = jwtTokenProvider.isTokenExists(((PrincipalUserDetails) accountDetails).getUsername(), jwtToken);
-            } else if (accountDetails instanceof PrincipalAdminDetails) {
-                isTokenExists = jwtTokenProvider.isTokenExists(((PrincipalAdminDetails) accountDetails).getUsername(), jwtToken);
+            if (accountDetails instanceof CustomUserDetails) {
+                isTokenExists = jwtTokenProvider.isTokenExists(((CustomUserDetails) accountDetails).getUsername(), jwtToken);
+            } else if (accountDetails instanceof CustomAdminDetails) {
+                isTokenExists = jwtTokenProvider.isTokenExists(((CustomAdminDetails) accountDetails).getUsername(), jwtToken);
             } else {
                 throw new GlobalException(ExceptionStatus.UNAUTHORIZED, "Token not found in DB");
             }
@@ -207,10 +207,10 @@ public class AuthServiceImpl implements AuthService {
             log.info("accountDetails : {}", accountDetails);
 
             boolean isRemoved;
-            if (accountDetails instanceof PrincipalUserDetails) {
-                isRemoved = jwtTokenProvider.invalidateToken(((PrincipalUserDetails) accountDetails).getUsername());
-            } else if (accountDetails instanceof PrincipalAdminDetails) {
-                isRemoved = jwtTokenProvider.invalidateToken(((PrincipalAdminDetails) accountDetails).getUsername());
+            if (accountDetails instanceof CustomUserDetails) {
+                isRemoved = jwtTokenProvider.invalidateToken(((CustomUserDetails) accountDetails).getUsername());
+            } else if (accountDetails instanceof CustomAdminDetails) {
+                isRemoved = jwtTokenProvider.invalidateToken(((CustomAdminDetails) accountDetails).getUsername());
             } else {
                 throw new GlobalException(ExceptionStatus.UNAUTHORIZED, "Invalid User Type");
             }

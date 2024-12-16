@@ -1,33 +1,25 @@
 package site.wellmind.security.filter;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import site.wellmind.common.domain.vo.ExceptionStatus;
-import site.wellmind.common.domain.vo.Role;
 import site.wellmind.common.exception.GlobalException;
 import site.wellmind.security.provider.JwtTokenProvider;
 import site.wellmind.security.util.RoleManager;
-import site.wellmind.user.repository.AccountRoleRepository;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
 /**
- * JwtAuthorizationFilter
+ * AuthenticationHeaderFilter
  * <p>Checks user authentication and authorization with access and refresh tokens.</p>
  * <p>If the access token is expired but refresh token is valid, prompts the client to refresh the token.</p>
  * @see JwtTokenProvider
@@ -35,10 +27,10 @@ import java.util.List;
  * @version 1.0
  * @since 2024-11-09
  */
-@Slf4j(topic = "JwtAuthorizationFilter")
+@Slf4j(topic = "AuthenticationHeaderFilter")
 @Component
 @RequiredArgsConstructor
-public class JwtAuthorizationFilter extends OncePerRequestFilter {
+public class AuthenticationHeaderFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
     private final RoleManager roleManager;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
@@ -101,7 +93,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     
     @Override
     public void destroy() {
-        log.info("JwtAuthorizationFilter destroyed.");
+        log.info("AuthenticationHeaderFilter destroyed.");
         //closing database connections or stopping threads
     }
 

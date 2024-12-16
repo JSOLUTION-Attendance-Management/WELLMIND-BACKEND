@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.stereotype.Component;
-import site.wellmind.security.domain.model.PrincipalAdminDetails;
-import site.wellmind.security.domain.model.PrincipalUserDetails;
 import site.wellmind.user.repository.AccountRoleRepository;
 
 import java.util.List;
