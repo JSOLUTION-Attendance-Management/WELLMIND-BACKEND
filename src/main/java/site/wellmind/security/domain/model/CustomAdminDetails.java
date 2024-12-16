@@ -8,17 +8,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import site.wellmind.security.handler.CustomAuthenticationFailureHandler;
-import site.wellmind.security.handler.CustomAuthenticationSuccessHandler;
 import site.wellmind.user.domain.model.AdminTopModel;
-import site.wellmind.user.domain.model.UserTopModel;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 /**
- * PrincipalAdminDetails
+ * CustomAdminDetails
  * <p>Represents an administrator’s authentication details, implementing Spring Security's UserDetails.</p>
  *
  * @author Yuri Seok(tjrdbfl)
@@ -29,12 +26,12 @@ import java.util.Map;
 @Getter
 @Setter
 @RequiredArgsConstructor
-@Slf4j(topic = "PrincipalAdminDetails")
-public class PrincipalAdminDetails implements UserDetails {
+@Slf4j(topic = "CustomAdminDetails")
+public class CustomAdminDetails implements UserDetails {
     private AdminTopModel admin;
     private Map<String,Object> attributes;
 
-    public PrincipalAdminDetails(AdminTopModel admin){
+    public CustomAdminDetails(AdminTopModel admin){
         this.admin=admin;
     }
 

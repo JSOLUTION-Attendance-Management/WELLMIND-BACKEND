@@ -18,8 +18,8 @@ import org.springframework.stereotype.Service;
 import site.wellmind.common.domain.vo.ExceptionStatus;
 import site.wellmind.common.exception.GlobalException;
 import site.wellmind.security.domain.model.AccountTokenModel;
-import site.wellmind.security.domain.model.PrincipalAdminDetails;
-import site.wellmind.security.domain.model.PrincipalUserDetails;
+import site.wellmind.security.domain.model.CustomAdminDetails;
+import site.wellmind.security.domain.model.CustomUserDetails;
 import site.wellmind.security.domain.vo.TokenStatus;
 import site.wellmind.security.repository.AccountTokenRepository;
 import site.wellmind.user.domain.model.AdminTopModel;
@@ -38,8 +38,8 @@ import java.util.stream.Collectors;
  *
  * @author Yuri Seok(tjrdbfl)
  * @version 1.0
- * @see PrincipalUserDetails
- * @see PrincipalAdminDetails
+ * @see CustomUserDetails
+ * @see CustomAdminDetails
  * @since 2024-11-10
  */
 @Slf4j(topic = "JwtTokenProvider")
@@ -131,11 +131,11 @@ public class JwtTokenProvider {
         Long id;
         String username;
 
-        if(principal instanceof PrincipalUserDetails principalUserDetails){
+        if(principal instanceof CustomUserDetails principalUserDetails){
             roles="ROLE_USER_UGL_11";
             id=principalUserDetails.getUser().getId();
             username=principalUserDetails.getUsername();
-        }else if (principal instanceof PrincipalAdminDetails principalAdminDetails){
+        }else if (principal instanceof CustomAdminDetails principalAdminDetails){
             roles=principalAdminDetails.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
                     .toList().toString();
@@ -225,13 +225,13 @@ public class JwtTokenProvider {
         String employeeId = extractEmployeeId(jwt);
 
         if("ROLE_USER_UGL_11".equals(roles)){
-            return new PrincipalUserDetails(UserTopModel.builder()
+            return new CustomUserDetails(UserTopModel.builder()
                     .employeeId(employeeId)
                     .id(id)
                     .authType("N")
                     .build());
         }else{
-            return new PrincipalAdminDetails(AdminTopModel.builder()
+            return new CustomAdminDetails(AdminTopModel.builder()
                     .employeeId(employeeId)
                     .id(id)
                     .authType("M")
