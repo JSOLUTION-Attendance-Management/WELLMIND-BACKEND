@@ -18,13 +18,13 @@ import java.time.LocalDateTime;
 public class TransferDto {
     private Long id;
     private String transferReason;
-    private TransferType transferType;
+    private String transferType;
     private String managerName;
     private String previousPosition;
     private String newPosition;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+    @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd")
     private LocalDateTime regDate;
-    @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+    @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd")
     private LocalDateTime modDate;
 }
