@@ -29,6 +29,7 @@ import site.wellmind.user.repository.AdminTopRepository;
 import site.wellmind.user.repository.UserTopRepository;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -195,30 +196,17 @@ public class ReportServiceImpl implements ReportService {
         reportDto.setReportedEmployeeId(reportedEmployeeId);
         reportDto.setReportedEmployeeName(reportedEmployeeName);
 
-        // reportType 변환 및 "빈발형" 추가
-        String[] types = reportDto.getReportType().split(",");
-        List<String> convertedTypes = new ArrayList<>();
-        for (String type : types) {
-            switch (type) {
-                case "LA":
-                    convertedTypes.add("지각");
-                    break;
-                case "LL":
-                    convertedTypes.add("야근");
-                    break;
-                case "EL":
-                    convertedTypes.add("조퇴");
-                    break;
-                case "OT":
-                    convertedTypes.add("외출");
-                    break;
-                case "BT":
-                    convertedTypes.add("출장");
-                    break;
+        // 키워드 변환
+        if (reportModel.getKeywords() != null && !reportModel.getKeywords().isEmpty()) {
+            String[] keywordArray = reportModel.getKeywords().split(",");
+            List<List<String>> convertedKeywords = new ArrayList<>();
+            for (String keyword : keywordArray) {
+                convertedKeywords.add(Arrays.asList(keyword));
             }
+            reportDto.setKeywords(convertedKeywords);
+        } else {
+            reportDto.setKeywords(new ArrayList<>());
         }
-        String convertedType = String.join(", ", convertedTypes) + " 빈발형";
-        reportDto.setReportType(convertedType);
 
         if (reportModel.getIsAdmin()) {
             AdminTopModel admin = adminTopRepository.findById(reportModel.getReportedId())
