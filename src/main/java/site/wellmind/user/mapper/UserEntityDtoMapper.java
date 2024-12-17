@@ -159,6 +159,7 @@ public class UserEntityDtoMapper {
     public UserDetailDto entityToDtoUserDetail(UserTopModel user) {
 
         return UserDetailDto.builder()
+                .employeeId(user.getEmployeeId())
                 .regNumberFor(encryptionUtil.decrypt(user.getRegNumberFor()))
                 .regNumberLat(maskRegNumberLat(encryptionUtil.decrypt(user.getRegNumberLat())))
                 .userInfo(entityToDtoUserInfo(user.getUserInfoModel()))
@@ -174,6 +175,7 @@ public class UserEntityDtoMapper {
         List<UserEducationModel> userEducations = admin.getUserEduIds();
 
         return UserDetailDto.builder()
+                .employeeId(admin.getEmployeeId())
                 .regNumberFor(encryptionUtil.decrypt(admin.getRegNumberFor()))
                 .regNumberLat(maskRegNumberLat(encryptionUtil.decrypt(admin.getRegNumberLat())))
                 .userInfo(entityToDtoUserInfo(userInfoModel))
