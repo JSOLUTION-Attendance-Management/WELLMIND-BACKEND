@@ -34,7 +34,6 @@ public interface ReportService {
                 .reportType(model.getUserType())
                 .isAdmin(model.getIsAdmin())
                 .isSent(model.getIsSent())
-                .keywords(model.getKeywords())
                 .build();
     }
 
