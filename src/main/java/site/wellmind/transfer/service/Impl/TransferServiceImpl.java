@@ -78,7 +78,12 @@ public class TransferServiceImpl implements TransferService {
                                 managerName = admin.get().getName();
                             } else {
                                 Optional<UserTopModel> user = userTopRepository.findByEmployeeId(transfer.getManagerEmployeeId());
-                                managerName = user.get().getName();
+                                if (user.isPresent()) {
+                                    managerName = user.get().getName();
+                                } else {
+                                    log.warn("No manager found for employee ID: {}", transfer.getManagerEmployeeId());
+                                    managerName = "Unknown Manager";
+                                }
                             }
 
                             List<String> record = findByRecord(transfer.getUserId() == null ? transfer.getAdminId().getId() : transfer.getUserId().getId());
