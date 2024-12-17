@@ -35,6 +35,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Transfer Service Implementation
@@ -60,30 +62,52 @@ public class TransferServiceImpl implements TransferService {
 
     @Override
     public Page<TransferDto> findByEmployeeId(Pageable pageable, AccountDto accountDto) {
-        List<TransferModel> transfers = transferRepository.findTransfersByAccountId(accountDto.getAccountId(), accountDto.isAdmin());
-        String newPosition = transfers.get(0).getDepartment().getName() + "/" + transfers.get(0).getPosition().getName();
+        List<TransferModel> transfers = transferRepository
+                .findTransfersByAccountId(accountDto.getAccountId(), accountDto.isAdmin())
+                .stream()
+                .sorted((t1, t2) -> t1.getRegDate().compareTo(t2.getRegDate()))
+                .collect(Collectors.toList());
 
-        List<TransferDto> transferDtos = transfers.stream().map(transfer -> {
-            String managerName;
-            Optional<AdminTopModel> admin = adminTopRepository.findByEmployeeId(transfer.getManagerEmployeeId());
-            if (admin.isPresent()) {
-                managerName = admin.get().getName();
-            } else {
-                Optional<UserTopModel> user = userTopRepository.findByEmployeeId(transfer.getManagerEmployeeId());
-                managerName = user.get().getName();
-            }
+        List<TransferDto> transferDtos =
+                IntStream.range(0, transfers.size())
+                        .mapToObj(index -> {
+                            TransferModel transfer = transfers.get(index);
+                            String managerName;
+                            Optional<AdminTopModel> admin = adminTopRepository.findByEmployeeId(transfer.getManagerEmployeeId());
+                            if (admin.isPresent()) {
+                                managerName = admin.get().getName();
+                            } else {
+                                Optional<UserTopModel> user = userTopRepository.findByEmployeeId(transfer.getManagerEmployeeId());
+                                if (user.isPresent()) {
+                                    managerName = user.get().getName();
+                                } else {
+                                    log.warn("No manager found for employee ID: {}", transfer.getManagerEmployeeId());
+                                    managerName = "Unknown Manager";
+                                }
+                            }
 
-            // TransferDto 생성
-            return TransferDto.builder()
-                    .id(transfer.getId())
-                    .transferReason(transfer.getTransferReason())
-                    .transferType(transfer.getTransferType())
-                    .managerName(managerName)
-                    .newPosition(transfer.getDepartment().getName() + " / " + transfer.getPosition().getName())
-                    .regDate(transfer.getRegDate())
-                    .modDate(transfer.getModDate())
-                    .build();
-        }).toList();
+                            List<String> record = findByRecord(transfer.getUserId() == null ? transfer.getAdminId().getId() : transfer.getUserId().getId());
+
+                            // `previousPosition` 설정
+                            String previousPosition = "";
+                            if (index != transfers.size() - 1 && !"신규 입사".equals(transfer.getTransferType().getKorean())) {
+                                previousPosition = record.size() > 1 ? record.get(1) : "";
+                            }
+
+                            // TransferDto 생성
+                            return TransferDto.builder()
+                                    .id(transfer.getId())
+                                    .transferReason(transfer.getTransferReason())
+                                    .transferType(transfer.getTransferType().getKorean())
+                                    .managerName(managerName)
+                                    .previousPosition(previousPosition)
+                                    .newPosition(transfer.getDepartment().getName() + " / " + transfer.getPosition().getName())
+                                    .regDate(transfer.getRegDate())
+                                    .modDate(transfer.getModDate())
+                                    .build();
+                        }).toList();
+
+
         // 데이터 개수 계산
         long count = transfers.size();
 
@@ -130,7 +154,7 @@ public class TransferServiceImpl implements TransferService {
             return TransferDto.builder()
                     .id(transfer.getId())
                     .transferReason(transfer.getTransferReason())
-                    .transferType(transfer.getTransferType())
+                    .transferType(transfer.getTransferType().getKorean())
                     .managerName(managerName)
                     .newPosition(record.get(0))
                     .previousPosition(record.get(1))
