@@ -45,6 +45,30 @@ public class UserEntityDtoMapper {
                 .build();
     }
 
+    public UserAllDto entityToDtoUserAllRest(UserTopModel model) {
+        TransferModel transferModel = model.getTransferEmployeeIds().get(0);
+
+        return UserAllDto.builder()
+                .userTopDto(entityToDtoUserTopRest(model))
+                .userInfo(entityToDtoUserInfoRest(model.getUserInfoModel()))
+                .education(null)
+                .departName(transferModel.getDepartment().getName())
+                .positionName(transferModel.getPosition().getName())
+                .build();
+    }
+
+    public UserAllDto entityToDtoUserAllRest(AdminTopModel model) {
+        TransferModel transferModel = model.getTransferIds().get(0);
+
+        return UserAllDto.builder()
+                .userTopDto(entityToDtoUserTopRest(model))
+                .userInfo(entityToDtoUserInfoRest(model.getUserInfoModel()))
+                .education(null)
+                .departName(transferModel.getDepartment().getName())
+                .positionName(transferModel.getPosition().getName())
+                .build();
+    }
+
 
     public UserTopDto entityToDtoUserTop(AdminTopModel model) {
         return UserTopDto.builder()
@@ -53,6 +77,8 @@ public class UserEntityDtoMapper {
                 .email(model.getEmail())
                 .name(model.getName())
                 .phoneNum(model.getPhoneNum())
+                .regNumberFor(encryptionUtil.decrypt(model.getRegNumberFor()))
+                .regNumberLat(maskRegNumberLat(encryptionUtil.decrypt(model.getRegNumberLat())))
                 .deleteFlag(model.getDeleteFlag())
                 .authType(model.getAuthType())
                 .regDate(model.getRegDate())
@@ -61,6 +87,43 @@ public class UserEntityDtoMapper {
                 .roleId(model.getRole().getId())
                 .build();
     }
+
+    public UserTopDto entityToDtoUserTopRest(UserTopModel model) {
+        return UserTopDto.builder()
+                .id(model.getId())
+                .employeeId(model.getEmployeeId())
+                .email(model.getEmail())
+                .name(model.getName())
+                .phoneNum(model.getPhoneNum())
+                .regNumberFor(null)
+                .regNumberLat(null)
+                .deleteFlag(model.getDeleteFlag())
+                .authType(model.getAuthType())
+                .regDate(model.getRegDate())
+                .modDate(model.getModDate())
+                .userInfoId(model.getUserInfoModel().getId())
+                .roleId(model.getRole().getId())
+                .build();
+    }
+
+    public UserTopDto entityToDtoUserTopRest(AdminTopModel model) {
+        return UserTopDto.builder()
+                .id(model.getId())
+                .employeeId(model.getEmployeeId())
+                .email(model.getEmail())
+                .name(model.getName())
+                .phoneNum(model.getPhoneNum())
+                .regNumberFor(null)
+                .regNumberLat(null)
+                .deleteFlag(model.getDeleteFlag())
+                .authType(model.getAuthType())
+                .regDate(model.getRegDate())
+                .modDate(model.getModDate())
+                .userInfoId(model.getUserInfoModel().getId())
+                .roleId(model.getRole().getId())
+                .build();
+    }
+
 
     public UserTopDto entityToDtoUserTop(UserTopModel model) {
         return UserTopDto.builder()
@@ -93,7 +156,19 @@ public class UserEntityDtoMapper {
                 .build();
     }
 
-    public UserSignificantDto entityToDtoUserSignificant(UserSignificantModel model){
+    public UserInfoDto entityToDtoUserInfoRest(UserInfoModel model) {
+        return UserInfoDto.builder()
+                .id(model.getId())
+                .address(model.getAddress())
+                .photo(model.getPhoto())
+                .hobby(null)
+                .isLong(model.isLong())
+                .significant(null)
+                .hireDate(null)
+                .build();
+    }
+
+    public UserSignificantDto entityToDtoUserSignificant(UserSignificantModel model) {
         return UserSignificantDto.builder()
                 .id(model.getId())
                 .maritalStatus(model.getMaritalStatus().getKorean())
