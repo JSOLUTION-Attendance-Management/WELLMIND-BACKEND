@@ -28,4 +28,6 @@ public class ReportListDto {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private String registeredDate;
+
+    private boolean isSent;
 }
