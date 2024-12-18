@@ -44,6 +44,7 @@ public interface ReportService {
                 .reportId(model.getId())
                 .registeredDate(regDate != null ? regDate.format(DateTimeFormatter.ISO_LOCAL_DATE) : null)
                 .reportType(model.getUserType())
+                .isSent(model.getIsSent())
                 .build();
     }
 
