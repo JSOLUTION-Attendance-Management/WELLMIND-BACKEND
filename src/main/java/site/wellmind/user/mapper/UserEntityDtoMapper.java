@@ -125,6 +125,7 @@ public class UserEntityDtoMapper {
         TransferModel transferModel = user.getTransferEmployeeIds().get(0);
 
         return ProfileDto.builder()
+                .employeeId(user.getEmployeeId())
                 .email(user.getEmail())
                 .name(user.getName())
                 .phoneNum(user.getPhoneNum())
@@ -143,6 +144,7 @@ public class UserEntityDtoMapper {
         TransferModel transferModel = admin.getTransferIds().get(0);
 
         return ProfileDto.builder()
+                .employeeId(admin.getEmployeeId())
                 .email(admin.getEmail())
                 .name(admin.getName())
                 .phoneNum(admin.getPhoneNum())
