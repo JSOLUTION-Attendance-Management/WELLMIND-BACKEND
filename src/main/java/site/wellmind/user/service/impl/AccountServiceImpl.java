@@ -366,7 +366,7 @@ public class AccountServiceImpl implements AccountService {
 
                 if (!admin.isEmpty()) {
                     if (accountDto.getRole().equals("ROLE_ADMIN_UBL_55")) {
-                        return userEntityDtoMapper.entityToDtoUserProfile(admin.get());
+                       return userEntityDtoMapper.entityToDtoUserAllRest(admin.get());
                     } else if (accountDto.getRole().equals("ROLE_ADMIN_UBL_66")) {
                         return userEntityDtoMapper.entityToDtoUserAll(admin.get());
                     } else {
@@ -379,7 +379,7 @@ public class AccountServiceImpl implements AccountService {
 
                 if (!user.isEmpty()) {
                     if (accountDto.getRole().equals("ROLE_ADMIN_UBL_55")) {
-                        return userEntityDtoMapper.entityToDtoUserProfile(user.get());
+                          return userEntityDtoMapper.entityToDtoUserAllRest(user.get());
                     } else if (accountDto.getRole().equals("ROLE_ADMIN_UBL_66")) {
                         return userEntityDtoMapper.entityToDtoUserAll(user.get());
                     } else {
