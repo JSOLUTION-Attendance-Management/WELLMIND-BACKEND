@@ -145,7 +145,7 @@ public class UserEntityDtoMapper {
 
 
     public UserInfoDto entityToDtoUserInfo(UserInfoModel model) {
-        return UserInfoDto.builder()
+        return model==null? null:UserInfoDto.builder()
                 .id(model.getId())
                 .address(model.getAddress())
                 .photo(model.getPhoto())
@@ -157,7 +157,7 @@ public class UserEntityDtoMapper {
     }
 
     public UserInfoDto entityToDtoUserInfoRest(UserInfoModel model) {
-        return UserInfoDto.builder()
+        return model==null? null:UserInfoDto.builder()
                 .id(model.getId())
                 .address(model.getAddress())
                 .photo(model.getPhoto())
@@ -169,7 +169,7 @@ public class UserEntityDtoMapper {
     }
 
     public UserSignificantDto entityToDtoUserSignificant(UserSignificantModel model) {
-        return UserSignificantDto.builder()
+        return model==null? null:UserSignificantDto.builder()
                 .id(model.getId())
                 .maritalStatus(model.getMaritalStatus().getKorean())
                 .smoker(model.getSmoker())
@@ -183,7 +183,7 @@ public class UserEntityDtoMapper {
 
     public EducationDto entityToDtoUserEdu(UserEducationModel edu) {
 
-        return EducationDto.builder()
+        return edu==null? null:EducationDto.builder()
                 .id(edu.getId())
                 .degree(edu.getDegree())
                 .institutionName(edu.getInstitutionName())
@@ -196,39 +196,51 @@ public class UserEntityDtoMapper {
     }
 
     public ProfileDto entityToDtoUserProfile(UserTopModel user) {
-        UserInfoModel userInfoModel = user.getUserInfoModel();
-        TransferModel transferModel = user.getTransferEmployeeIds().get(0);
+        UserInfoModel userInfoModel = (user != null) ? user.getUserInfoModel() : null;
+        TransferModel transferModel = (user != null && user.getTransferEmployeeIds() != null && !user.getTransferEmployeeIds().isEmpty())
+                ? user.getTransferEmployeeIds().get(0)
+                : null;
 
         return ProfileDto.builder()
-                .employeeId(user.getEmployeeId())
-                .email(user.getEmail())
-                .name(user.getName())
-                .phoneNum(user.getPhoneNum())
+                .employeeId(user != null ? user.getEmployeeId() : null)
+                .email(user != null ? user.getEmail() : null)
+                .name(user != null ? user.getName() : null)
+                .phoneNum(user != null ? user.getPhoneNum() : null)
                 .authType("N")
-                .deleteFlag(user.getDeleteFlag())
-                .photo(userInfoModel.getPhoto())
-                .address(userInfoModel.getAddress())
-                .departName(transferModel.getDepartment().getName())
-                .positionName(transferModel.getPosition().getName())
+                .deleteFlag(user != null ? user.getDeleteFlag() : null)
+                .photo(userInfoModel != null ? userInfoModel.getPhoto() : null)
+                .address(userInfoModel != null ? userInfoModel.getAddress() : null)
+                .departName(transferModel != null && transferModel.getDepartment() != null
+                        ? transferModel.getDepartment().getName()
+                        : null)
+                .positionName(transferModel != null && transferModel.getPosition() != null
+                        ? transferModel.getPosition().getName()
+                        : null)
                 .build();
 
     }
 
     public ProfileDto entityToDtoUserProfile(AdminTopModel admin) {
-        UserInfoModel userInfoModel = admin.getUserInfoModel();
-        TransferModel transferModel = admin.getTransferIds().get(0);
+        UserInfoModel userInfoModel = admin != null ? admin.getUserInfoModel() : null;
+        TransferModel transferModel = (admin != null && admin.getTransferIds() != null && !admin.getTransferIds().isEmpty())
+                ? admin.getTransferIds().get(0)
+                : null;
 
         return ProfileDto.builder()
-                .employeeId(admin.getEmployeeId())
-                .email(admin.getEmail())
-                .name(admin.getName())
-                .phoneNum(admin.getPhoneNum())
+                .employeeId(admin != null ? admin.getEmployeeId() : null)
+                .email(admin != null ? admin.getEmail() : null)
+                .name(admin != null ? admin.getName() : null)
+                .phoneNum(admin != null ? admin.getPhoneNum() : null)
                 .authType("M")
-                .deleteFlag(admin.getDeleteFlag())
-                .photo(userInfoModel.getPhoto())
-                .address(userInfoModel.getAddress())
-                .departName(transferModel.getDepartment().getName())
-                .positionName(transferModel.getPosition().getName())
+                .deleteFlag(admin != null ? admin.getDeleteFlag() : null)
+                .photo(userInfoModel != null ? userInfoModel.getPhoto() : null)
+                .address(userInfoModel != null ? userInfoModel.getAddress() : null)
+                .departName(transferModel != null && transferModel.getDepartment() != null
+                        ? transferModel.getDepartment().getName()
+                        : null)
+                .positionName(transferModel != null && transferModel.getPosition() != null
+                        ? transferModel.getPosition().getName()
+                        : null)
                 .build();
 
     }
@@ -237,8 +249,16 @@ public class UserEntityDtoMapper {
 
         return UserDetailDto.builder()
                 .employeeId(user.getEmployeeId())
-                .regNumberFor(encryptionUtil.decrypt(user.getRegNumberFor()))
-                .regNumberLat(maskRegNumberLat(encryptionUtil.decrypt(user.getRegNumberLat())))
+                .regNumberFor(
+                        (user.getRegNumberFor() != null && !user.getRegNumberFor().isEmpty())
+                                ? encryptionUtil.decrypt(user.getRegNumberFor())
+                                : null
+                )
+                .regNumberLat(
+                        (user.getRegNumberLat() != null && !user.getRegNumberLat().isEmpty())
+                                ? maskRegNumberLat(encryptionUtil.decrypt(user.getRegNumberLat()))
+                                : null
+                )
                 .userInfo(entityToDtoUserInfo(user.getUserInfoModel()))
                 .userSignificant(entityToDtoUserSignificant(user.getUserSignificantModel()))
                 .education(user.getUserEduIds().stream()
@@ -253,8 +273,16 @@ public class UserEntityDtoMapper {
 
         return UserDetailDto.builder()
                 .employeeId(admin.getEmployeeId())
-                .regNumberFor(encryptionUtil.decrypt(admin.getRegNumberFor()))
-                .regNumberLat(maskRegNumberLat(encryptionUtil.decrypt(admin.getRegNumberLat())))
+                .regNumberFor(
+                        (admin.getRegNumberFor() != null && !admin.getRegNumberFor().isEmpty())
+                                ? encryptionUtil.decrypt(admin.getRegNumberFor())
+                                : null
+                )
+                .regNumberLat(
+                        (admin.getRegNumberLat() != null && !admin.getRegNumberLat().isEmpty())
+                                ? maskRegNumberLat(encryptionUtil.decrypt(admin.getRegNumberLat()))
+                                : null
+                )
                 .userInfo(entityToDtoUserInfo(userInfoModel))
                 .userSignificant(entityToDtoUserSignificant(admin.getUserSignificantModel()))
                 .education(userEducations.stream()
