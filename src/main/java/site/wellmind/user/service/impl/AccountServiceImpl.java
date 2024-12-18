@@ -483,6 +483,7 @@ public class AccountServiceImpl implements AccountService {
                 .select(Projections.constructor(
                         ProfileDto.class,
                         qUserTop.id.as("id"),
+                        qUserTop.employeeId.as("employeeId"),
                         qUserTop.email.as("email"),
                         qUserTop.name.as("name"),
                         qUserTop.phoneNum.as("phoneNum"),
@@ -507,6 +508,7 @@ public class AccountServiceImpl implements AccountService {
                 .select(Projections.constructor(
                         ProfileDto.class,
                         qAdminTop.id.as("id"),
+                        qAdminTop.employeeId.as("employeeId"),
                         qAdminTop.email.as("email"),
                         qAdminTop.name.as("name"),
                         qAdminTop.phoneNum.as("phoneNum"),

@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ProfileDto {
     private Long id;
+    private String employeeId;
     private String email;
     private String name;
     private String phoneNum;
